@@ -1,6 +1,7 @@
 
 import 'package:book_Verse/common/widgets/custom_shapes/rounded_container.dart';
 import 'package:book_Verse/common/widgets/custom_shapes/search_container.dart';
+import 'package:book_Verse/common/widgets/layouts/grid_layout.dart';
 import 'package:book_Verse/common/widgets/texts/section_heading.dart';
 import 'package:book_Verse/utils/constants/colors.dart';
 import 'package:book_Verse/utils/constants/enums.dart';
@@ -48,36 +49,39 @@ class StoreScreen extends StatelessWidget {
               TSectionHeading(title: 'Featured Genre', showActionButton: true, onPressed: (){},),
               const SizedBox(height: TSizes.spaceBtwSections / 1.5),
               
-              GestureDetector(
-                onTap: (){},
-                child: TRoundedContainer(
-                  padding: const EdgeInsets.all(TSizes.sm),
-                  showBorder: true,
-                  backgroundColor: Colors.transparent,
-                  child: Row(
-                    children: [
-                      ///----->Icon
-                      TCircularImage(
-                        isNetworkImage: false,
-                        image: TImages.genreIcon2,
-                      backgroundColor: Colors.transparent,
-                      overlayColor: THelperFunction.isDarkMode(context) ? TColors.white : TColors.black,),
-                      const SizedBox(height: TSizes.spaceBtwItems / 2,),
-                      Column(
-
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                        TGenreTitleWithVerification(title: 'Romance', genreTextSizes: TextSizes.large,),
-                          Text('10 books',
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.labelMedium,)
-
-                        ],
-                      )
-                    ],
+              TGridLayout(itemCount: 4,mainAxisExtent: 80, itemBuilder: (_, index){
+                return GestureDetector(
+                  onTap: (){},
+                  child: TRoundedContainer(
+                    padding: const EdgeInsets.all(TSizes.sm),
+                    showBorder: true,
+                    backgroundColor: Colors.transparent,
+                    child: Row(
+                      children: [
+                        ///----->Icon
+                        Flexible(
+                          child: TCircularImage(
+                            isNetworkImage: false,
+                            image: TImages.genreIcon2,
+                            backgroundColor: Colors.transparent,
+                            overlayColor: THelperFunction.isDarkMode(context) ? TColors.white : TColors.black,),
+                        ),
+                        const SizedBox(height: TSizes.spaceBtwItems / 2,), 
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TGenreTitleWithVerification(title: 'Romance', genreTextSizes: TextSizes.large,),
+                            Text('10 books',
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.labelMedium,),
+                          ],
+                        )
+                      ],
+                    ),
                   ),
-                ),
-              )
+                );
+              })
             ],
           ),
         ),
