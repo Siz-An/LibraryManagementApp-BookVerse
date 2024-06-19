@@ -1,0 +1,65 @@
+name: book_Verse
+description: "A new Flutter project."
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.1 <4.0.0'
+
+#----------------packages----------------#
+
+dependencies:
+  flutter:
+    sdk: flutter
+# Utility packages
+
+  http: ^1.2.1
+  intl: ^0.19.0
+  logger: ^2.3.0
+  url_launcher: ^6.3.0
+  flutter_native_splash: ^2.4.0
+  smooth_page_indicator: ^1.1.0
+  carousel_slider: ^4.2.1
+
+
+#navigation curve menu_bar
+  curved_navigation_bar: ^1.0.6
+
+  # Icons
+  cupertino_icons: ^1.0.6
+  iconsax: ^0.0.8
+
+# State Management
+  get: ^4.6.5
+  get_storage: ^2.1.1
+
+# Product Specifier
+
+#------------- ./Packages End -------------#
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+#-----------Local Assets----------#
+  assets:
+    - assets/
+    - assets/logos/
+    - assets/images/
+    - assets/images/on_boarding_images/
+    - assets/images/animation/
+    - assets/icons/icon_genre/
+    - assets/icons/brand/
+    - assets/icons/category/
+    - assets/images/banner/
+    - assets/images/products/desktop/
+    - assets/images/products/keyboard/
+    - assets/images/products/laptop/
+    - assets/images/products/mouse/
+
+#----------Local Fonts-----------#
