@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../features/shop/screens/store/store.dart';
-import '../utils/constants/sizes.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 
 class NavigationMenu extends StatelessWidget {
   const NavigationMenu({super.key});
@@ -18,24 +18,26 @@ class NavigationMenu extends StatelessWidget {
     final controller = Get.put(NavigationController());
     final darkMode = THelperFunction.isDarkMode(context);
     return Scaffold(
-
-      bottomNavigationBar: Obx(
-        () => NavigationBar(
-          height: 80,
-          elevation: 0,
-          selectedIndex: controller.selectedIndex.value,
-          onDestinationSelected: (index) => controller.selectedIndex.value = index,
-          backgroundColor: darkMode ? TColors.black : Colors.white,
-          indicatorColor: darkMode ? TColors.white.withOpacity(0.3) : TColors.black.withOpacity(0.3),
-          destinations: const [
-          NavigationDestination(icon: Icon(Iconsax.search_normal), label: 'Search'),
-          NavigationDestination(icon: Icon(Iconsax.bookmark), label: 'BookMark',),
-            NavigationDestination(icon: Icon(Iconsax.home), label: 'Home'),
-          NavigationDestination(icon: Icon(Iconsax.book), label: 'Received'),
-            NavigationDestination(icon: Icon(Iconsax.user), label: 'Profile'),
-
-        ],),
-      ),
+      bottomNavigationBar: Obx(() => CurvedNavigationBar(
+        index: controller.selectedIndex.value,
+        height: 70.0,
+        items: <Widget>[
+          Icon(Iconsax.search_normal, size: 20,color: Colors.purple,),
+          Icon(Iconsax.bookmark, size: 20,color: Colors.purple,),
+          Icon(Iconsax.home, size: 30,color: Colors.purple),
+          Icon(Iconsax.received, size: 20,color: Colors.purple),
+          Icon(Iconsax.profile_2user, size: 20,color: Colors.purple),
+        ],
+        color: darkMode ? TColors.dark : Colors.white,
+        buttonBackgroundColor: darkMode ? TColors.white : TColors.dark,
+        backgroundColor: Colors.grey,
+        animationCurve: Curves.decelerate,
+        animationDuration: const Duration(milliseconds: 600),
+        onTap: (index) {
+          controller.selectedIndex.value = index;
+        },
+        letIndexChange: (index) => true,
+      )),
       body: Obx(() => controller.screens[controller.selectedIndex.value]),
     );
   }
