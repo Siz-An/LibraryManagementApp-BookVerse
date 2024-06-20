@@ -13,34 +13,36 @@ class TGenreTitleWithVerification extends StatelessWidget {
     this.maxLines = 1,
     this.textColor,
     this.iconColor = TColors.primaryColor,
-    this.textAlign = TextAlign.center,
+    this.textAlign = TextAlign.start,
     this.genreTextSizes = TextSizes.small,
   });
+
   final String title;
   final int maxLines;
   final Color? textColor, iconColor;
-  final TextAlign? textAlign;
+  final TextAlign textAlign;
   final TextSizes genreTextSizes;
+
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Flexible(
-            child: TGenreTitleText(
-                title: title,
-                color: textColor,
-                maxLines: maxLines,
-                textAlign: textAlign,
-                genreTextSizes: genreTextSizes
-
-            )
-
+          child: TGenreTitleText(
+            title: title,
+            color: textColor,
+            maxLines: maxLines,
+            textAlign: textAlign,
+            genreTextSizes: genreTextSizes,
+          ),
         ),
-
         const SizedBox(width: TSizes.xs),
-        const Icon(Iconsax.verify5, color: TColors.primaryColor, size: TSizes.iconXs,),
-
+        Icon(
+          Iconsax.verify5,
+          color: iconColor,
+          size: TSizes.iconXs,
+        ),
       ],
     );
   }

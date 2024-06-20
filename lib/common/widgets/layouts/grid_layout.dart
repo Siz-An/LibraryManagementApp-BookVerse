@@ -3,13 +3,13 @@
 import 'package:flutter/material.dart' ;
 
 import '../../../utils/constants/sizes.dart';
-import '../products/product_card/product_card_vertical.dart';
+
 
 class TGridLayout extends StatelessWidget {
   const TGridLayout({
     super.key,
     required this.itemCount,
-    this.mainAxisExtent = 288,
+    this.mainAxisExtent = 280,
     required this.itemBuilder,
   });
 

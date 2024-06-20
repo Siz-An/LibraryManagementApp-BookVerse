@@ -1,6 +1,6 @@
-import 'package:book_Verse/features/shop/screens/home/widget/home_appbar.dart';
-import 'package:book_Verse/features/shop/screens/home/widget/home_category.dart';
-import 'package:book_Verse/features/shop/screens/home/widget/promo_slider.dart';
+import 'package:book_Verse/features/home/screens/home/widget/home_appbar.dart';
+import 'package:book_Verse/features/home/screens/home/widget/home_category.dart';
+import 'package:book_Verse/features/home/screens/home/widget/promo_slider.dart';
 import 'package:flutter/material.dart';
 import '../../../../common/widgets/custom_shapes/primary_header_container.dart';
 import '../../../../common/widgets/custom_shapes/search_container.dart';
@@ -62,7 +62,7 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: TSizes.spaceBtwItems),
 
                   /// ----> Popular Books
-                  TGridLayout(itemCount: 6, itemBuilder: (_, index) => const TProductCardVertical()),
+                  TGridLayout(itemCount: 8, itemBuilder: (_, index) => const TProductCardVertical()),
 
 
                 ],

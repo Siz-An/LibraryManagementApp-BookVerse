@@ -1,7 +1,6 @@
 import 'package:book_Verse/common/widgets/images/t_rounded_images.dart';
 import 'package:book_Verse/common/widgets/texts/T_genreTitle.dart';
 import 'package:book_Verse/utils/constants/colors.dart';
-import 'package:book_Verse/utils/constants/enums.dart';
 import 'package:book_Verse/utils/helpers/helper_function.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
@@ -57,16 +56,15 @@ class TProductCardVertical extends StatelessWidget {
             const SizedBox(height: TSizes.spaceBtwItems / 2),
 
             /// ----> Details
-            Padding(
-              padding: EdgeInsets.only(left: TSizes.sm),
+            const Padding(
+              padding: EdgeInsets.only(left: TSizes.xs),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TProductTitleText(
-                    title: 'IT Ends With Us',
+                    title: 'IT Ends With Us ',
                     smallSize: true,
                   ),
-                  SizedBox(height: TSizes.spaceBtwItems / 2),
+                  SizedBox(height: TSizes.spaceBtwItems / 3),
                   TGenreTitleWithVerification(title: 'Romance'),
 
                 ],
