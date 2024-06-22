@@ -1,13 +1,11 @@
-import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class TSectionHeading extends StatelessWidget {
   const TSectionHeading({
     super.key,
     this.textColor,
-    this.showActionButton = false,
+    this.showActionButton = true,
     required this.title,
     this.buttonTitle = 'View all',
     this.onPressed,

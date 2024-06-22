@@ -1,4 +1,5 @@
 
+import 'package:book_Verse/features/personalization/profile/profile.dart';
 import 'package:book_Verse/utils/constants/colors.dart';
 import 'package:book_Verse/utils/helpers/helper_function.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,7 @@ class NavigationMenu extends StatelessWidget {
       bottomNavigationBar: Obx(() => CurvedNavigationBar(
         index: controller.selectedIndex.value,
         height: 70.0,
-        items: <Widget>[
+        items: const <Widget>[
           Icon(Iconsax.search_normal, size: 20,color: Colors.purple,),
           Icon(Iconsax.bookmark, size: 20,color: Colors.purple,),
           Icon(Iconsax.home, size: 30,color: Colors.purple),
@@ -52,6 +53,6 @@ class NavigationController extends GetxController{
     Container(color: Colors.purple),
     const HomeScreen(),
     Container(color: Colors.pink),
-    Container(color: Colors.yellowAccent,)
+    const profileScreen()
   ];
 }

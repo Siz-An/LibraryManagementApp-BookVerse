@@ -44,14 +44,14 @@ length: 4,
                     : TColors.white,
                 expandedHeight: 405,
                 flexibleSpace: Padding(
-                  padding: EdgeInsets.all(TSizes.defaultSpace),
+                  padding: const EdgeInsets.all(TSizes.defaultSpace),
                   child: ListView(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
                       /// Search Bar
-                      SizedBox(height: TSizes.spaceBtwItems),
-                      TSearchContainer(
+                      const SizedBox(height: TSizes.spaceBtwItems),
+                      const TSearchContainer(
                         text: 'Search',
                         showBorder: true,
                         showBackground: false,
@@ -94,7 +94,7 @@ length: 4,
                                     mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      TGenreTitleWithVerification(
+                                      const TGenreTitleWithVerification(
                                         title: 'Romance',
                                         genreTextSizes: TextSizes.large,
                                       ),
@@ -116,28 +116,28 @@ length: 4,
                 ),
                 bottom: const TTabBar(
                   tabs: [
-                    Tab(child: Text('eco')),
-                    Tab(child: Text('Horror')),
-                    Tab(child: Text('eco')),
+                    Tab(child: Text('Romance')),
                     Tab(child: Text('BioGraph')),
+                    Tab(child: Text('History')),
+                    Tab(child: Text('Horror')),
 
                   ],
                 ),
               ),
             ];
           },
-          body: TabBarView(
+          body: const TabBarView(
             children: [
               /// Content for Romance tab
               Padding(
-                padding: const EdgeInsets.all(TSizes.defaultSpace),
+                padding: EdgeInsets.all(TSizes.defaultSpace),
                 child: Column(
                   children: [
                     TRoundedContainer(
                       showBorder: true,
                       borderColor: TColors.darkerGrey,
                       backgroundColor: Colors.transparent,
-                      margin: const EdgeInsets.only(bottom: TSizes.spaceBtwItems),
+                      margin: EdgeInsets.only(bottom: TSizes.spaceBtwItems),
                       child: Column(),
                     ),
                   ],
@@ -145,14 +145,14 @@ length: 4,
               ),
               /// Content for Horror tab
               Padding(
-                padding: const EdgeInsets.all(TSizes.defaultSpace),
+                padding: EdgeInsets.all(TSizes.defaultSpace),
                 child: Column(
                   children: [
                     TRoundedContainer(
                       showBorder: true,
                       borderColor: TColors.darkerGrey,
                       backgroundColor: Colors.transparent,
-                      margin: const EdgeInsets.only(bottom: TSizes.spaceBtwItems),
+                      margin: EdgeInsets.only(bottom: TSizes.spaceBtwItems),
                       child: Column(),
                     ),
                   ],
@@ -160,14 +160,14 @@ length: 4,
               ),
               /// Content for Mystery tab
               Padding(
-                padding: const EdgeInsets.all(TSizes.defaultSpace),
+                padding: EdgeInsets.all(TSizes.defaultSpace),
                 child: Column(
                   children: [
                     TRoundedContainer(
                       showBorder: true,
                       borderColor: TColors.darkerGrey,
                       backgroundColor: Colors.transparent,
-                      margin: const EdgeInsets.only(bottom: TSizes.spaceBtwItems),
+                      margin: EdgeInsets.only(bottom: TSizes.spaceBtwItems),
                       child: Column(),
                     ),
                   ],
@@ -175,14 +175,14 @@ length: 4,
               ),
               /// Content for Thriller tab
               Padding(
-                padding: const EdgeInsets.all(TSizes.defaultSpace),
+                padding: EdgeInsets.all(TSizes.defaultSpace),
                 child: Column(
                   children: [
                     TRoundedContainer(
                       showBorder: true,
                       borderColor: TColors.darkerGrey,
                       backgroundColor: Colors.transparent,
-                      margin: const EdgeInsets.only(bottom: TSizes.spaceBtwItems),
+                      margin: EdgeInsets.only(bottom: TSizes.spaceBtwItems),
                       child: Column(),
                     ),
                   ],

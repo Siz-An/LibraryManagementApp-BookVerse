@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -9,7 +8,7 @@ import '../../../utils/helpers/helper_function.dart';
 
 class TSearchContainer extends StatelessWidget {
   const TSearchContainer({
-    Key? key,
+    super.key,
     required this.text,
     this.icon = Iconsax.search_normal,
     this.showBackground = true,
@@ -17,7 +16,7 @@ class TSearchContainer extends StatelessWidget {
     this.onTap,
     this.padding = const EdgeInsets.symmetric(horizontal: TSizes.defaultSpace),
     this.alignment = CrossAxisAlignment.start,
-  }) : super(key: key);
+  });
 
   final String text;
   final IconData icon;

@@ -1,6 +1,5 @@
 import 'package:book_Verse/utils/helpers/helper_function.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import '../../../utils/constants/colors.dart';
 
 

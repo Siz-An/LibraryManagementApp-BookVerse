@@ -1,14 +1,12 @@
 import 'package:book_Verse/common/styles/spacing_styles.dart';
 import 'package:book_Verse/features/authentication/screens/login/widget/login_form.dart';
 import 'package:book_Verse/features/authentication/screens/login/widget/login_header.dart';
-import 'package:book_Verse/utils/constants/colors.dart';
 import 'package:book_Verse/utils/constants/sizes.dart';
 import 'package:book_Verse/utils/helpers/helper_function.dart';
 import 'package:flutter/material.dart';
 import '../../../../common/widgets/login_signup/form_divider.dart';
 import '../../../../common/widgets/login_signup/social_buttons.dart';
 
-import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/text_strings.dart';
 
 class LoginScreen extends StatelessWidget {

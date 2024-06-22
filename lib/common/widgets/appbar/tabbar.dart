@@ -3,7 +3,6 @@
 import 'package:book_Verse/utils/constants/colors.dart';
 import 'package:book_Verse/utils/device/device_utility.dart';
 import 'package:book_Verse/utils/helpers/helper_function.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class TTabBar extends StatelessWidget implements PreferredSizeWidget{
@@ -17,7 +16,7 @@ class TTabBar extends StatelessWidget implements PreferredSizeWidget{
       color: dark ? TColors.black : TColors.white,
       child: TabBar(
         tabs: tabs,
-        isScrollable: true,
+        isScrollable: false,
         indicatorColor: TColors.primaryColor,
         labelColor:  dark ? TColors.white : TColors.black,
         unselectedLabelColor: TColors.darkerGrey,

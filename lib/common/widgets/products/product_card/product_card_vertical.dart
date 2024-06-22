@@ -21,7 +21,7 @@ class TProductCardVertical extends StatelessWidget {
       onTap: () {},
       child: Container(
         width: 180,
-        padding: EdgeInsets.all(1),
+        padding: const EdgeInsets.all(1),
         decoration: BoxDecoration(
           boxShadow: [TShadowStyle.verticalProductShadow],
           borderRadius: BorderRadius.circular(TSizes.productImageRadius),
@@ -32,10 +32,10 @@ class TProductCardVertical extends StatelessWidget {
           children: [
             Row(
               children: [
-                Spacer(),
+                const Spacer(),
                 Container(
                   child:
-                  Icon(Iconsax.bookmark),
+                  const Icon(Iconsax.bookmark),
                 )
               ],
             ),

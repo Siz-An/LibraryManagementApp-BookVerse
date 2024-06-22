@@ -1,6 +1,5 @@
 import 'package:book_Verse/common/widgets/products/bookmark/bookmark_icon.dart';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../common/widgets/appbar/appbar.dart';

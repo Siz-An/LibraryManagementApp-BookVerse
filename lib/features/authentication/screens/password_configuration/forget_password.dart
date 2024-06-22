@@ -13,7 +13,7 @@ class ForgetPassword extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body:  Padding(padding: EdgeInsets.all(TSizes.defaultSpace),
+      body:  Padding(padding: const EdgeInsets.all(TSizes.defaultSpace),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

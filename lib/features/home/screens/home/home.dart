@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           children: [
             /// ---> Header
-            TPrimaryHeaderContainer(
+            const TPrimaryHeaderContainer(
               child: Column(
                 children: [
                   /// ---> Appbar
@@ -29,7 +29,7 @@ class HomeScreen extends StatelessWidget {
                   SizedBox(height: TSizes.spaceBtwSections),
 
                   /// ---> searchBar
-                  TSearchContainer(text: 'Search in store'),
+                  TSearchContainer(text: 'Search in Library'),
                   SizedBox(height: TSizes.spaceBtwSections),
 
                   /// ---> categories <-----
@@ -46,12 +46,13 @@ class HomeScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                  SizedBox(height: TSizes.spaceBtwSections,)
                 ],
               ),
             ),
             /// ----> Body Part
             Padding(
-              padding:  EdgeInsets.all(TSizes.defaultSpace),
+              padding:  const EdgeInsets.all(TSizes.defaultSpace),
               child: Column(
                 children: [
                   const TPromoSlide(banner: [TImages.promoBanner1,TImages.promoBanner2,TImages.promoBanner3,TImages.promoBanner4]),

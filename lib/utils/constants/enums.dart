@@ -2,6 +2,7 @@
 
 /// LIST OF ENUMS
 /// THEY CANNOT BE CREATED INSIDE A CLASS
+library;
 
 enum TextSizes{ small, medium, large }
 
