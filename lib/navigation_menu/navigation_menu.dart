@@ -1,15 +1,15 @@
 
-import 'package:book_Verse/features/personalization/profile/profile.dart';
+import 'package:book_Verse/features/personalization/profile/settings.dart';
 import 'package:book_Verse/utils/constants/colors.dart';
 import 'package:book_Verse/utils/helpers/helper_function.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-
 import '../features/home/screens/home/home.dart';
 import '../features/home/screens/search/search.dart';
+
+
 
 class NavigationMenu extends StatelessWidget {
   const NavigationMenu({super.key});
@@ -19,26 +19,24 @@ class NavigationMenu extends StatelessWidget {
     final controller = Get.put(NavigationController());
     final darkMode = THelperFunction.isDarkMode(context);
     return Scaffold(
-      bottomNavigationBar: Obx(() => CurvedNavigationBar(
-        index: controller.selectedIndex.value,
-        height: 70.0,
-        items: const <Widget>[
-          Icon(Iconsax.search_normal, size: 20,color: Colors.purple,),
-          Icon(Iconsax.bookmark, size: 20,color: Colors.purple,),
-          Icon(Iconsax.home, size: 30,color: Colors.purple),
-          Icon(Iconsax.received, size: 20,color: Colors.purple),
-          Icon(Iconsax.profile_2user, size: 20,color: Colors.purple),
-        ],
-        color: darkMode ? TColors.dark : Colors.white,
-        buttonBackgroundColor: darkMode ? TColors.white : TColors.dark,
-        backgroundColor: Colors.grey,
-        animationCurve: Curves.decelerate,
-        animationDuration: const Duration(milliseconds: 600),
-        onTap: (index) {
-          controller.selectedIndex.value = index;
-        },
-        letIndexChange: (index) => true,
-      )),
+
+      bottomNavigationBar: Obx(
+            () => NavigationBar(
+          height: 60,
+          elevation: 0,
+          selectedIndex: controller.selectedIndex.value,
+          onDestinationSelected: (index) => controller.selectedIndex.value = index,
+          backgroundColor: darkMode ? TColors.black : Colors.white.withOpacity(0.1),
+          indicatorColor: darkMode ? TColors.white.withOpacity(0.3) : TColors.black.withOpacity(0.3),
+          destinations: const [
+            NavigationDestination(icon: Icon(Iconsax.search_normal), label: 'Search'),
+            NavigationDestination(icon: Icon(Iconsax.bookmark), label: 'BookMark'),
+            NavigationDestination(icon: Icon(Iconsax.home), label: 'Home'),
+            NavigationDestination(icon: Icon(Iconsax.book), label: 'Received'),
+            NavigationDestination(icon: Icon(Iconsax.user), label: 'Profile'),
+
+          ],),
+      ),
       body: Obx(() => controller.screens[controller.selectedIndex.value]),
     );
   }
@@ -53,6 +51,5 @@ class NavigationController extends GetxController{
     Container(color: Colors.purple),
     const HomeScreen(),
     Container(color: Colors.pink),
-    const profileScreen()
-  ];
+    const settingScreen()];
 }
