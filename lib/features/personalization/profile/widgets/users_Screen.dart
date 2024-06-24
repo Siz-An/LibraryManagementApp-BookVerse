@@ -2,9 +2,7 @@ import 'package:book_Verse/common/widgets/appbar/appbar.dart';
 import 'package:book_Verse/common/widgets/images/t_circular_image.dart';
 import 'package:book_Verse/common/widgets/texts/section_heading.dart';
 import 'package:book_Verse/features/personalization/profile/widgets/profile_menu.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../../../utils/constants/image_strings.dart';
@@ -38,7 +36,7 @@ class userScreen extends StatelessWidget {
               const SizedBox(height: TSizes.spaceBtwItems / 2,),
               const Divider(),
               const SizedBox(height: TSizes.spaceBtwItems ,),
-              TSectionHeading(title: 'Profile Information', showActionButton: false,),
+              const TSectionHeading(title: 'Profile Information', showActionButton: false,),
               const SizedBox(height: TSizes.spaceBtwItems ),
 
               TProfileMenu(onPressed: () {  }, title: 'USerName', value: 'Book Verse',),
