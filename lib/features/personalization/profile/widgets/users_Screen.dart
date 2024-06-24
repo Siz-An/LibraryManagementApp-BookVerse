@@ -44,13 +44,11 @@ class userScreen extends StatelessWidget {
               TProfileMenu(onPressed: () {  }, title: 'USerName', value: 'Book Verse',),
               TProfileMenu(onPressed: () {  }, title: 'USerId', value: '9566', icon: Iconsax.copy,),
 
-
               const SizedBox(height: TSizes.spaceBtwItems / 2,),
               const Divider(),
               const SizedBox(height: TSizes.spaceBtwItems ,),
 
               ///-----> Personal Info
-
               TProfileMenu(onPressed: () {  }, title: 'Full Name', value: 'Book Verse'),
               TProfileMenu(onPressed: () {  }, title: 'Email Id', value: 'Bookverse@gmail.com'),
               TProfileMenu(onPressed: () {  }, title: 'Phone number', value: '+977 9816207570'),
@@ -60,7 +58,6 @@ class userScreen extends StatelessWidget {
 
               ///----> Delete Account Section
               const SizedBox(height: TSizes.spaceBtwItems * 2),
-              
               Center(
                 child: TextButton(
                   onPressed: (){},
