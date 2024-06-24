@@ -1,0 +1,126 @@
+{
+  "project_info": {
+    "project_number": "808424067899",
+    "project_id": "bookverse-8ac90",
+    "storage_bucket": "bookverse-8ac90.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:808424067899:android:782b7e7728176842079d1e",
+        "android_client_info": {
+          "package_name": "com.example.bookVerse"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "808424067899-5in0aab6emo12t1hmhhqon7tu348tjg9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCl5GNguOJoEOFAcIzIt6PeccN5nDkLXCM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "808424067899-5in0aab6emo12t1hmhhqon7tu348tjg9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "808424067899-vo3nf45oq3qd9etr87jhkh8qhdv57a5l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.bookVerse"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:808424067899:android:f28f3edd0ca04f2f079d1e",
+        "android_client_info": {
+          "package_name": "com.example.book_verse"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "808424067899-5in0aab6emo12t1hmhhqon7tu348tjg9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCl5GNguOJoEOFAcIzIt6PeccN5nDkLXCM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "808424067899-5in0aab6emo12t1hmhhqon7tu348tjg9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "808424067899-vo3nf45oq3qd9etr87jhkh8qhdv57a5l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.bookVerse"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:808424067899:android:302574036bfd238b079d1e",
+        "android_client_info": {
+          "package_name": "com.package.bookVerse"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "808424067899-k8h5tg2rroov2srnmmo214uci1v28lml.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.package.bookVerse",
+            "certificate_hash": "145ef51584b5627a0dd8aec6636f98abaf8dda8a"
+          }
+        },
+        {
+          "client_id": "808424067899-5in0aab6emo12t1hmhhqon7tu348tjg9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCl5GNguOJoEOFAcIzIt6PeccN5nDkLXCM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "808424067899-5in0aab6emo12t1hmhhqon7tu348tjg9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "808424067899-vo3nf45oq3qd9etr87jhkh8qhdv57a5l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.bookVerse"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
