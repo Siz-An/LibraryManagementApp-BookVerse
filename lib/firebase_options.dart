@@ -87,4 +87,5 @@ class DefaultFirebaseOptions {
     authDomain: 'bookverse-8ac90.firebaseapp.com',
     storageBucket: 'bookverse-8ac90.appspot.com',
   );
+
 }

@@ -10,9 +10,9 @@ class TImages{
 
   // --> OnBoarding Images
   static const String onBoardingImage1 = "assets/images/on_boarding_images/onBoarding1.gif";
-  static const String onBoardingImage2 = "assets/images/on_boarding_images/shopping.gif";
-  static const String onBoardingImage3 = "assets/images/on_boarding_images/delivery.gif";
-  static const String onBoardingImage4 = "assets/images/on_boarding_images/shopping2.gif";
+  static const String onBoardingImage2 = "assets/images/on_boarding_images/onBoarding2.gif";
+  static const String onBoardingImage3 = "assets/images/on_boarding_images/onBoarding3.gif";
+
 
 
   // --> Animations Email
