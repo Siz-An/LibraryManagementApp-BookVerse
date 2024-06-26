@@ -1,4 +1,3 @@
-import 'package:book_Verse/features/authentication/controllers.onboarding/onboarding_controller.dart';
 import 'package:book_Verse/features/authentication/screens/widgets/onboarding_dot_navigation.dart';
 import 'package:book_Verse/features/authentication/screens/widgets/onboarding_next_button.dart';
 import 'package:book_Verse/features/authentication/screens/widgets/onboarding_page.dart';
@@ -8,6 +7,8 @@ import 'package:book_Verse/utils/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/get_instance.dart';
+
+import '../controller/onboarding/onboarding_controller.dart';
 
 
 class OnBoardingScreen extends StatelessWidget {
