@@ -4,7 +4,6 @@ import 'package:book_Verse/features/authentication/screens/signup/verify_email.d
 import 'package:book_Verse/utils/validators/validation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../../../utils/constants/sizes.dart';
 import '../../../../../utils/constants/text_strings.dart';

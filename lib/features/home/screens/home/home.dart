@@ -41,10 +41,10 @@ class HomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         /// Heading
-                        TSectionHeading(title: 'Popular Genre', showActionButton: false, textColor: Colors.white,),
+                       // TSectionHeading(title: 'Popular Genre', showActionButton: false, textColor: Colors.white,),
                         SizedBox(height: TSizes.spaceBtwItems),
                         /// Categories
-                        THomeCategory()
+                        //THomeCategory()
                       ],
                     ),
                   ),
