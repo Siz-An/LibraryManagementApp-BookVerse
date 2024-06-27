@@ -72,17 +72,25 @@ class TSignupform extends StatelessWidget {
             const SizedBox(height: TSizes.spaceBtwInputFields),
             TextFormField(
               controller: controller.phoneNo,
-              validator: (value) => TValidator.validatePhoneNuber(value),
+              validator: (value) => TValidator.validatePhoneNumber(value),
               expands : false,
               decoration: const InputDecoration(labelText: TTexts.phoneNo, prefixIcon: Icon(Iconsax.call)),
             ),
             /// Password
             const SizedBox(height: TSizes.spaceBtwInputFields),
-            TextFormField(
-              controller: controller.password,
-              validator: (value) => TValidator.validatePassword(value),
-              expands : false,
-              decoration: const InputDecoration(labelText: TTexts.password, prefixIcon: Icon(Iconsax.password_check), suffixIcon: Icon(Iconsax.eye_slash)),
+            Obx(
+              () => TextFormField(
+                controller: controller.password,
+                obscureText: controller.hidePassword.value,
+                validator: (value) => TValidator.validatePassword(value),
+                decoration:  InputDecoration(
+                    labelText: TTexts.password,
+                    prefixIcon: Icon(Iconsax.password_check),
+                    suffixIcon: IconButton(
+                      onPressed: ()=>controller.hidePassword.value = !controller.hidePassword.value,
+                      icon:  Icon(controller.hidePassword.value ? Iconsax.eye_slash : Iconsax.eye),
+                    )),
+              ),
             ),
             const SizedBox(height: TSizes.spaceBtwSections),
 
