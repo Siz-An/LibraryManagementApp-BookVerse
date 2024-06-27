@@ -1,4 +1,6 @@
 
+import 'package:book_Verse/data/user/user_repo.dart';
+import 'package:book_Verse/features/authentication/screens/signup/verify_email.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import '../../../../common/network_check/network_manager.dart';
@@ -64,14 +66,24 @@ class SignupController extends GetxController {
         profilePicture: '',
       );
 
+      final userRepo = Get.put(UserRepo());
+      await userRepo.saveUserRecord(newUser);
 
+      //show success Method
+      TLoaders.successSnackBar(title: 'Congratulation' ,message: 'Your account has been Created! Please Verify it');
+
+      // Move to verify Screen
+      Get.to(() => const VerifyEmailScreen());
 
       // Save newUser to Firestore (implementation not shown, assuming you have a method for this)
 
     } catch (e) {
-      TLoaders.errorSnackBar(title: 'Oh Snap!', message: e.toString());
-    } finally {
+      // Remove Loader
       TFullScreenLoader.stopLoading();
+
+      // Show some generic Error to the user
+      TLoaders.errorSnackBar(title: 'Oh Snap!', message: e.toString());
     }
+
   }
 }
