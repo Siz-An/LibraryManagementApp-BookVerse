@@ -16,8 +16,10 @@ Future<void> main() async {
 ///-----> GetX local storage
   await GetStorage.init();
 
+  ///---> Await Splash Screen until Other item Load
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
+  ///----> Initialize firebase & firebase Auth repo
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform).then(
       (FirebaseApp value) => Get.put(AuthenticationRepository())
   );
