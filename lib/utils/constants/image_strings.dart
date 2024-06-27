@@ -13,7 +13,9 @@ class TImages{
   static const String onBoardingImage2 = "assets/images/on_boarding_images/onBoarding2.gif";
   static const String onBoardingImage3 = "assets/images/on_boarding_images/onBoarding3.gif";
 
-
+  // --> Lottie animation
+  static String successfullyRegisterAnimation = "assets/images/animation/lottie/successfully-done.json";
+  static String checkRegistration = "assets/images/animation/lottie/72462-check-register.json";
 
   // --> Animations Email
   static const String deliveredEmailVerify = "assets/images/animation/email-verify.gif";

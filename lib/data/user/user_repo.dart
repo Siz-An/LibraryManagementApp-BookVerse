@@ -5,6 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../features/personalization/models/userModels.dart';
+import '../../utils/exceptions/firebase_exception.dart';
+import '../../utils/exceptions/format_exception.dart';
+import '../../utils/exceptions/platform_exception.dart';
 
 class UserRepo extends GetxController{
   static UserRepo get instance => Get.find();

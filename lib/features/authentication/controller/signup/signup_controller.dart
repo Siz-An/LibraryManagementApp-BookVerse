@@ -26,34 +26,43 @@ class SignupController extends GetxController {
   GlobalKey<FormState> signupFormKey = GlobalKey<FormState>();
 
   void signup() async {
+    // Start loading
+    TFullScreenLoader.openLoadingDialogue(
+        'We are processing your information....',
+        TImages.checkRegistration);
+
+    // Check Internet Connectivity
+    final isConnected = await NetworkManager.instance.isConnected();
+    if (!isConnected) {
+      TLoaders.errorSnackBar(
+          title: 'No Internet Connection',
+          message: 'Please check your internet connection and try again.');
+      TFullScreenLoader.stopLoading();
+      return;
+    }
+
+    // Form Validation
+    if (!signupFormKey.currentState!.validate()) {
+      TFullScreenLoader.stopLoading();
+      return;
+    }
+
+    // Privacy policy check
+    if (!privacyPolicy.value) {
+      TLoaders.warningSnackBar(
+          title: 'Accept Privacy Policy',
+          message: 'In order to create an account you have to accept privacy policy and terms of use.');
+      TFullScreenLoader.stopLoading();
+      return;
+    }
+
     try {
-      // Start loading
-      TFullScreenLoader.openLoadingDialogue(
-          'We are processing your information....', TImages.darkAppLogo);
-
-      // Check Internet Connectivity
-      final isConnected = await NetworkManager.instance.isConnected();
-      if (!isConnected) {
-        TLoaders.errorSnackBar(
-            title: 'No Internet Connection',
-            message: 'Please check your internet connection and try again.');
-        return;
-      }
-
-      // Form Validation
-      if (!signupFormKey.currentState!.validate()) return;
-
-      // Privacy policy check
-      if (!privacyPolicy.value) {
-        TLoaders.warningSnackBar(
-            title: 'Accept Privacy Policy',
-            message:
-            'In order to create an account you have to accept privacy policy and terms of use.');
-        return;
-      }
-
       // Register user in the Firebase authentication
-      final userCredential = await AuthenticationRepository.instance.registerWithEmailAndPassword(email.text.trim(), password.text.trim());
+      final userCredential = await AuthenticationRepository.instance
+          .registerWithEmailAndPassword(
+        email.text.trim(),
+        password.text.trim(),
+      );
 
       // Save Authenticated user data in the Firebase FireStore
       final newUser = UserModel(
@@ -69,21 +78,19 @@ class SignupController extends GetxController {
       final userRepo = Get.put(UserRepo());
       await userRepo.saveUserRecord(newUser);
 
-      //show success Method
-      TLoaders.successSnackBar(title: 'Congratulation' ,message: 'Your account has been Created! Please Verify it');
+      // Show success Method
+      TLoaders.successSnackBar(
+          title: 'Congratulations',
+          message: 'Your account has been created! Please verify it');
 
       // Move to verify Screen
-      Get.to(() => const VerifyEmailScreen());
-
-      // Save newUser to Firestore (implementation not shown, assuming you have a method for this)
-
+      Get.to(() => VerifyEmailScreen(email: email.text.trim(),));
     } catch (e) {
-      // Remove Loader
-      TFullScreenLoader.stopLoading();
-
       // Show some generic Error to the user
       TLoaders.errorSnackBar(title: 'Oh Snap!', message: e.toString());
+    } finally {
+      // Remove Loader
+      TFullScreenLoader.stopLoading();
     }
-
   }
 }

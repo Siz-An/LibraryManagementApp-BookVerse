@@ -1,13 +1,12 @@
 import 'package:book_Verse/features/authentication/controller/signup/signup_controller.dart';
 import 'package:book_Verse/features/authentication/screens/signup/upWidget/terms_conditions_checkbox.dart';
-import 'package:book_Verse/features/authentication/screens/signup/verify_email.dart';
 import 'package:book_Verse/utils/validators/validation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../../../utils/constants/sizes.dart';
 import '../../../../../utils/constants/text_strings.dart';
-import '../../../../../utils/helpers/helper_function.dart';
+
 
 class TSignupform extends StatelessWidget {
   const TSignupform({

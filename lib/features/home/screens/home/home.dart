@@ -1,6 +1,5 @@
 import 'package:book_Verse/features/home/screens/home/books%20/Course%20books%20/BCA/firstSem.dart';
 import 'package:book_Verse/features/home/screens/home/widget/home_appbar.dart';
-import 'package:book_Verse/features/home/screens/home/widget/home_category.dart';
 import 'package:book_Verse/features/home/screens/home/widget/promo_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

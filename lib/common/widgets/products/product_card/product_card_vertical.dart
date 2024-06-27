@@ -30,13 +30,10 @@ class TProductCardVertical extends StatelessWidget {
         child: Column(
           /// -----> Thumbnail, Wishlist Button, Discount Tag
           children: [
-            Row(
+            const Row(
               children: [
-                const Spacer(),
-                Container(
-                  child:
-                  const Icon(Iconsax.bookmark),
-                )
+                Spacer(),
+                Icon(Iconsax.bookmark)
               ],
             ),
             Stack(
