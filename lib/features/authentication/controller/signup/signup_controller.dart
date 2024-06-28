@@ -86,11 +86,10 @@ class SignupController extends GetxController {
       // Move to verify Screen
       Get.to(() => VerifyEmailScreen(email: email.text.trim(),));
     } catch (e) {
-      // Show some generic Error to the user
-      TLoaders.errorSnackBar(title: 'Oh Snap!', message: e.toString());
-    } finally {
-      // Remove Loader
       TFullScreenLoader.stopLoading();
+      // Show some generic Error to the user
+      // Remove Loader
+      TLoaders.errorSnackBar(title: 'Oh Snap!', message: e.toString());
     }
   }
 }
