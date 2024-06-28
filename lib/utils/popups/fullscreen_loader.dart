@@ -9,8 +9,8 @@ class TFullScreenLoader {
     showDialog(
       context: Get.overlayContext!,
       barrierDismissible: false,
-      builder: (_) => AbsorbPointer(
-        absorbing: true,
+      builder: (_) => PopScope(
+        canPop: false,
         child: Dialog(
           backgroundColor: THelperFunction.isDarkMode(Get.context!) ? TColors.dark : TColors.white,
           child: Container(

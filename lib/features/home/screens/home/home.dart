@@ -83,7 +83,7 @@ class HomeScreen extends StatelessWidget {
 
                   /// ----> Grade section
                   TGridLayout(
-                    itemCount: 1,
+                    itemCount: 4,
                     mainAxisExtent: 80,
                     itemBuilder: (_, index) {
                       return GestureDetector(
@@ -97,15 +97,73 @@ class HomeScreen extends StatelessWidget {
                           backgroundColor: Colors.transparent,
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               const Text(
                                  'BCA',
+                                style: TextStyle(
+                                  fontSize: TSizes.fontSizeMd,
+                                  fontWeight: FontWeight.bold
+                                ),
                               ),
                               Text(
                                 '8 Semesters',
                                 overflow: TextOverflow.ellipsis,
                                 style: Theme.of(context).textTheme.labelLarge,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: TSizes.spaceBtwItems),
+
+                  ///----> Heading
+                  TSectionHeading(
+                    title: '| Genre ',
+                    showActionButton: true,
+                    onPressed: () {},
+                  ),
+                  const SizedBox(height: TSizes.spaceBtwItems),
+
+                  TGridLayout(
+                    itemCount: 10,
+                    mainAxisExtent: 80,
+                    itemBuilder: (_, index) {
+                      return GestureDetector(
+                        onTap: () {},
+                        child: TRoundedContainer(
+                          padding: const EdgeInsets.all(TSizes.sm),
+                          showBorder: true,
+                          backgroundColor: Colors.transparent,
+                          child: Row(
+                            children: [
+                              /// Icon
+                              Flexible(
+                                child: TCircularImage(
+                                  isNetworkImage: false,
+                                  image: TImages.genreIcon2,
+                                  backgroundColor: Colors.transparent,
+                                  overlayColor: THelperFunction.isDarkMode(context)
+                                      ? TColors.white
+                                      : TColors.black,
+                                ),
+                              ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const TGenreTitleWithVerification(
+                                    title: 'Romance',
+                                    genreTextSizes: TextSizes.large,
+                                  ),
+                                  Text(
+                                    '10 books',
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context).textTheme.labelMedium,
+                                  ),
+                                ],
                               ),
                             ],
                           ),

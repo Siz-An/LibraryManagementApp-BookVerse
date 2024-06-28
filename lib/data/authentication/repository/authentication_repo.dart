@@ -24,46 +24,47 @@ class AuthenticationRepository extends GetxController {
     FlutterNativeSplash.remove();
     // Redirect to appropriate screen based on authentication status
     screenRedirect();
-    super.onReady();
   }
 
   Future<void> screenRedirect() async {
-    try {
-      final user = _auth.currentUser;
-      if (user != null) {
-        // User is logged in
-        await user.reload(); // Refresh user data
-        if (user.emailVerified) {
-          // Navigate to main app screen if email is verified
-          Get.offAll(() => const NavigationMenu());
-        } else {
-          // Navigate to verify email screen if email is not verified
-          Get.to(() => VerifyEmailScreen(email: user.email));
-        }
+    final user = _auth.currentUser;
+
+    if (user != null) {
+      if (user.emailVerified) {
+        Get.offAll(() => const NavigationMenu());
       } else {
-        // No user is logged in
-        if (deviceStorage.read('isFirstTime') != true) {
-          // Not the first time user, navigate to login screen
-          Get.offAll(() => const LoginScreen());
-        } else {
-          // First-time user, navigate to onboarding screen
-          Get.offAll(() => const OnBoardingScreen());
-        }
+        Get.offAll(() => VerifyEmailScreen(email: _auth.currentUser?.email));
       }
-    } catch (e) {
-      // Handle any exceptions that occur during redirection
-      print('Error during screen redirection: $e');
-      // Fallback to a default screen or handle the error gracefully
+    } else {
+      deviceStorage.writeIfNull('IsFirstTime', true);
+      deviceStorage.read('IsFirstTime') != true
+          ? Get.offAll(() => const LoginScreen())
+          : Get.offAll(() => const OnBoardingScreen());
     }
   }
+    ///---> Login
+    Future<UserCredential> loginWithEmailAndPassword(String email,
+        String password) async {
+      try {
+        return await _auth.signInWithEmailAndPassword(
+            email: email, password: password);
+      } on FirebaseAuthException catch (e) {
+        throw TFirebaseAuthException(e.code).message;
+      } on FirebaseException catch (e) {
+        throw TFirebaseException(e.code).message;
+      } on FormatException catch (_) {
+        throw const TFormatException();
+      } on PlatformException catch (e) {
+        throw TPlatformException(e.code).message;
+      } catch (e) {
+        throw 'Something went wrong. Please try again.';
+      }
+    }
 
+  ///---> register
   Future<UserCredential> registerWithEmailAndPassword(String email, String password) async {
     try {
-      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      return userCredential;
+     return await _auth.createUserWithEmailAndPassword(email: email, password: password);
     } on FirebaseAuthException catch (e) {
       throw TFirebaseAuthException(e.code).message;
     } on FirebaseException catch (e) {

@@ -116,11 +116,7 @@ length: 4,
                 ),
                 bottom: const TTabBar(
                   tabs: [
-                    Tab(child: Text('Romance')),
-                    Tab(child: Text('BioGraph')),
-                    Tab(child: Text('History')),
-                    Tab(child: Text('Horror')),
-
+                    Tab(child: Text('Suggestion')),
                   ],
                 ),
               ),
@@ -143,54 +139,6 @@ length: 4,
                   ],
                 ),
               ),
-              /// Content for Horror tab
-              Padding(
-                padding: EdgeInsets.all(TSizes.defaultSpace),
-                child: Column(
-                  children: [
-                    TRoundedContainer(
-                      showBorder: true,
-                      borderColor: TColors.darkerGrey,
-                      backgroundColor: Colors.transparent,
-                      margin: EdgeInsets.only(bottom: TSizes.spaceBtwItems),
-                      child: Column(),
-                    ),
-                  ],
-                ),
-              ),
-              /// Content for Mystery tab
-              Padding(
-                padding: EdgeInsets.all(TSizes.defaultSpace),
-                child: Column(
-                  children: [
-                    TRoundedContainer(
-                      showBorder: true,
-                      borderColor: TColors.darkerGrey,
-                      backgroundColor: Colors.transparent,
-                      margin: EdgeInsets.only(bottom: TSizes.spaceBtwItems),
-                      child: Column(),
-                    ),
-                  ],
-                ),
-              ),
-              /// Content for Thriller tab
-              Padding(
-                padding: EdgeInsets.all(TSizes.defaultSpace),
-                child: Column(
-                  children: [
-                    TRoundedContainer(
-                      showBorder: true,
-                      borderColor: TColors.darkerGrey,
-                      backgroundColor: Colors.transparent,
-                      margin: EdgeInsets.only(bottom: TSizes.spaceBtwItems),
-                      child: Column(),
-                    ),
-                  ],
-                ),
-              ),
-
-
-
             ],
           ),
         ),
