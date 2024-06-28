@@ -1,23 +1,28 @@
+import 'package:book_Verse/common/widgets/layouts/grid_layout.dart';
 import 'package:book_Verse/features/home/screens/home/books%20/Course%20books%20/BCA/firstSem.dart';
 import 'package:book_Verse/features/home/screens/home/widget/home_appbar.dart';
 import 'package:book_Verse/features/home/screens/home/widget/promo_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import '../../../../common/widgets/custom_shapes/primary_header_container.dart';
+import '../../../../common/widgets/custom_shapes/rounded_container.dart';
 import '../../../../common/widgets/custom_shapes/search_container.dart';
+import '../../../../common/widgets/images/t_circular_image.dart';
+import '../../../../common/widgets/texts/T_genreTitle.dart';
 import '../../../../common/widgets/texts/section_heading.dart';
+import '../../../../utils/constants/colors.dart';
+import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
+import '../../../../utils/helpers/helper_function.dart';
 import '../../../personalization/profile/widgets/profile_menu.dart';
 
-
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -40,10 +45,11 @@ class HomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         /// Heading
-                       // TSectionHeading(title: 'Popular Genre', showActionButton: false, textColor: Colors.white,),
+                        // TSectionHeading(title: 'Popular Genre', showActionButton: false, textColor: Colors.white,),
                         SizedBox(height: TSizes.spaceBtwItems),
+
                         /// Categories
-                        //THomeCategory()
+                        // THomeCategory()
                       ],
                     ),
                   ),
@@ -51,87 +57,68 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
+
             /// ----> Body Part
             Padding(
-              padding:  const EdgeInsets.all(TSizes.defaultSpace),
+              padding: const EdgeInsets.all(TSizes.defaultSpace),
               child: Column(
                 children: [
-                  const TPromoSlide(banner: [TImages.promoBanner1,TImages.promoBanner2,TImages.promoBanner3,TImages.promoBanner4]),
+                  const TPromoSlide(
+                      banner: [
+                        TImages.promoBanner1,
+                        TImages.promoBanner2,
+                        TImages.promoBanner3,
+                        TImages.promoBanner4
+                      ]
+                  ),
                   const SizedBox(height: TSizes.spaceBtwItems),
 
                   ///----> Heading
-                   TSectionHeading(title: '| Course Books',showActionButton: true, onPressed: (){},),
-                  const SizedBox(height: TSizes.spaceBtwItems),
-
-                  /// ----> Grade section 
-                  
-                  ///----> BCA
-                  TProfileMenu(onPressed: ()=> Get.to(() => const firstSem()), title: 'BCA Books', value: '',),
-                  Divider(),
-                  SizedBox(height: TSizes.spaceBtwItems),
-                  ///----> BBA
-                  TProfileMenu(onPressed: () { }, title: 'BBA Books', value: '',),
-                  Divider(
+                  TSectionHeading(
+                    title: '| Course Books',
+                    showActionButton: true,
+                    onPressed: () {},
                   ),
-                  SizedBox(height: TSizes.spaceBtwItems),
-                  ///----> BBS
-                  TProfileMenu(onPressed: () {  }, title: 'BBS Books', value: '',),
-                  Divider(),
-                  SizedBox(height: TSizes.spaceBtwItems),
-                  ///----> Bsc-CsIT
-                  TProfileMenu(onPressed: () {  }, title: 'Bsc-CsIT Books', value: '',),
-                  SizedBox(height: TSizes.spaceBtwItems),
-
-                  ///----> 2nd Heading
-                  TSectionHeading(title: '| Genre',showActionButton: true, onPressed: (){},),
                   const SizedBox(height: TSizes.spaceBtwItems),
-                  ///---->Fiction
-                  TProfileMenu(onPressed: () {  }, title: 'Fiction Books', value: '',),
-                  Divider(),
-                  SizedBox(height: TSizes.spaceBtwItems),
-                  ///----> Horror
-                  TProfileMenu(onPressed: () {  }, title: 'Horror Books', value: '',),
-                  Divider(),
-                  SizedBox(height: TSizes.spaceBtwItems),
-                  ///----> Thriller
-                  TProfileMenu(onPressed: () {  }, title: 'Thriller Books', value: '',),
-                  Divider(),
-                  SizedBox(height: TSizes.spaceBtwItems),
-                  ///----> Mystery
-                  TProfileMenu(onPressed: () {  }, title: 'Mystery Books', value: '',),
-                  Divider(),
-                  SizedBox(height: TSizes.spaceBtwItems),
-                  ///---->Romance
-                  TProfileMenu(onPressed: () {  }, title: 'Romance Books', value: '',),
-                  Divider(),
-                  SizedBox(height: TSizes.spaceBtwItems),
-                  ///----> Adventure
-                  TProfileMenu(onPressed: () {  }, title: 'Adventure Books', value: '',),
-                  Divider(),
-                  SizedBox(height: TSizes.spaceBtwItems),
-                  ///----> Bio Graph
-                  TProfileMenu(onPressed: () {  }, title: 'Bio-Graph Books', value: '',),
-                  Divider(),
-                  SizedBox(height: TSizes.spaceBtwItems),
-                  ///----> Poetry
-                  TProfileMenu(onPressed: () {  }, title: 'Poetry Books', value: '',),
-                  SizedBox(height: TSizes.spaceBtwItems),
 
-
+                  /// ----> Grade section
+                  TGridLayout(
+                    itemCount: 1,
+                    mainAxisExtent: 80,
+                    itemBuilder: (_, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          // Navigate to BCA firstSem screen
+                          Get.to(() => firstSem());
+                        },
+                        child: TRoundedContainer(
+                          padding: const EdgeInsets.all(TSizes.md),
+                          showBorder: true,
+                          backgroundColor: Colors.transparent,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                 'BCA',
+                              ),
+                              Text(
+                                '8 Semesters',
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.labelLarge,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ],
-              )
-            )
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
-
-
-
-
-
-
-
-
