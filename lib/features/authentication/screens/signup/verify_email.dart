@@ -16,8 +16,7 @@ class VerifyEmailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put( VerifyEmailController());
-
+    final controller = Get.put(VerifyEmailController());
     return  Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,

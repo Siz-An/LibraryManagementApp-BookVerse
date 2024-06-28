@@ -9,26 +9,27 @@ class TFullScreenLoader {
     showDialog(
       context: Get.overlayContext!,
       barrierDismissible: false,
-      builder: (_) => PopScope(
-        canPop: false,
-        child: Container(
-          color: THelperFunction.isDarkMode(Get.context!) ? TColors.dark : TColors.white,
-          width: double.infinity,
-          height: double.infinity,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TAnimationLoaderWidget(
-                text: text,
-                animation: animation,
-              ),
-            ],
+      builder: (_) => AbsorbPointer(
+        absorbing: true,
+        child: Dialog(
+          backgroundColor: THelperFunction.isDarkMode(Get.context!) ? TColors.dark : TColors.white,
+          child: Container(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TAnimationLoaderWidget(
+                  text: text,
+                  animation: animation,
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-  static stopLoading(){
+  static void stopLoading() {
     Navigator.of(Get.overlayContext!).pop();
   }
 }

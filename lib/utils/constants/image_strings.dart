@@ -15,7 +15,8 @@ class TImages{
 
   // --> Lottie animation
   static String successfullyRegisterAnimation = "assets/images/animation/lottie/successfully-done.json";
-  static String checkRegistration = "assets/images/animation/lottie/72462-check-register.json";
+  static String checkRegistration = "assets/images/animation/lottie/141397-loading-juggle.json";
+  static String success = "assets/images/animation/lottie/72462-check-register.json";
 
   // --> Animations Email
   static const String deliveredEmailVerify = "assets/images/animation/email-verify.gif";
