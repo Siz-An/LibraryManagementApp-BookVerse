@@ -50,13 +50,11 @@ class settingScreen extends StatelessWidget {
                 const SizedBox(height: TSizes.spaceBtwItems),
 
                 TSettingMenu(icon: Iconsax.reserve, title: 'Reservation', subTitle: 'List books that the user has reserved', onTap: (){},),
-                TSettingMenu(icon: Iconsax.reserve, title: 'Reservation', subTitle: 'List books that the user has reserved', onTap: (){},),
-                TSettingMenu(icon: Iconsax.reserve, title: 'Reservation', subTitle: 'List books that the user has reserved', onTap: (){},),
-                TSettingMenu(icon: Iconsax.reserve, title: 'Reservation', subTitle: 'List books that the user has reserved', onTap: (){},),
-                TSettingMenu(icon: Iconsax.reserve, title: 'Overdue', subTitle: 'Display alerts for overdue books.', onTap: (){},),
-                TSettingMenu(icon: Iconsax.reserve, title: 'Overdue', subTitle: 'Display alerts for overdue books.', onTap: (){},),
-                TSettingMenu(icon: Iconsax.reserve, title: 'Overdue', subTitle: 'Display alerts for overdue books.', onTap: (){},),
-                TSettingMenu(icon: Iconsax.reserve, title: 'Overdue', subTitle: 'Display alerts for overdue books.', onTap: (){},),
+                TSettingMenu(icon: Iconsax.archive_tick, title: 'Issue', subTitle: 'List books that the Librarian has Issued', onTap: (){},),
+                TSettingMenu(icon: Iconsax.receipt, title: 'Return History', subTitle: 'Books that the user has returned', onTap: (){},),
+                TSettingMenu(icon: Iconsax.alarm, title: 'Book Return Notice', subTitle: 'List books that the user have to return', onTap: (){},),
+                TSettingMenu(icon: Iconsax.export, title: 'Exchange', subTitle: 'User can exchange books among themselves.', onTap: (){},),
+                TSettingMenu(icon: Iconsax.danger, title: 'Damage Books', subTitle: 'Books that are damaged', onTap: (){},),
 
 
                 ///---> App Settings
@@ -67,19 +65,21 @@ class settingScreen extends StatelessWidget {
                 const TSettingMenu(icon: Iconsax.document_upload, title: 'Load Data', subTitle: 'Upload data to your cloud fireBase',),
                 TSettingMenu(icon: Iconsax.security_user, title: 'Safe Mode', subTitle: 'Search Result is for all ages',
                     trailing: Switch(value: false, onChanged:(value){}),),
-                TSettingMenu(icon: Iconsax.image, title: 'Hd Image Quality', subTitle: 'Set Image Quality to be Seen',
-                    trailing: Switch(value: false, onChanged:(value){}),),
-                const SizedBox(height: TSizes.spaceBtwItems),
                 // Logout button
                 SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        _showLogoutConfirmationDialog(context);
-                      },
-                      child: const Text('Logout'),
-                     )
-                     )
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _showLogoutConfirmationDialog(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white, backgroundColor: Colors.green, // Text color of the button
+                      padding: EdgeInsets.symmetric(vertical: 16.0), // Add some padding
+                    ),
+                    child: const Text('Logout'),
+                  ),
+                )
+
               ],
             ),
             )
@@ -104,7 +104,7 @@ void _showLogoutConfirmationDialog(BuildContext context) {
             },
           ),
           TextButton(
-            child: Text('Logout'),
+            child: Text('Confirm'),
             onPressed: () {
               // Call logout method here
               Get.find<AuthenticationRepository>().logout();

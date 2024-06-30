@@ -72,13 +72,33 @@ class TLoginForm extends StatelessWidget {
               ),
               const SizedBox(height: TSizes.spaceBtwSections),
               /// Sign In Button
-              SizedBox(width: double.infinity,
-                  child: ElevatedButton(onPressed: () => controller.emailAndPasswordSignIn(), child: const Text(TTexts.signIn))),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    controller.emailAndPasswordSignIn();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white, backgroundColor: Colors.green, // Text color of the button
+                    padding: EdgeInsets.symmetric(vertical: 17.0), // Add some padding
+                  ),
+                  child: const Text(TTexts.signIn),
+                ),
+              ),
+
               const SizedBox(height: TSizes.spaceBtwItems),
 
               /// Create an Account Button
-              SizedBox(width: double.infinity, child: OutlinedButton(
-                  onPressed: () => Get.to(() => const SignUpScreen()), child: const Text(TTexts.createAccount))),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => Get.to(() => const SignUpScreen()),
+                  child: const Text(TTexts.createAccount),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.green),
+                  ),
+                ),
+              ),
 
             ],
           ),
