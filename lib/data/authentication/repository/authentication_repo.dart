@@ -45,8 +45,7 @@ class AuthenticationRepository extends GetxController {
     }
   }
     ///---> Login
-    Future<UserCredential> loginWithEmailAndPassword(String email,
-        String password) async {
+    Future<UserCredential> loginWithEmailAndPassword(String email, String password) async {
       try {
         return await _auth.signInWithEmailAndPassword(
             email: email, password: password);
@@ -80,6 +79,7 @@ class AuthenticationRepository extends GetxController {
     }
   }
  ///----> Send Email Verification
+
   Future<void> sendEmailVerification() async {
     try {
       await _auth.currentUser?.sendEmailVerification();
@@ -95,8 +95,8 @@ class AuthenticationRepository extends GetxController {
       throw 'Something went wrong. Please try again.';
     }
   }
-  ///---------------GooGle login Start--------------------///
 
+  ///---------------GooGle login Start--------------------///
   Future<UserCredential?> signInWithGoogle() async {
     try {
        //  Triggering the authentication flow
@@ -126,9 +126,26 @@ class AuthenticationRepository extends GetxController {
       return null;
     }
   }
-
-
   ///---------------GooGle login end--------------------///
+
+
+  /// [EmailAuthentication]-----> Forgot Password
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw TFirebaseAuthException(e.code).message;
+    } on FirebaseException catch (e) {
+      throw TFirebaseException(e.code).message;
+    } on FormatException catch (_) {
+      throw const TFormatException();
+    } on PlatformException catch (e) {
+      throw TPlatformException(e.code).message;
+    } catch (e) {
+      throw 'Something went wrong. Please try again.';
+    }
+  }
+
 
 
   ///-----> Logout

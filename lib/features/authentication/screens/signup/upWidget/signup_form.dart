@@ -11,10 +11,7 @@ import '../../../../../utils/constants/text_strings.dart';
 class TSignupform extends StatelessWidget {
   const TSignupform({
     super.key
-
   });
-
-
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(SignupController());
@@ -89,11 +86,25 @@ class TSignupform extends StatelessWidget {
             const TTermsAndConditionCheckbox(),
             const SizedBox(height: TSizes.spaceBtwSections),
             /// SignUp Button
-            SizedBox(width: double.infinity,
+            SizedBox(
+              width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => controller.signup(),
+                onPressed: () {
+                  controller.signup();
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, // Text color of the button
+                  backgroundColor: Colors.green, // Background color of the button
+                  padding: EdgeInsets.symmetric(vertical: 17.0), // Add some padding
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0), // Border radius
+                    side: BorderSide(color: Colors.green, width: 2.0), // Outline color and width
+                  ),
+                ),
                 child: const Text(TTexts.createAccount),
-              ),)
+              ),
+            ),
+
           ],
         ));
   }

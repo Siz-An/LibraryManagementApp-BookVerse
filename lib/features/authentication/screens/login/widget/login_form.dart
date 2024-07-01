@@ -79,12 +79,18 @@ class TLoginForm extends StatelessWidget {
                     controller.emailAndPasswordSignIn();
                   },
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white, backgroundColor: Colors.green, // Text color of the button
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.green, // Text color of the button
                     padding: EdgeInsets.symmetric(vertical: 17.0), // Add some padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0), // Border radius
+                      side: BorderSide(color: Colors.green, width: 2.0), // Outline color and width
+                    ),
                   ),
                   child: const Text(TTexts.signIn),
                 ),
               ),
+
 
               const SizedBox(height: TSizes.spaceBtwItems),
 
