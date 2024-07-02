@@ -5,7 +5,6 @@ import 'package:book_Verse/utils/constants/text_strings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../../../../utils/helpers/helper_function.dart';
 import '../login/login.dart';
 
