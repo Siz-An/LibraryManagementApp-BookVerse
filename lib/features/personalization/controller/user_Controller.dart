@@ -1,16 +1,36 @@
 
-
-import 'package:book_Verse/data/user/user_repo.dart';
 import 'package:book_Verse/utils/popups/loaders.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
+import '../../../data/authentication/repository/userRepo.dart';
 import '../models/userModels.dart';
 
 class UserController extends GetxController{
   static UserController get instance => Get.find();
 
-  final userRepository = Get.put(UserRepo());
+  final profileLoading = false.obs;
+  Rx<UserModel> user = UserModel.empty().obs;
+  final userRepository = Get.put(UserRepository());
+
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchUserRecord();
+  }
+
+  Future<void> fetchUserRecord() async{
+    try{
+      profileLoading.value = true;
+      final user = await userRepository.fetchUserDetails();
+      this.user(user);
+    } catch (e) {
+      user(UserModel.empty());
+    }finally{
+      profileLoading.value = false;
+    }
+  }
 
   /// Save User Record from any Registration Provider
 

@@ -7,12 +7,14 @@ import 'package:iconsax/iconsax.dart';
 
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
+import '../../controller/user_Controller.dart';
 
 class userScreen extends StatelessWidget {
   const userScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = UserController.instance;
     return Scaffold(
       appBar: const TAppBar(
         showBackArrow: true, title: Text('User Profile'),
@@ -39,17 +41,17 @@ class userScreen extends StatelessWidget {
               const TSectionHeading(title: 'Profile Information', showActionButton: false,),
               const SizedBox(height: TSizes.spaceBtwItems ),
 
-              TProfileMenu(onPressed: () {  }, title: 'USerName', value: 'Book Verse',),
-              TProfileMenu(onPressed: () {  }, title: 'USerId', value: '9566', icon: Iconsax.copy,),
+              TProfileMenu(onPressed: () {  }, title: 'Name', value: controller.user.value.fullName),
+              TProfileMenu(onPressed: () {  }, title: 'UserName', value: controller.user.value.userName),
 
               const SizedBox(height: TSizes.spaceBtwItems / 2,),
               const Divider(),
               const SizedBox(height: TSizes.spaceBtwItems ,),
 
               ///-----> Personal Info
-              TProfileMenu(onPressed: () {  }, title: 'Full Name', value: 'Book Verse'),
-              TProfileMenu(onPressed: () {  }, title: 'Email Id', value: 'Bookverse@gmail.com'),
-              TProfileMenu(onPressed: () {  }, title: 'Phone number', value: '+977 9816207570'),
+              TProfileMenu(onPressed: () {  }, title: 'UserId ', value:controller.user.value.id, icon: Iconsax.copy,),
+              TProfileMenu(onPressed: () {  }, title: 'Email Id', value: controller.user.value.email),
+              TProfileMenu(onPressed: () {  }, title: 'Phone number', value: controller.user.value.phoneNo),
               TProfileMenu(onPressed: () {  }, title: 'Gender', value: 'Male'),
               TProfileMenu(onPressed: () {  }, title: 'Birth Date', value: '9 Dec, 2002'),
 

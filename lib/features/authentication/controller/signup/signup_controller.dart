@@ -58,8 +58,7 @@ class SignupController extends GetxController {
 
     try {
       // Register user in the Firebase authentication
-      final userCredential = await AuthenticationRepository.instance
-          .registerWithEmailAndPassword(
+      final userCredential = await AuthenticationRepository.instance.registerWithEmailAndPassword(
         email.text.trim(),
         password.text.trim(),
       );

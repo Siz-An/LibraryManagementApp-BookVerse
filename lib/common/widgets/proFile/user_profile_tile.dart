@@ -1,4 +1,5 @@
 
+import 'package:book_Verse/features/personalization/controller/user_Controller.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -14,10 +15,11 @@ class TUserProfileTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = UserController.instance;
     return ListTile(
       leading: const TCircularImage(image: TImages.genreIcon, width: 50, height: 50, padding: 0,),
-      title: Text('Book Verse', style: Theme.of(context).textTheme.headlineSmall!.apply(color: TColors.white),),
-      subtitle: Text('bookverse@gmail.com', style: Theme.of(context).textTheme.bodySmall!.apply(color: TColors.white),),
+      title: Text(controller.user.value.fullName, style: Theme.of(context).textTheme.headlineSmall!.apply(color: TColors.white),),
+      subtitle: Text(controller.user.value.email, style: Theme.of(context).textTheme.bodySmall!.apply(color: TColors.white),),
       trailing: IconButton(onPressed: onPressed, icon: const Icon(Iconsax.edit, color: TColors.white,),),
     );
   }

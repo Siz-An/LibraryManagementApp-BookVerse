@@ -1,5 +1,3 @@
-
-
 import 'package:book_Verse/features/authentication/controller/login/login_controller.dart';
 import 'package:book_Verse/features/authentication/screens/password_configuration/forget_password.dart';
 import 'package:book_Verse/utils/validators/validation.dart';
@@ -8,8 +6,6 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:iconsax/iconsax.dart';
-
-import '../../../../../navigation_menu/navigation_menu.dart';
 import '../../../../../utils/constants/sizes.dart';
 import '../../../../../utils/constants/text_strings.dart';
 import '../../signup/signup.dart';

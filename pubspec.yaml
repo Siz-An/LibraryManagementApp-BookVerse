@@ -24,6 +24,7 @@ dependencies:
   smooth_page_indicator: ^1.1.0
   shared_preferences: ^2.2.3
   carousel_slider: ^4.2.1
+  shimmer: ^3.0.0
 
 
 #navigation curve menu_bar
