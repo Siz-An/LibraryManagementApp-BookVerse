@@ -1,6 +1,7 @@
 
 import 'package:book_Verse/utils/popups/loaders.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
 import '../../../data/authentication/repository/userRepo.dart';
@@ -11,7 +12,12 @@ class UserController extends GetxController{
 
   final profileLoading = false.obs;
   Rx<UserModel> user = UserModel.empty().obs;
+
+  final verifyEmail = TextEditingController();
+  final verifyPassword = TextEditingController();
   final userRepository = Get.put(UserRepository());
+  GlobalKey<FormState> reAuthFormKey = GlobalKey<FormState>();
+
 
 
   @override
@@ -49,7 +55,7 @@ class UserController extends GetxController{
               lastName: nameParts.length > 1 ? nameParts.sublist(1).join(' ') : ' ',
               userName: userName,
               email: userCredentials.user!.email ?? ' ',
-              phoneNo: userCredentials.user!.phoneNumber ?? ' ',
+              phoneNumber: userCredentials.user!.phoneNumber ?? ' ',
               profilePicture: userCredentials.user!.photoURL ?? ' '
           );
 

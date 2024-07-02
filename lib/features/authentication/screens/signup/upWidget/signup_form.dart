@@ -59,7 +59,7 @@ class TSignupform extends StatelessWidget {
             /// Phone Number
             const SizedBox(height: TSizes.spaceBtwInputFields),
             TextFormField(
-              controller: controller.phoneNo,
+              controller: controller.phoneNumber,
               validator: (value) => TValidator.validatePhoneNumber(value),
               expands : false,
               decoration: const InputDecoration(labelText: TTexts.phoneNo, prefixIcon: Icon(Iconsax.call)),

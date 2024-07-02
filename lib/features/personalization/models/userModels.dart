@@ -1,13 +1,13 @@
-import 'package:book_Verse/utils/formatters/formatter.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:book_Verse/utils/formatters/formatter.dart';
 class UserModel {
   final String id;
   String firstName;
   String lastName;
   final String userName;
   final String email;
-  String phoneNo;
+  String phoneNumber;
   String profilePicture;
 
   UserModel({
@@ -16,7 +16,7 @@ class UserModel {
     required this.lastName,
     required this.userName,
     required this.email,
-    required this.phoneNo,
+    required this.phoneNumber,
     required this.profilePicture,
   });
 
@@ -24,7 +24,7 @@ class UserModel {
   String get fullName => '$firstName $lastName';
 
   /// Helper function to format phone Number
-  String get formattedPhoneNo => TFormatter.formatPhoneNumber(phoneNo);
+  String get formattedPhoneNo => TFormatter.formatPhoneNumber(phoneNumber);
 
   /// Static Function to split full name into first and Last name
   static List<String> nameParts(String fullName) => fullName.split(" ");
@@ -47,7 +47,7 @@ class UserModel {
       lastName: '',
       userName: '',
       email: '',
-      phoneNo: '',
+      phoneNumber: '',
       profilePicture: '');
 
   /// Convert model to JSON structure for storing data in Firestore
@@ -57,7 +57,7 @@ class UserModel {
       'LastName': lastName,
       'UserName': userName,
       'Email': email,
-      'PhoneNumber': phoneNo,
+      'PhoneNumber': phoneNumber,
       'ProfilePicture': profilePicture,
     };
   }
@@ -71,7 +71,7 @@ class UserModel {
         lastName: data['LastName'] ?? '',
         userName: data['UserName'] ?? '',
         email: data['Email'] ?? '',
-        phoneNo: data['PhoneNumber'] ?? '',
+        phoneNumber: data['PhoneNumber'] ?? '',
         profilePicture: data['ProfilePicture'] ?? '',
       );
     } else {

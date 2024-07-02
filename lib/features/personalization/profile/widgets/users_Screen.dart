@@ -1,10 +1,11 @@
 import 'package:book_Verse/common/widgets/appbar/appbar.dart';
 import 'package:book_Verse/common/widgets/images/t_circular_image.dart';
 import 'package:book_Verse/common/widgets/texts/section_heading.dart';
+import 'package:book_Verse/features/personalization/profile/widgets/changeName.dart';
 import 'package:book_Verse/features/personalization/profile/widgets/profile_menu.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../../controller/user_Controller.dart';
@@ -41,7 +42,7 @@ class userScreen extends StatelessWidget {
               const TSectionHeading(title: 'Profile Information', showActionButton: false,),
               const SizedBox(height: TSizes.spaceBtwItems ),
 
-              TProfileMenu(onPressed: () {  }, title: 'Name', value: controller.user.value.fullName),
+              TProfileMenu(onPressed: () => Get.to(() => const ChangeName()), title: 'Full Name', value: controller.user.value.fullName),
               TProfileMenu(onPressed: () {  }, title: 'UserName', value: controller.user.value.userName),
 
               const SizedBox(height: TSizes.spaceBtwItems / 2,),
@@ -51,7 +52,7 @@ class userScreen extends StatelessWidget {
               ///-----> Personal Info
               TProfileMenu(onPressed: () {  }, title: 'UserId ', value:controller.user.value.id, icon: Iconsax.copy,),
               TProfileMenu(onPressed: () {  }, title: 'Email Id', value: controller.user.value.email),
-              TProfileMenu(onPressed: () {  }, title: 'Phone number', value: controller.user.value.phoneNo),
+              TProfileMenu(onPressed: () {  }, title: 'Phone number', value: controller.user.value.phoneNumber),
               TProfileMenu(onPressed: () {  }, title: 'Gender', value: 'Male'),
               TProfileMenu(onPressed: () {  }, title: 'Birth Date', value: '9 Dec, 2002'),
 
