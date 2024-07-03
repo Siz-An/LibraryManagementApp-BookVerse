@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 
 import '../../../../../../../common/widgets/texts/section_heading.dart';
 import '../../../../../../../utils/constants/sizes.dart';
-import '../../../../../../personalization/profile/widgets/profile_menu.dart';
 import '../widgets/courseMenu.dart';
 
 class firstSem extends StatelessWidget {

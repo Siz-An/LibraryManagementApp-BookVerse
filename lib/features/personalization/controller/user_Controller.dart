@@ -10,6 +10,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../data/authentication/repository/userRepo.dart';
 import '../../../utils/constants/image_strings.dart';
 import '../models/userModels.dart';
@@ -20,6 +21,7 @@ class UserController extends GetxController {
   final profileLoading = false.obs;
   Rx<UserModel> user = UserModel.empty().obs;
 
+  final imageUploading = false.obs;
   final hidePassword = false.obs;
   final verifyEmail = TextEditingController();
   final verifyPassword = TextEditingController();
@@ -46,31 +48,31 @@ class UserController extends GetxController {
   }
 
   /// Save User Record from any Registration Provider
-
   Future<void> saveUserRecord(UserCredential? userCredentials) async {
     try {
-      if (userCredentials != null) {
-        //convert Name to first and last nam
-        final nameParts = UserModel.nameParts(
-            userCredentials.user!.displayName ?? '');
-        final userName = UserModel.generateUsername(
-            userCredentials.user!.displayName ?? '');
+      // First Update Rx User and then check if the user data is already stored. If not store new data
+      await fetchUserRecord();
+      // If no record is already stored.
+      if(user.value.id.isEmpty) {
+        if (userCredentials != null) {
+          //convert Name to first and last nam
+          final nameParts = UserModel.nameParts(userCredentials.user!.displayName ?? '');
+          final userName = UserModel.generateUsername(userCredentials.user!.displayName ?? '');
 
-        // Map Data
-        final user = UserModel(
-            id: userCredentials.user!.uid,
-            firstName: nameParts[0],
-            lastName: nameParts.length > 1
-                ? nameParts.sublist(1).join(' ')
-                : ' ',
-            userName: userName,
-            email: userCredentials.user!.email ?? ' ',
-            phoneNumber: userCredentials.user!.phoneNumber ?? ' ',
-            profilePicture: userCredentials.user!.photoURL ?? ' '
-        );
+          // Map Data
+          final user = UserModel(
+              id: userCredentials.user!.uid,
+              firstName: nameParts[0],
+              lastName: nameParts.length > 1 ? nameParts.sublist(1).join(' ') : ' ',
+              userName: userName,
+              email: userCredentials.user!.email ?? ' ',
+              phoneNumber: userCredentials.user!.phoneNumber ?? ' ',
+              profilePicture: userCredentials.user!.photoURL ?? ' '
+          );
 
-        // save user data
-        await userRepository.saveUserRecord(user);
+          // save user data
+          await userRepository.saveUserRecord(user);
+        }
       }
     } catch (e) {
       TLoaders.warningSnackBar(title: 'Error Saving data',
@@ -80,8 +82,8 @@ class UserController extends GetxController {
   }
 
 
-        /// Delete Account Warning
-        void deleteAccountWarningPopup(){
+  /// Delete Account Warning
+  void deleteAccountWarningPopup(){
   Get.defaultDialog(
     contentPadding: const EdgeInsets.all(TSizes.md),
     title: 'Delete Account',
@@ -97,8 +99,8 @@ class UserController extends GetxController {
   );
         }
 
-        ///----> Delete User Account
-        void deleteUserAccount() async{
+  ///----> Delete User Account
+  void deleteUserAccount() async{
     try{
       TFullScreenLoader.openLoadingDialogue('Processing', TImages.checkRegistration);
 
@@ -123,8 +125,8 @@ class UserController extends GetxController {
     }
         }
 
-        ///----> Re-auth before deleting Account
-        Future<void> reAuthenticateEmailAndPasswordUser() async {
+  ///----> Re-auth before deleting Account
+  Future<void> reAuthenticateEmailAndPasswordUser() async {
           try {
             TFullScreenLoader.openLoadingDialogue('Processing', TImages.checkRegistration);
 
@@ -149,4 +151,32 @@ class UserController extends GetxController {
 
           }
         }
+
+  ///----> Upload Profile Image
+  uploadUserProfilePicture() async{
+    try {
+      final image = await ImagePicker().pickImage(source: ImageSource.gallery,
+          imageQuality: 70,
+          maxHeight: 512,
+          maxWidth: 512);
+      if (image != null) {
+        imageUploading.value = true;
+        final imageUrl = await userRepository.uploadImage(
+            'user/Images/Profile/', image);
+
+        //update User Image Record
+        Map<String, dynamic> json = {'ProfilePicture': imageUrl};
+        await userRepository.updateSingleField(json);
+
+        user.value.profilePicture = imageUrl;
+        user.refresh();
+
+        TLoaders.successSnackBar(title: 'Congrats', message: 'Your profile Picture has been Uploaded');
+      }
+    }catch(e){
+      TLoaders.errorSnackBar(title: 'oh fuck', message: 'You messed up something: $e');
+    }finally{
+      imageUploading.value = false;
+    }
+  }
 }

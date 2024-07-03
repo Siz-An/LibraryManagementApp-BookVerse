@@ -56,4 +56,6 @@ class TImages{
   static const String genreIcon2 = "assets/icons/icon_genre/love-books.png";
   static const String genreIcon3 = "assets/icons/icon_genre/annonymous.png";
 
+  // --> User icon
+  static const String user = "assets/icons/user.png";
 }

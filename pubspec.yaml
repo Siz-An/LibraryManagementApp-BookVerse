@@ -25,6 +25,7 @@ dependencies:
   shared_preferences: ^2.2.3
   carousel_slider: ^4.2.1
   shimmer: ^3.0.0
+  image_picker: ^1.1.2
 
 
 #navigation curve menu_bar
@@ -43,6 +44,9 @@ dependencies:
   firebase_auth: ^5.1.1
   cloud_firestore: ^5.0.2
   google_sign_in: ^6.2.1
+  firebase_storage: ^12.1.0
+  cached_network_image: ^3.3.1
+
 
 # Product Specifier
 
@@ -60,6 +64,7 @@ flutter:
   assets:
     - assets/
     - assets/logos/
+    - assets/icons/
     - assets/images/
     - assets/images/on_boarding_images/
     - assets/images/animation/

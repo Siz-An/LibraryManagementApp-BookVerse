@@ -3,6 +3,7 @@ import 'package:book_Verse/common/widgets/images/t_circular_image.dart';
 import 'package:book_Verse/common/widgets/texts/section_heading.dart';
 import 'package:book_Verse/features/personalization/profile/widgets/changeName.dart';
 import 'package:book_Verse/features/personalization/profile/widgets/profile_menu.dart';
+import 'package:book_Verse/utils/constants/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -31,8 +32,14 @@ class userScreen extends StatelessWidget {
                 width: double.infinity,
                 child: Column(
                   children: [
-                    const TCircularImage(image: TImages.genreIcon, width: 80, height: 80,),
-                    TextButton(onPressed: (){}, child: const Text('Change Profile Screen')),
+                    Obx(() {
+                      final networkImage = controller.user.value.profilePicture;
+                      final image = networkImage.isNotEmpty ? networkImage :TImages.user;
+                      return controller.imageUploading.value
+                        ? const TShimmerEffect(width: 80, height: 80, radius: 80,)
+                        : TCircularImage(image: image, width: 80, height: 80, isNetworkImage: networkImage.isNotEmpty,);
+                    } ),
+                    TextButton(onPressed: () => controller.uploadUserProfilePicture(), child: const Text('Change Profile Screen')),
                   ],
                 ),
               ),

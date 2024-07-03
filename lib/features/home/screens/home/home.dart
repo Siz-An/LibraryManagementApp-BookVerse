@@ -25,10 +25,12 @@ class HomeScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
+
             /// ---> Header
             const TPrimaryHeaderContainer(
               child: Column(
                 children: [
+                  SizedBox(height: TSizes.sm,),
                   /// ---> Appbar
                   THomeAppBar(),
                   SizedBox(height: TSizes.spaceBtwSections),
