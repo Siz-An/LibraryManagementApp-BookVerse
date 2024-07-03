@@ -9,7 +9,6 @@ import 'package:book_Verse/utils/popups/fullscreen_loader.dart';
 import 'package:book_Verse/utils/popups/loaders.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 
 class UpdateNameController extends GetxController{
   static UpdateNameController get instance => Get.find();

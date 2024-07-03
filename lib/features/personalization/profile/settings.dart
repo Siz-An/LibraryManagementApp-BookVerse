@@ -14,8 +14,6 @@ import '../../../common/widgets/proFile/user_profile_tile.dart';
 import '../../../data/authentication/repository/authentication_repo.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/sizes.dart';
-import '../../../utils/constants/text_strings.dart';
-import '../../authentication/screens/login/login.dart';
 
 class settingScreen extends StatelessWidget {
   const settingScreen({super.key});
