@@ -26,8 +26,8 @@ class TPromoSlide extends StatelessWidget {
             viewportFraction: 1,
             onPageChanged: (index, _) => controller.updatePageIndicator(index),
             autoPlay: true, // Set to true for automatic sliding
-            autoPlayInterval: Duration(seconds: 2), // Optional: set the interval between slides
-            autoPlayAnimationDuration: Duration(milliseconds: 800), // Optional: animation duration
+            autoPlayInterval: const Duration(seconds: 4), // Optional: set the interval between slides
+            autoPlayAnimationDuration: const Duration(milliseconds: 800), // Optional: animation duration
             autoPlayCurve: Curves.fastOutSlowIn, // Optional: animation curve
           ),
           items: banner.map((url) => TRoundedImage(imageUrl: url)).toList(),

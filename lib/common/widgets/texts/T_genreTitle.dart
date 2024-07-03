@@ -1,7 +1,6 @@
 import 'package:book_Verse/common/widgets/texts/t_genretitle_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:iconsax/iconsax.dart';
-
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/enums.dart';
 import '../../../utils/constants/sizes.dart';
