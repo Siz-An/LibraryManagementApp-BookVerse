@@ -25,7 +25,7 @@ class NetworkManager extends GetxController {
       TLoaders.customToast(message: 'No Internet Connection');
     }
   }
-
+  ///----> checking internet if it is connected or not
   Future<bool> isConnected() async {
     try {
       final result = await _connectivity.checkConnectivity();

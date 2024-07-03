@@ -28,7 +28,7 @@ class TLoaders {
     );
   }
 
-
+    ///----> Showing error if there is any errors
   static errorSnackBar({required String title, String message = '', duration = 3}) {
     Get.snackbar(
       title,
@@ -43,6 +43,7 @@ class TLoaders {
       icon: const Icon(Iconsax.warning_2, color: TColors.white),
     );
   }
+  ///----> Showing Success Snack Bar
   static successSnackBar({required String title, String message = '', duration = 3}) {
     Get.snackbar(
       title,
@@ -57,7 +58,7 @@ class TLoaders {
       icon: const Icon(Iconsax.chart_success, color: TColors.white),
     );
   }
-
+    ///---> Showing Warning Snack Bar
   static warningSnackBar({required String title, String message = '', duration = 3}) {
     Get.snackbar(
       title,

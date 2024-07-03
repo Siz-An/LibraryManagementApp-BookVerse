@@ -17,6 +17,7 @@ class userScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = UserController.instance;
     return Scaffold(
+      ///--->Appbar
       appBar: const TAppBar(
         showBackArrow: true, title: Text('User Profile'),
       ),

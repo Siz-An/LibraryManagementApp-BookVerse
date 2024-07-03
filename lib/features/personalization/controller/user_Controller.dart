@@ -1,9 +1,7 @@
-
 import 'package:book_Verse/utils/popups/loaders.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-
 import '../../../data/authentication/repository/userRepo.dart';
 import '../models/userModels.dart';
 
@@ -18,14 +16,13 @@ class UserController extends GetxController{
   final userRepository = Get.put(UserRepository());
   GlobalKey<FormState> reAuthFormKey = GlobalKey<FormState>();
 
-
-
   @override
   void onInit() {
     super.onInit();
     fetchUserRecord();
   }
 
+    ///---> Retrieving Record from FireBase
   Future<void> fetchUserRecord() async{
     try{
       profileLoading.value = true;
@@ -63,7 +60,7 @@ class UserController extends GetxController{
           await userRepository.saveUserRecord(user);
         }
       }catch(e){
-        TLoaders.warningSnackBar(title: 'Data not Saved',
+        TLoaders.warningSnackBar(title: 'Error Saving data',
         message: 'Something went Wrong while saving your credentials'
         );
       }

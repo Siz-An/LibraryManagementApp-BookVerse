@@ -49,6 +49,7 @@ class settingScreen extends StatelessWidget {
                 const TSectionHeading(title: 'Account Settings',showActionButton: false,),
                 const SizedBox(height: TSizes.spaceBtwItems),
 
+                // Settings
                 TSettingMenu(icon: Iconsax.reserve, title: 'Reservation', subTitle: 'List books that the user has reserved', onTap: (){},),
                 TSettingMenu(icon: Iconsax.archive_tick, title: 'Issue', subTitle: 'List books that the Librarian has Issued', onTap: (){},),
                 TSettingMenu(icon: Iconsax.receipt, title: 'Return History', subTitle: 'Books that the user has returned', onTap: (){},),
@@ -89,6 +90,7 @@ class settingScreen extends StatelessWidget {
     );
   }
 }
+///---> Confirmation Logout Button
 void _showLogoutConfirmationDialog(BuildContext context) {
   showDialog(
     context: context,

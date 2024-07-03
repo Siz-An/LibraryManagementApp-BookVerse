@@ -37,6 +37,7 @@ class ChangeName extends StatelessWidget {
               key: controller.updateUserNameFormKey,
               child: Column(
                 children: [
+                  ///---> First Name change
                   TextFormField(
                     controller: controller.firstName,
                     validator: (value) => TValidator.validateEmptyText('First name', value),
@@ -46,6 +47,7 @@ class ChangeName extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: TSizes.spaceBtwSections),
+                  ///----> Last Name Change
                   TextFormField(
                     controller: controller.lastName,
                     validator: (value) => TValidator.validateEmptyText('Last name', value),
@@ -55,6 +57,7 @@ class ChangeName extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: TSizes.spaceBtwSections),
+                  ///---> Saving the data
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(

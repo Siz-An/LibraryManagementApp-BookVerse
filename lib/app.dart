@@ -12,12 +12,13 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      // debug banner removing
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.system,
       theme: TAppTheme.lightTheme,
       darkTheme: TAppTheme.darkTheme,
       initialBinding: GeneralBinding(),
-      ///--> Show Loader or circular Progress meanWhile Authentication Repository is deciding to show relevant screen
+      ///----> Show Loader or circular Progress meanWhile Authentication Repository is deciding to show relevant screen
       home: const Scaffold(
         backgroundColor: TColors.primaryColor, body: Center(child: CircularProgressIndicator(color: Colors.white,),),
       ),
