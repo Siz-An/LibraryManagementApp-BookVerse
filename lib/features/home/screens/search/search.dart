@@ -1,148 +1,146 @@
-import 'package:book_Verse/common/widgets/custom_shapes/rounded_container.dart';
-import 'package:book_Verse/common/widgets/custom_shapes/search_container.dart';
-import 'package:book_Verse/common/widgets/layouts/grid_layout.dart';
-import 'package:book_Verse/common/widgets/texts/section_heading.dart';
-import 'package:book_Verse/utils/constants/colors.dart';
-import 'package:book_Verse/utils/constants/enums.dart';
-import 'package:book_Verse/utils/helpers/helper_function.dart';
 import 'package:flutter/material.dart';
+import '../../../../api/BookDetailsPage.dart';
+import '../../../../api/book.dart';
+import '../../../../api/book_service.dart';
 import '../../../../common/widgets/appbar/appbar.dart';
-import '../../../../common/widgets/appbar/tabbar.dart';
-import '../../../../common/widgets/images/t_circular_image.dart';
-import '../../../../common/widgets/products/bookmark/bookmark_icon.dart';
-import '../../../../common/widgets/texts/T_genreTitle.dart';
-import '../../../../utils/constants/image_strings.dart';
+import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
+import '../../../../utils/helpers/helper_function.dart';
 
-class SearchScreen extends StatelessWidget {
+class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
+
+  @override
+  _SearchScreenState createState() => _SearchScreenState();
+}
+
+class _SearchScreenState extends State<SearchScreen> {
+  final BookService _bookService = BookService();
+  final TextEditingController _controller = TextEditingController();
+  List<Book> _books = [];
+  List<Book> _popularBooks = [];
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPopularBooks();
+  }
+
+  Future<void> _fetchPopularBooks() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final popularBooks = await _bookService.searchBooks('popular');
+      setState(() {
+        _popularBooks = popularBooks;
+      });
+    } catch (e) {
+      // Handle error
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _searchBooks() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final books = await _bookService.searchBooks(_controller.text);
+      setState(() {
+        _books = books;
+      });
+    } catch (e) {
+      // Handle error
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showBookDetails(Book book) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => BookDetailsPage(book: book)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-length: 1,
-
+      length: 1,
       child: Scaffold(
         appBar: TAppBar(
           title: Text(
             'Book Verse',
             style: Theme.of(context).textTheme.headlineMedium,
           ),
-          actions: [
-            TCartCounterIcons(onPressed: () {}),
-          ],
         ),
-        body: NestedScrollView(
-          headerSliverBuilder: (_, innerBoxIsScrolled) {
-            return [
-              SliverAppBar(
-                automaticallyImplyLeading: false,
-                pinned: true,
-                floating: true,
-                backgroundColor: THelperFunction.isDarkMode(context)
-                    ? TColors.black
-                    : TColors.white,
-                expandedHeight: 405,
-                flexibleSpace: Padding(
-                  padding: const EdgeInsets.all(TSizes.defaultSpace),
-                  child: ListView(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: [
-                      /// Search Bar
-                      const SizedBox(height: TSizes.spaceBtwItems),
-                      const TSearchContainer(
-                        text: 'Search',
-                        showBorder: true,
-                        showBackground: false,
-                        padding: EdgeInsets.zero,
-                      ),
-                      const SizedBox(height: TSizes.spaceBtwSections / 4),
-
-                      /// Featured Genre
-                      TSectionHeading(
-                        title: 'Featured Genre',
-                        showActionButton: true,
-                        onPressed: () {},
-                      ),
-                      const SizedBox(height: TSizes.spaceBtwSections / 7),
-
-                      TGridLayout(
-                        itemCount: 4,
-                        mainAxisExtent: 80,
-                        itemBuilder: (_, index) {
-                          return GestureDetector(
-                            onTap: () {},
-                            child: TRoundedContainer(
-                              padding: const EdgeInsets.all(TSizes.sm),
-                              showBorder: true,
-                              backgroundColor: Colors.transparent,
-                              child: Row(
-                                children: [
-                                  /// Icon
-                                  Flexible(
-                                    child: TCircularImage(
-                                      isNetworkImage: false,
-                                      image: TImages.genreIcon2,
-                                      backgroundColor: Colors.transparent,
-                                      overlayColor: THelperFunction.isDarkMode(context)
-                                          ? TColors.white
-                                          : TColors.black,
-                                    ),
-                                  ),
-                                  Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const TGenreTitleWithVerification(
-                                        title: 'Romance',
-                                        genreTextSizes: TextSizes.large,
-                                      ),
-                                      Text(
-                                        '10 books',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: Theme.of(context).textTheme.labelMedium,
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(TSizes.defaultSpace),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _controller,
+                decoration: InputDecoration(
+                  labelText: 'Search',
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: _searchBooks,
                   ),
                 ),
-                bottom: const TTabBar(
-                  tabs: [
-                    Tab(child: Text('Suggestion')),
-                  ],
-                ),
+                onSubmitted: (value) => _searchBooks(),
               ),
-            ];
-          },
-          body: const TabBarView(
-            children: [
-              /// Content for Romance tab
-              Padding(
-                padding: EdgeInsets.all(TSizes.defaultSpace),
-                child: Column(
-                  children: [
-                    TRoundedContainer(
-                      showBorder: true,
-                      borderColor: TColors.darkerGrey,
-                      backgroundColor: Colors.transparent,
-                      margin: EdgeInsets.only(bottom: TSizes.spaceBtwItems),
-                      child: Column(),
-                    ),
-                  ],
-                ),
-              ),
+              const SizedBox(height: TSizes.spaceBtwItems),
+              if (_isLoading)
+                const Center(child: CircularProgressIndicator())
+              else if (_books.isNotEmpty)
+                _buildBookList(_books)
+              else
+                _buildBookList(_popularBooks, title: 'Popular Books'),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBookList(List<Book> books, {String? title}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (title != null) ...[
+          Text(
+            title,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16.0),
+        ],
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: books.length,
+          itemBuilder: (context, index) {
+            final book = books[index];
+            return ListTile(
+              leading: book.thumbnail.isNotEmpty
+                  ? Image.network(book.thumbnail)
+                  : null,
+              title: Text(book.title),
+              subtitle: Text(book.authors.join(', ')),
+              onTap: () => _showBookDetails(book),
+            );
+          },
+        ),
+      ],
     );
   }
 }
