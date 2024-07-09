@@ -3,9 +3,7 @@ import '../../../../api/BookDetailsPage.dart';
 import '../../../../api/book.dart';
 import '../../../../api/book_service.dart';
 import '../../../../common/widgets/appbar/appbar.dart';
-import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/sizes.dart';
-import '../../../../utils/helpers/helper_function.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
