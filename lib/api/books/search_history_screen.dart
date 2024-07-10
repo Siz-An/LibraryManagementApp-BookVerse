@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/search_history.dart';
 import '../services/book_service.dart';
 import 'BookDetailsPage.dart';
+import 'books.dart';
 
 class SearchHistoryScreen extends StatelessWidget {
   @override

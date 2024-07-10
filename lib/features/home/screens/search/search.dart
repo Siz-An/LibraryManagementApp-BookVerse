@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:book_Verse/api/services/book_service.dart'; // Ensure this import is consistent
 import '../../../../api/books/BookDetailsPage.dart';
+import '../../../../api/books/books.dart';
 import '../../../../api/books/search_history_screen.dart';
 import '../../../../api/models/search_history.dart';
-import '../../../../api/services/book_service.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -24,18 +25,28 @@ class _SearchScreenState extends State<SearchScreen> {
     });
 
     final books = await _bookService.searchBooks(term);
-    final recommendations = await _bookService.getRecommendations(term);
 
-    // Filter out the searched books from the recommendations
-    final filteredRecommendations = recommendations.where((recBook) {
-      return !_books.any((searchedBook) => searchedBook.title == recBook.title);
-    }).toList();
+    if (books.isNotEmpty && books.first.genres != null) {
+      final genre = books.first.genres!.first;
+      final recommendations = await _bookService.getRecommendations(genre);
 
-    setState(() {
-      _books = books;
-      _recommendedBooks = filteredRecommendations;
-      _isLoading = false;
-    });
+      // Filter out the searched books from the recommendations
+      final filteredRecommendations = recommendations.where((recBook) {
+        return !books.any((searchedBook) => searchedBook.title == recBook.title);
+      }).toList();
+
+      setState(() {
+        _books = books;
+        _recommendedBooks = filteredRecommendations;
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _books = books;
+        _recommendedBooks = [];
+        _isLoading = false;
+      });
+    }
   }
 
   @override
