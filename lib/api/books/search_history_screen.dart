@@ -13,6 +13,14 @@ class SearchHistoryScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Search History'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () {
+              searchHistory.clearHistory();
+            },
+          ),
+        ],
       ),
       body: ListView.builder(
         itemCount: searchHistory.history.length,

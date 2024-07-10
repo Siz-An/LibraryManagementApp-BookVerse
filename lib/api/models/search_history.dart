@@ -9,4 +9,9 @@ class SearchHistory with ChangeNotifier {
     _history.add(term);
     notifyListeners();
   }
+
+  void clearHistory() {
+    _history.clear();
+    notifyListeners();
+  }
 }
