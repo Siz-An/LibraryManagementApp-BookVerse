@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../../../api/BookDetailsPage.dart';
-import '../../../../api/book.dart';
-import '../../../../api/book_service.dart';
-import '../../../../common/widgets/appbar/appbar.dart';
-import '../../../../utils/constants/sizes.dart';
+import 'package:provider/provider.dart';
+import '../../../../api/books/BookDetailsPage.dart';
+import '../../../../api/books/search_history_screen.dart';
+import '../../../../api/models/search_history.dart';
+import '../../../../api/services/book_service.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  const SearchScreen({Key? key}) : super(key: key);
 
   @override
   _SearchScreenState createState() => _SearchScreenState();
@@ -14,131 +14,113 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final BookService _bookService = BookService();
-  final TextEditingController _controller = TextEditingController();
   List<Book> _books = [];
-  List<Book> _popularBooks = [];
+  List<Book> _recommendedBooks = [];
   bool _isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchPopularBooks();
-  }
-
-  Future<void> _fetchPopularBooks() async {
+  void _searchBooks(String term) async {
     setState(() {
       _isLoading = true;
     });
 
-    try {
-      final popularBooks = await _bookService.searchBooks('popular');
-      setState(() {
-        _popularBooks = popularBooks;
-      });
-    } catch (e) {
-      // Handle error
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
+    final books = await _bookService.searchBooks(term);
+    final recommendations = await _bookService.getRecommendations(term);
 
-  void _searchBooks() async {
+    // Filter out the searched books from the recommendations
+    final filteredRecommendations = recommendations.where((recBook) {
+      return !_books.any((searchedBook) => searchedBook.title == recBook.title);
+    }).toList();
+
     setState(() {
-      _isLoading = true;
+      _books = books;
+      _recommendedBooks = filteredRecommendations;
+      _isLoading = false;
     });
-
-    try {
-      final books = await _bookService.searchBooks(_controller.text);
-      setState(() {
-        _books = books;
-      });
-    } catch (e) {
-      // Handle error
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _showBookDetails(Book book) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => BookDetailsPage(book: book)),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 1,
-      child: Scaffold(
-        appBar: TAppBar(
-          title: Text(
-            'Book Verse',
-            style: Theme.of(context).textTheme.headlineMedium,
+    final searchHistory = Provider.of<SearchHistory>(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Google Book Api'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.history),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SearchHistoryScreen()),
+              );
+            },
           ),
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(TSizes.defaultSpace),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: _controller,
+        ],
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
                 decoration: InputDecoration(
-                  labelText: 'Search',
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.search),
-                    onPressed: _searchBooks,
-                  ),
+                  labelText: 'Search for books',
+                  border: OutlineInputBorder(),
                 ),
-                onSubmitted: (value) => _searchBooks(),
+                onSubmitted: (term) {
+                  searchHistory.addSearchTerm(term);
+                  _searchBooks(term);
+                },
               ),
-              const SizedBox(height: TSizes.spaceBtwItems),
-              if (_isLoading)
-                const Center(child: CircularProgressIndicator())
-              else if (_books.isNotEmpty)
-                _buildBookList(_books)
-              else
-                _buildBookList(_popularBooks, title: 'Popular Books'),
-            ],
-          ),
+            ),
+            _isLoading
+                ? CircularProgressIndicator()
+                : Expanded(
+              child: ListView(
+                children: <Widget>[
+                  _buildSectionTitle('Search Results'),
+                  _buildBookList(_books),
+                  _buildSectionTitle('Recommended Books'),
+                  _buildBookList(_recommendedBooks),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildBookList(List<Book> books, {String? title}) {
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text(
+        title,
+        style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildBookList(List<Book> books) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (title != null) ...[
-          Text(
-            title,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16.0),
-        ],
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: books.length,
-          itemBuilder: (context, index) {
-            final book = books[index];
-            return ListTile(
-              leading: book.thumbnail.isNotEmpty
-                  ? Image.network(book.thumbnail)
-                  : null,
-              title: Text(book.title),
-              subtitle: Text(book.authors.join(', ')),
-              onTap: () => _showBookDetails(book),
+      children: books.map((book) {
+        return ListTile(
+          leading: book.thumbnail != null
+              ? Image.network(book.thumbnail!)
+              : null,
+          title: Text(book.title),
+          subtitle: Text(book.authors),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BookDetailsScreen(book: book),
+              ),
             );
           },
-        ),
-      ],
+        );
+      }).toList(),
     );
   }
 }
