@@ -1,11 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/get_instance.dart';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:provider/provider.dart';
 import 'api/models/search_history.dart';
+import 'api/bookmark/bookMrk.dart';
 import 'app.dart';
 import 'data/authentication/repository/authentication_repo.dart';
 import 'firebase_options.dart';
@@ -13,20 +13,25 @@ import 'firebase_options.dart';
 Future<void> main() async {
   // Widgets Binding
   final WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  // GetX local storage
+
+  // Initialize GetStorage
   await GetStorage.init();
 
   // Await Splash Screen until Other item Load
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  // Initialize firebase & firebase Auth repo
+  // Initialize Firebase & Firebase Auth repo
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform).then(
           (FirebaseApp value) => Get.put(AuthenticationRepository())
   );
 
-  // Setup MultiProvider for SearchHistory
+  // Setup MultiProvider for SearchHistory and Bookmarks
   runApp(
-    MultiProvider(providers: [ChangeNotifierProvider(create: (_) => SearchHistory()),],
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SearchHistory()),
+        ChangeNotifierProvider(create: (_) => Bookmarks()..loadBookmarks()), // Load bookmarks
+      ],
       child: const App(),
     ),
   );

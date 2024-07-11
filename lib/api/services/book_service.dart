@@ -1,31 +1,36 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../books/books.dart'; // Ensure this import is consistent
+
+import '../books/books.dart';
 
 class BookService {
-  static const String apiUrl = 'https://www.googleapis.com/books/v1/volumes?q=';
-
-  Future<List<Book>> searchBooks(String query) async {
-    final response = await http.get(Uri.parse('$apiUrl$query'));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      List<Book> books = (data['items'] as List).map((item) => Book.fromJson(item)).toList();
-      return books;
-    } else {
-      throw Exception('Failed to load books');
+  Future<List<Book>> searchBooks(String term) async {
+    try {
+      final response = await http.get(Uri.parse('https://www.googleapis.com/books/v1/volumes?q=$term'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return (data['items'] as List).map((item) => Book.fromJson(item['volumeInfo'])).toList();
+      } else {
+        throw Exception('Failed to load books');
+      }
+    } catch (e) {
+      print('Failed to load books: $e');
+      return [];
     }
   }
 
   Future<List<Book>> getRecommendations(String genre) async {
-    final response = await http.get(Uri.parse('$apiUrl$genre'));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      List<Book> books = (data['items'] as List).map((item) => Book.fromJson(item)).toList();
-      return books;
-    } else {
-      throw Exception('Failed to load recommendations');
+    try {
+      final response = await http.get(Uri.parse('https://www.googleapis.com/books/v1/volumes?q=subject:$genre'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return (data['items'] as List).map((item) => Book.fromJson(item['volumeInfo'])).toList();
+      } else {
+        throw Exception('Failed to load recommendations');
+      }
+    } catch (e) {
+      print('Failed to load recommendations: $e');
+      return [];
     }
   }
 }
