@@ -23,54 +23,46 @@ class SearchHistoryScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: searchHistory.history.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(searchHistory.history[index]),
-            onTap: () async {
-              final recommendations = await bookService.getRecommendations(searchHistory.history[index]);
+      body: FutureBuilder<List<List<Book>>>(
+        future: Future.wait(searchHistory.history.map((term) => bookService.getRecommendations(term)).toList()),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error fetching recommendations'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No recommendations found'));
+          }
 
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => RecommendationsScreen(recommendations: recommendations),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-}
+          final recommendations = snapshot.data!;
 
-class RecommendationsScreen extends StatelessWidget {
-  final List<Book> recommendations;
-
-  RecommendationsScreen({required this.recommendations});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Recommendations'),
-      ),
-      body: ListView.builder(
-        itemCount: recommendations.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            leading: recommendations[index].thumbnail != null
-                ? Image.network(recommendations[index].thumbnail!)
-                : null,
-            title: Text(recommendations[index].title),
-            subtitle: Text(recommendations[index].authors),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BookDetailsScreen(book: recommendations[index]),
-                ),
+          return ListView.builder(
+            itemCount: recommendations.length,
+            itemBuilder: (context, index) {
+              final books = recommendations[index];
+              if (books.isEmpty) {
+                return ListTile(title: Text('No recommendations found for "${searchHistory.history[index]}"'));
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListTile(title: Text('Recommendations for "${searchHistory.history[index]}"')),
+                  ...books.map((book) {
+                    return ListTile(
+                      leading: book.thumbnail != null ? Image.network(book.thumbnail!) : null,
+                      title: Text(book.title),
+                      subtitle: Text(book.authors),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BookDetailsScreen(book: book),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+                ],
               );
             },
           );
