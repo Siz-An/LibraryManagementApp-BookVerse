@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:book_Verse/api/services/book_service.dart'; // Ensure this import is consistent
 import '../../../../api/books/BookDetailsPage.dart';
 import '../../../../api/books/books.dart';
 import '../../../../api/books/search_history_screen.dart';
 import '../../../../api/models/search_history.dart';
+import '../../../../api/services/book_service.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -16,7 +16,7 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final BookService _bookService = BookService();
   List<Book> _books = [];
-  List<Book> _recommendedBooks = [];
+  Map<String, List<Book>> _recommendedBooksByGenre = {};
   bool _isLoading = false;
 
   void _searchBooks(String term) async {
@@ -25,28 +25,25 @@ class _SearchScreenState extends State<SearchScreen> {
     });
 
     final books = await _bookService.searchBooks(term);
+    final Map<String, List<Book>> recommendedBooksByGenre = {};
 
-    if (books.isNotEmpty && books.first.genres != null) {
-      final genre = books.first.genres!.first;
-      final recommendations = await _bookService.getRecommendations(genre);
-
-      // Filter out the searched books from the recommendations
-      final filteredRecommendations = recommendations.where((recBook) {
-        return !books.any((searchedBook) => searchedBook.title == recBook.title);
-      }).toList();
-
-      setState(() {
-        _books = books;
-        _recommendedBooks = filteredRecommendations;
-        _isLoading = false;
-      });
-    } else {
-      setState(() {
-        _books = books;
-        _recommendedBooks = [];
-        _isLoading = false;
-      });
+    for (var book in books) {
+      if (book.genres != null && book.genres!.isNotEmpty) {
+        final genre = book.genres!.first;
+        if (!recommendedBooksByGenre.containsKey(genre)) {
+          final recommendations = await _bookService.getRecommendations(genre);
+          recommendedBooksByGenre[genre] = recommendations.where((recBook) {
+            return !books.any((searchedBook) => searchedBook.title == recBook.title);
+          }).toList();
+        }
+      }
     }
+
+    setState(() {
+      _books = books;
+      _recommendedBooksByGenre = recommendedBooksByGenre;
+      _isLoading = false;
+    });
   }
 
   @override
@@ -92,8 +89,15 @@ class _SearchScreenState extends State<SearchScreen> {
                 children: <Widget>[
                   _buildSectionTitle('Search Results'),
                   _buildBookList(_books),
-                  _buildSectionTitle('Recommended Books'),
-                  _buildBookList(_recommendedBooks),
+                  ..._recommendedBooksByGenre.entries.map((entry) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionTitle('Recommended Books for Genre: ${entry.key}'),
+                        _buildBookList(entry.value),
+                      ],
+                    );
+                  }).toList(),
                 ],
               ),
             ),
@@ -117,11 +121,9 @@ class _SearchScreenState extends State<SearchScreen> {
     return Column(
       children: books.map((book) {
         return ListTile(
-          leading: book.thumbnail != null
-              ? Image.network(book.thumbnail!)
-              : null,
+          leading: book.thumbnail != null ? Image.network(book.thumbnail!) : null,
           title: Text(book.title),
-          subtitle: Text(book.authors),
+          subtitle: Text('${book.authors}\nGenres: ${book.genres?.join(', ') ?? 'No genres available'}'),
           onTap: () {
             Navigator.push(
               context,

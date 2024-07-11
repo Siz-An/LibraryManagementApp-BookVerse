@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:book_Verse/api/services/book_service.dart';
-
 import 'books.dart'; // Ensure this import is consistent
 
 class BookDetailsScreen extends StatelessWidget {
