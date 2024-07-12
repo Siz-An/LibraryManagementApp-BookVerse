@@ -1,20 +1,23 @@
-import 'package:book_Verse/common/widgets/layouts/grid_layout.dart';
+// home_screen.dart
+
 import 'package:book_Verse/features/home/screens/home/books%20/Course%20books%20/BCA/firstSem.dart';
+import 'package:book_Verse/features/home/screens/home/widget/gerne.dart';
+import 'package:book_Verse/features/home/screens/home/widget/grade.dart';
 import 'package:book_Verse/features/home/screens/home/widget/home_appbar.dart';
 import 'package:book_Verse/features/home/screens/home/widget/promo_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import '../../../../common/widgets/custom_shapes/primary_header_container.dart';
 import '../../../../common/widgets/custom_shapes/rounded_container.dart';
 import '../../../../common/widgets/custom_shapes/search_container.dart';
 import '../../../../common/widgets/images/t_circular_image.dart';
+import '../../../../common/widgets/layouts/grid_layout.dart';
 import '../../../../common/widgets/texts/T_genreTitle.dart';
 import '../../../../common/widgets/texts/section_heading.dart';
 import '../../../../utils/constants/colors.dart';
 import '../../../../utils/constants/enums.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/sizes.dart';
-import '../../../../utils/helpers/helper_function.dart';
+import '../../../../utils/helpers/helper_function.dart'; // Import grades list from grades.dart
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -32,12 +35,12 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   SizedBox(height: TSizes.sm,),
                   /// ---> Appbar
-                  THomeAppBar(),
-                  SizedBox(height: TSizes.spaceBtwSections),
+                   THomeAppBar(), // Example placeholder
+                 // SizedBox(height: TSizes.spaceBtwSections),
 
                   /// ---> searchBar
-                  TSearchContainer(text: 'Search in Library'),
-                  SizedBox(height: TSizes.spaceBtwSections),
+                 // TSearchContainer(text: 'Search in Library'),
+                 // SizedBox(height: TSizes.spaceBtwSections),
 
                   /// ---> categories <-----
                   Padding(
@@ -50,7 +53,7 @@ class HomeScreen extends StatelessWidget {
                         SizedBox(height: TSizes.spaceBtwItems),
 
                         /// Categories
-                        // THomeCategory()
+                        // THomeCategory() // Example placeholder
                       ],
                     ),
                   ),
@@ -64,14 +67,14 @@ class HomeScreen extends StatelessWidget {
               padding: const EdgeInsets.all(TSizes.defaultSpace),
               child: Column(
                 children: [
-                  const TPromoSlide(
-                      banner: [
-                        TImages.promoBanner1,
-                        TImages.promoBanner2,
+                  const TPromoSlide( // Example placeholder
+                       banner: [
+                          TImages.promoBanner1,
+                         TImages.promoBanner2,
                         TImages.promoBanner3,
                         TImages.promoBanner4
-                      ]
-                  ),
+                       ]
+                   ),
                   const SizedBox(height: TSizes.spaceBtwItems),
 
                   ///----> Heading
@@ -84,13 +87,14 @@ class HomeScreen extends StatelessWidget {
 
                   /// ----> Grade section
                   TGridLayout(
-                    itemCount: 4,
+                    itemCount: grades.length,
                     mainAxisExtent: 80,
                     itemBuilder: (_, index) {
+                      final grade = grades[index];
                       return GestureDetector(
                         onTap: () {
-                          // Navigate to BCA firstSem screen
-                          Get.to(() => firstSem());
+                          // Example navigation to a specific grade screen
+                           Navigator.push(context, MaterialPageRoute(builder: (_) => firstSem()));
                         },
                         child: TRoundedContainer(
                           padding: const EdgeInsets.all(TSizes.md),
@@ -100,17 +104,17 @@ class HomeScreen extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              const Text(
-                                 'BCA',
-                                style: TextStyle(
+                              Text(
+                                grade['name'],
+                                style: const TextStyle(
                                   fontSize: TSizes.fontSizeMd,
-                                  fontWeight: FontWeight.bold
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
-                                '8 Semesters',
+                                '${grade['semesters']} Semesters',
                                 overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.labelLarge,
+                                style: Theme.of(context).textTheme.bodySmall,
                               ),
                             ],
                           ),
@@ -129,11 +133,15 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: TSizes.spaceBtwItems),
 
                   TGridLayout(
-                    itemCount: 10,
+                    itemCount: genres.length,
                     mainAxisExtent: 80,
                     itemBuilder: (_, index) {
+                      final genre = genres[index];
                       return GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          // Example action when tapping on a genre
+                          // print('Selected genre: ${genre['name']}');
+                        },
                         child: TRoundedContainer(
                           padding: const EdgeInsets.all(TSizes.sm),
                           showBorder: true,
@@ -144,7 +152,7 @@ class HomeScreen extends StatelessWidget {
                               Flexible(
                                 child: TCircularImage(
                                   isNetworkImage: false,
-                                  image: TImages.genreIcon2,
+                                  image: genre['icon'],
                                   backgroundColor: Colors.transparent,
                                   overlayColor: THelperFunction.isDarkMode(context)
                                       ? TColors.white
@@ -155,14 +163,14 @@ class HomeScreen extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const TGenreTitleWithVerification(
-                                    title: 'Romance',
+                                  TGenreTitleWithVerification(
+                                    title: genre['name'],
                                     genreTextSizes: TextSizes.large,
                                   ),
                                   Text(
-                                    '10 books',
+                                    '${genre['books']} books',
                                     overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context).textTheme.labelMedium,
+                                    style: Theme.of(context).textTheme.bodySmall,
                                   ),
                                 ],
                               ),

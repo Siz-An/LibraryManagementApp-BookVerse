@@ -11,14 +11,13 @@ class TGenreTitleWithVerification extends StatelessWidget {
     required this.title,
     this.maxLines = 1,
     this.textColor,
-    this.iconColor = TColors.primaryColor,
     this.textAlign = TextAlign.start,
     this.genreTextSizes = TextSizes.small,
   });
 
   final String title;
   final int maxLines;
-  final Color? textColor, iconColor;
+  final Color? textColor;
   final TextAlign textAlign;
   final TextSizes genreTextSizes;
 
@@ -37,11 +36,7 @@ class TGenreTitleWithVerification extends StatelessWidget {
           ),
         ),
         const SizedBox(width: TSizes.xs),
-        Icon(
-          Iconsax.verify5,
-          color: iconColor,
-          size: TSizes.iconXs,
-        ),
+
       ],
     );
   }

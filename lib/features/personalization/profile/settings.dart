@@ -14,6 +14,8 @@ import '../../../common/widgets/proFile/user_profile_tile.dart';
 import '../../../data/authentication/repository/authentication_repo.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/sizes.dart';
+import '../../home/screens/mark/markApp.dart';
+import '../../home/screens/search/search.dart';
 
 class settingScreen extends StatelessWidget {
   const settingScreen({super.key});
@@ -48,12 +50,12 @@ class settingScreen extends StatelessWidget {
                 const SizedBox(height: TSizes.spaceBtwItems),
 
                 // Settings
-                TSettingMenu(icon: Iconsax.reserve, title: 'Reservation', subTitle: 'List books that the user has reserved', onTap: (){},),
+                TSettingMenu(icon: Iconsax.bookmark, title: 'BookMark', subTitle: 'List books that the user has BookMarked', onTap: () => Get.to(() => BookmarkScreen())),
                 TSettingMenu(icon: Iconsax.archive_tick, title: 'Issue', subTitle: 'List books that the Librarian has Issued', onTap: (){},),
                 TSettingMenu(icon: Iconsax.receipt, title: 'Return History', subTitle: 'Books that the user has returned', onTap: (){},),
                 TSettingMenu(icon: Iconsax.alarm, title: 'Book Return Notice', subTitle: 'List books that the user have to return', onTap: (){},),
                 TSettingMenu(icon: Iconsax.export, title: 'Exchange', subTitle: 'User can exchange books among themselves.', onTap: (){},),
-                TSettingMenu(icon: Iconsax.danger, title: 'Damage Books', subTitle: 'Books that are damaged', onTap: (){},),
+                TSettingMenu(icon: Iconsax.search_normal, title: 'Search Screen', subTitle: 'Search Books in the Google API', onTap: ()=> Get.to(() => SearchScreen())),
 
 
                 ///---> App Settings

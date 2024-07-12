@@ -37,10 +37,10 @@ class TImages{
   static const String b1 = "assets/images/b1.jpeg";
 
   // --> Banner
-  static const String promoBanner1 = "assets/images/banner/banner1.png";
-  static const String promoBanner2 = "assets/images/banner/banner2.png";
-  static const String promoBanner3 = "assets/images/banner/banner3.jpeg";
-  static const String promoBanner4 = "assets/images/banner/banner4.jpeg";
+  static const String promoBanner1 = "assets/images/banner/banner1.webp";
+  static const String promoBanner2 = "assets/images/banner/banner2.webp";
+  static const String promoBanner3 = "assets/images/banner/banner3.webp";
+  static const String promoBanner4 = "assets/images/banner/banner4.jpg";
 
   // --> Products Image
   static const String productImageKey1 = "assets/images/products/keyboard/keyboard1.webp";
