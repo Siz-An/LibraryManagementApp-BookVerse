@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../api/bookmark/bookMrk.dart';
+import '../bookmark/bookMark_Provider.dart';
 import 'books.dart'; // Import the Book class definition
 
 class BookDetailsScreen extends StatelessWidget {

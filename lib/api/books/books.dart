@@ -1,3 +1,4 @@
+
 class Book {
   final String title;
   final String authors;
@@ -26,7 +27,7 @@ class Book {
   factory Book.fromJson(Map<String, dynamic> json) {
     return Book(
       title: json['title'] ?? '',
-      authors: json['authors']?.join(', ') ?? 'Unknown Author',
+      authors: (json['authors'] as List<dynamic>?)?.join(', ') ?? 'Unknown Author',
       description: json['description'],
       thumbnail: json['imageLinks'] != null ? json['imageLinks']['thumbnail'] : null,
       genres: json['categories'] != null ? List<String>.from(json['categories']) : null,

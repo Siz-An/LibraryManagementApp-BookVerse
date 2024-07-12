@@ -33,4 +33,19 @@ class BookService {
       return [];
     }
   }
+
+  Future<List<Book>> getBooksByAuthor(String author) async {
+    try {
+      final response = await http.get(Uri.parse('https://www.googleapis.com/books/v1/volumes?q=inauthor:$author'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return (data['items'] as List).map((item) => Book.fromJson(item['volumeInfo'])).toList();
+      } else {
+        throw Exception('Failed to load books by author');
+      }
+    } catch (e) {
+      print('Failed to load books by author: $e');
+      return [];
+    }
+  }
 }

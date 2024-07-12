@@ -4,8 +4,8 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:provider/provider.dart';
+import 'api/bookmark/bookMark_Provider.dart';
 import 'api/models/search_history.dart';
-import 'api/bookmark/bookMrk.dart';
 import 'app.dart';
 import 'data/authentication/repository/authentication_repo.dart';
 import 'firebase_options.dart';
@@ -17,7 +17,7 @@ Future<void> main() async {
   // Initialize GetStorage
   await GetStorage.init();
 
-  // Await Splash Screen until Other item Load
+  // Await Splash Screen until Other items Load
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   // Initialize Firebase & Firebase Auth repo
@@ -30,7 +30,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => SearchHistory()),
-        ChangeNotifierProvider(create: (_) => Bookmarks()..loadBookmarks()), // Load bookmarks
+        ChangeNotifierProvider(create: (_) => Bookmarks()), // Add Bookmarks provider
       ],
       child: const App(),
     ),
