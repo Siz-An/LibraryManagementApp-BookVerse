@@ -1,23 +1,21 @@
 // home_screen.dart
-
-import 'package:book_Verse/features/home/screens/home/books%20/Course%20books%20/BCA/firstSem.dart';
-import 'package:book_Verse/features/home/screens/home/widget/gerne.dart';
-import 'package:book_Verse/features/home/screens/home/widget/grade.dart';
-import 'package:book_Verse/features/home/screens/home/widget/home_appbar.dart';
-import 'package:book_Verse/features/home/screens/home/widget/promo_slider.dart';
+import 'package:book_Verse/features/home/screens/users/home/widget/gerne.dart';
+import 'package:book_Verse/features/home/screens/users/home/widget/grade.dart';
+import 'package:book_Verse/features/home/screens/users/home/widget/home_appbar.dart';
+import 'package:book_Verse/features/home/screens/users/home/widget/promo_slider.dart';
 import 'package:flutter/material.dart';
-import '../../../../common/widgets/custom_shapes/primary_header_container.dart';
-import '../../../../common/widgets/custom_shapes/rounded_container.dart';
-import '../../../../common/widgets/custom_shapes/search_container.dart';
-import '../../../../common/widgets/images/t_circular_image.dart';
-import '../../../../common/widgets/layouts/grid_layout.dart';
-import '../../../../common/widgets/texts/T_genreTitle.dart';
-import '../../../../common/widgets/texts/section_heading.dart';
-import '../../../../utils/constants/colors.dart';
-import '../../../../utils/constants/enums.dart';
-import '../../../../utils/constants/image_strings.dart';
-import '../../../../utils/constants/sizes.dart';
-import '../../../../utils/helpers/helper_function.dart'; // Import grades list from grades.dart
+import '../../../../../common/widgets/custom_shapes/primary_header_container.dart';
+import '../../../../../common/widgets/custom_shapes/rounded_container.dart';
+import '../../../../../common/widgets/images/t_circular_image.dart';
+import '../../../../../common/widgets/layouts/grid_layout.dart';
+import '../../../../../common/widgets/texts/T_genreTitle.dart';
+import '../../../../../common/widgets/texts/section_heading.dart';
+import '../../../../../utils/constants/colors.dart';
+import '../../../../../utils/constants/enums.dart';
+import '../../../../../utils/constants/image_strings.dart';
+import '../../../../../utils/constants/sizes.dart';
+import '../../../../../utils/helpers/helper_function.dart';
+import 'books /Course books /BCA/firstSem.dart'; // Import grades list from grades.dart
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);

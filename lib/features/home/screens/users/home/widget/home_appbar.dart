@@ -4,12 +4,10 @@ import 'package:book_Verse/features/personalization/controller/user_Controller.d
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../../common/widgets/appbar/appbar.dart';
-
-import '../../../../../utils/constants/colors.dart';
-import '../../../../../utils/constants/shimmer.dart';
-import '../../../../../utils/constants/text_strings.dart';
-import '../../../../personalization/profile/settings.dart';
+import '../../../../../../common/widgets/appbar/appbar.dart';
+import '../../../../../../utils/constants/colors.dart';
+import '../../../../../../utils/constants/shimmer.dart';
+import '../../../../../../utils/constants/text_strings.dart';
 import '../../search/search.dart';
 
 class THomeAppBar extends StatelessWidget {

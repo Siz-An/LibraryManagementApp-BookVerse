@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../api/books/BookDetailsPage.dart';
-import '../../../../api/books/books.dart';
-import '../../../../api/books/search_history_screen.dart';
-import '../../../../api/models/search_history.dart';
-import '../../../../api/services/book_service.dart';
+import '../../../../../api/books/BookDetailsPage.dart';
+import '../../../../../api/books/books.dart';
+import '../../../../../api/books/search_history_screen.dart';
+import '../../../../../api/models/search_history.dart';
+import '../../../../../api/services/book_service.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);

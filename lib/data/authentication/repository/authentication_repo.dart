@@ -1,6 +1,7 @@
 import 'package:book_Verse/data/authentication/repository/userRepo.dart';
 import 'package:book_Verse/features/authentication/screens/login/login.dart';
 import 'package:book_Verse/navigation_menu/navigation_menu.dart';
+import 'package:book_Verse/navigation_menu/admin_navigation_menu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -25,9 +26,8 @@ class AuthenticationRepository extends GetxController {
 
   @override
   void onReady() {
-    // Remove splash screen on app launch
+    super.onReady();
     FlutterNativeSplash.remove();
-    // Redirect to appropriate screen based on authentication status
     screenRedirect();
   }
 
@@ -36,163 +36,101 @@ class AuthenticationRepository extends GetxController {
 
     if (user != null) {
       if (user.emailVerified) {
-        Get.offAll(() => const NavigationMenu());
+        final userRole = deviceStorage.read('userRole') ?? 'user'; // Check user role from storage
+        if (userRole == 'admin') {
+          Get.offAll(() => const AdminNavigationMenu()); // Redirect to Admin Menu
+        } else {
+          Get.offAll(() => const NavigationMenu()); // Redirect to User Menu
+        }
       } else {
-        Get.offAll(() => VerifyEmailScreen(email: _auth.currentUser?.email));
+        Get.offAll(() => VerifyEmailScreen(email: user.email ?? ''));
       }
     } else {
-      deviceStorage.writeIfNull('IsFirstTime', true);
-      deviceStorage.read('IsFirstTime') != true
-          ? Get.offAll(() => const OnBoardingScreen())
-          : Get.offAll(() => const LoginScreen());
+      final isFirstTime = deviceStorage.read('IsFirstTime') ?? true;
+      if (isFirstTime) {
+        deviceStorage.write('IsFirstTime', false);
+        Get.offAll(() => const OnBoardingScreen());
+      } else {
+        Get.offAll(() => const LoginScreen());
+      }
     }
   }
 
-  ///---> Login
-  Future<UserCredential> loginWithEmailAndPassword(String email,
-      String password) async {
+  Future<UserCredential> loginWithEmailAndPassword(String email, String password) async {
     try {
-      return await _auth.signInWithEmailAndPassword(
-          email: email, password: password);
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
+      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
+
+      // Retrieve user role from the database or storage
+      final userRole = await fetchUserRole(userCredential.user!.uid); // Custom method to fetch user role
+      deviceStorage.write('userRole', userRole); // Store the user role
+
+      return userCredential;
     } catch (e) {
-      throw 'Something went wrong. Please try again.';
+      handleExceptions(e);
+      rethrow; // Ensure that the method returns a value even if an exception is thrown
     }
   }
 
-  ///---> register
-  Future<UserCredential> registerWithEmailAndPassword(String email,
-      String password) async {
+  Future<UserCredential> registerWithEmailAndPassword(String email, String password) async {
     try {
-      return await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
+      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+
+      // Default role for new users
+      deviceStorage.write('userRole', 'user');
+
+      return userCredential;
     } catch (e) {
-      throw 'Something went wrong. Please try again.';
+      handleExceptions(e);
+      rethrow; // Ensure that the method returns a value even if an exception is thrown
     }
   }
-
-  ///----> Send Email Verification
 
   Future<void> sendEmailVerification() async {
     try {
       await _auth.currentUser?.sendEmailVerification();
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
     } catch (e) {
-      throw 'Something went wrong. Please try again.';
+      handleExceptions(e);
     }
   }
 
-  ///---------------GooGle login Start--------------------///
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      //  Triggering the authentication flow
       final GoogleSignInAccount? userAccount = await GoogleSignIn().signIn();
-
-      //  Obtain the auth details from the request
-      final GoogleSignInAuthentication? googleAuth = await userAccount
-          ?.authentication;
-
-      //  Creating a new Credentials
+      final GoogleSignInAuthentication? googleAuth = await userAccount?.authentication;
       final credentials = GoogleAuthProvider.credential(
           accessToken: googleAuth?.accessToken, idToken: googleAuth?.idToken);
-
-      //  Once Signed in , return UserCredentials
-
       return await _auth.signInWithCredential(credentials);
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
     } catch (e) {
-      if (kDebugMode) print('Something went wrong. Please try again.');
+      if (kDebugMode) print('Error during Google sign-in: $e');
+      handleExceptions(e);
       return null;
     }
   }
 
-  ///---------------GooGle login end--------------------///
-
-
-  /// [EmailAuthentication]-----> Forgot Password
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
     } catch (e) {
-      throw 'Something went wrong. Please try again.';
+      handleExceptions(e);
     }
   }
 
-
-  ///-----> Logout
   Future<void> logout() async {
     try {
       await GoogleSignIn().signOut();
       await _auth.signOut();
       Get.offAll(() => const LoginScreen());
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
     } catch (e) {
-      throw 'Something went wrong. Please try again.';
+      handleExceptions(e);
     }
   }
 
-  ///----> ReAuth User
-  Future<void> reAuthenticateWithEmailAndPassword(String email,
-      String password) async {
+  Future<void> reAuthenticateWithEmailAndPassword(String email, String password) async {
     try {
-      // Create Credentials
-      AuthCredential credential = EmailAuthProvider.credential(
-          email: email, password: password);
+      AuthCredential credential = EmailAuthProvider.credential(email: email, password: password);
       await _auth.currentUser!.reauthenticateWithCredential(credential);
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
     } catch (e) {
-      throw 'Something went wrong. Please try again.';
+      handleExceptions(e);
     }
   }
 
@@ -201,17 +139,28 @@ class AuthenticationRepository extends GetxController {
       await UserRepository.instance.removeUserRecord(_auth.currentUser!.uid);
       await _auth.currentUser?.delete();
       Get.offAll(() => const LoginScreen());
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
     } catch (e) {
+      handleExceptions(e);
+    }
+  }
+
+  Future<String> fetchUserRole(String uid) async {
+    // Replace this with your actual implementation to fetch user role from database
+    // Here, we're just using a mock implementation
+    return 'user'; // Default to 'user' or 'admin' based on your actual logic
+  }
+
+  void handleExceptions(dynamic e) {
+    if (e is FirebaseAuthException) {
+      throw TFirebaseAuthException(e.code).message;
+    } else if (e is FirebaseException) {
+      throw TFirebaseException(e.code).message;
+    } else if (e is FormatException) {
+      throw const TFormatException();
+    } else if (e is PlatformException) {
+      throw TPlatformException(e.code).message;
+    } else {
       throw 'Something went wrong. Please try again.';
     }
   }
 }
-

@@ -1,6 +1,5 @@
 // grades.dart
 
-import '../../../../../utils/constants/image_strings.dart';
 
 final List<Map<String, dynamic>> grades = [
   {'name': 'BCA', 'semesters': 8, },

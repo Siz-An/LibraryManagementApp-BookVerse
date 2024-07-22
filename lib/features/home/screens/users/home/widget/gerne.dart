@@ -1,5 +1,5 @@
 // genres.dart
-import '../../../../../utils/constants/image_strings.dart';
+import '../../../../../../utils/constants/image_strings.dart';
 
 final List<Map<String, dynamic>> genres = [
   {'name': 'Romance', 'books': 10, 'icon': TImages.genreIcon2},
