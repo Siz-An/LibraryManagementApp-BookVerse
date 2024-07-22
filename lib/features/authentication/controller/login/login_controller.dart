@@ -20,6 +20,7 @@ class LoginController extends GetxController {
   final localStorage = GetStorage();
   final email = TextEditingController();
   final password = TextEditingController();
+  final selectedRole = 'User'.obs;  // Added observable for role selection
   GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
   final userController = Get.find<UserController>();
 
@@ -49,10 +50,12 @@ class LoginController extends GetxController {
       final user = await userRepo.fetchUserDetails();
 
       TFullScreenLoader.stopLoading();
-      if (user.isAdmin) {
+      if (selectedRole.value == 'Admin' && user.isAdmin) {
         Get.offAll(() => AdminNavigationMenu());
-      } else {
+      } else if (selectedRole.value == 'User' && !user.isAdmin) {
         Get.offAll(() => NavigationMenu());
+      } else {
+        TLoaders.errorSnackBar(title: 'Role Mismatch', message: 'Selected role does not match with user role.');
       }
     } catch (e) {
       TFullScreenLoader.stopLoading();
@@ -77,10 +80,12 @@ class LoginController extends GetxController {
       final user = await userRepo.fetchUserDetails();
 
       TFullScreenLoader.stopLoading();
-      if (user.isAdmin) {
+      if (selectedRole.value == 'Admin' && user.isAdmin) {
         Get.offAll(() => AdminNavigationMenu());
-      } else {
+      } else if (selectedRole.value == 'User' && !user.isAdmin) {
         Get.offAll(() => NavigationMenu());
+      } else {
+        TLoaders.errorSnackBar(title: 'Role Mismatch', message: 'Selected role does not match with user role.');
       }
     } catch (e) {
       TFullScreenLoader.stopLoading();

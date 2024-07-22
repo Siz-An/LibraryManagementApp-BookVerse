@@ -63,6 +63,23 @@ class SignupController extends GetxController {
       final userRepo = Get.put(UserRepository());
       final isAdminExists = await userRepo.checkIfAdminExists();
 
+      // Get the admin email if it exists
+      final adminEmail = await userRepo.getAdminEmail();
+
+      // Check if the email being used for signup is the admin email
+      if (adminEmail != null && email.text.trim() == adminEmail && selectedRole.value != 'Admin') {
+        TFullScreenLoader.stopLoading();
+        Get.defaultDialog(
+          title: 'Admin Email Used',
+          content: Text('You cannot sign up using the admin email. Please use a different email address.'),
+          textConfirm: 'OK',
+          onConfirm: () {
+            Get.back();
+          },
+        );
+        return;
+      }
+
       // If an admin already exists and the user selected 'Admin', show a dialog box and return
       if (isAdminExists && selectedRole.value == 'Admin') {
         TFullScreenLoader.stopLoading();

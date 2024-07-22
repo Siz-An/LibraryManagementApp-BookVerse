@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:book_Verse/data/authentication/repository/authentication_repo.dart';
 import 'package:book_Verse/features/personalization/models/userModels.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -134,6 +133,28 @@ class UserRepository extends GetxController {
           .limit(1)
           .get();
       return adminQuery.docs.isNotEmpty;
+    } on FirebaseException catch (e) {
+      throw TFirebaseException(e.code).message;
+    } on FormatException catch (_) {
+      throw const TFormatException();
+    } on PlatformException catch (e) {
+      throw TPlatformException(e.code).message;
+    } catch (e) {
+      throw 'Something went wrong. Please try again.';
+    }
+  }
+
+  /// Function to get the admin email
+  Future<String?> getAdminEmail() async {
+    try {
+      final adminQuery = await _db.collection("Users")
+          .where("isAdmin", isEqualTo: true)
+          .limit(1)
+          .get();
+      if (adminQuery.docs.isNotEmpty) {
+        return adminQuery.docs.first['email'];
+      }
+      return null;
     } on FirebaseException catch (e) {
       throw TFirebaseException(e.code).message;
     } on FormatException catch (_) {
