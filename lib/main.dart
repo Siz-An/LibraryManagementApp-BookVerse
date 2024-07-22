@@ -11,8 +11,6 @@ import 'data/authentication/repository/authentication_repo.dart';
 import 'data/authentication/repository/userRepo.dart'; // Import UserRepository
 import 'features/personalization/controller/user_Controller.dart';
 import 'firebase_options.dart';
-import 'features/home/screens/admin/adminDashbord/admin_dashbord.dart';
-import 'features/home/screens/users/home/home.dart';
 import 'navigation_menu/admin_navigation_menu.dart';
 import 'navigation_menu/navigation_menu.dart';
 

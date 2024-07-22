@@ -59,15 +59,29 @@ class SignupController extends GetxController {
     }
 
     try {
+      // Check if an admin already exists
+      final userRepo = Get.put(UserRepository());
+      final isAdminExists = await userRepo.checkIfAdminExists();
+
+      // If an admin already exists and the user selected 'Admin', show a dialog box and return
+      if (isAdminExists && selectedRole.value == 'Admin') {
+        TFullScreenLoader.stopLoading();
+        Get.defaultDialog(
+          title: 'Admin Already Exists',
+          content: Text('You cannot sign up as an admin. An admin already exists! Please sign up as a user.'),
+          textConfirm: 'OK',
+          onConfirm: () {
+            Get.back();
+          },
+        );
+        return;
+      }
+
       // Register user in the Firebase authentication
       final userCredential = await AuthenticationRepository.instance.registerWithEmailAndPassword(
         email.text.trim(),
         password.text.trim(),
       );
-
-      // Check if an admin already exists
-      final userRepo = Get.put(UserRepository());
-      final isAdminExists = await userRepo.checkIfAdminExists();
 
       // Set the role based on whether an admin exists
       final isAdmin = !isAdminExists && selectedRole.value == 'Admin';
