@@ -13,36 +13,38 @@ import '../../../utils/exceptions/firebase_exception.dart';
 import '../../../utils/exceptions/format_exception.dart';
 import '../../../utils/exceptions/platform_exception.dart';
 
-class UserRepository extends GetxController{
+class UserRepository extends GetxController {
   static UserRepository get instance => Get.find();
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  /// Function to save user data in fireStore
-
-    Future<void> saveUserRecord(UserModel user)async{
-      try {
-        await _db.collection("Users").doc(user.id).set(user.toJson());
-      } on FirebaseAuthException catch (e) {
-        throw TFirebaseAuthException(e.code).message;
-      } on FirebaseException catch (e) {
-        throw TFirebaseException(e.code).message;
-      } on FormatException catch (_) {
-        throw const TFormatException();
-      } on PlatformException catch (e) {
-        throw TPlatformException(e.code).message;
-      } catch (e) {
-        throw 'Something went wrong. Please try again.';
-      }
-    }
-
-    /// Function to fetch user details based on user ID
-  Future<UserModel> fetchUserDetails()async{
+  /// Function to save user data in Firestore
+  Future<void> saveUserRecord(UserModel user) async {
     try {
-      final documentSnapshot =  await _db.collection("Users").doc(AuthenticationRepository.instance.authUser?.uid).get();
-      if(documentSnapshot.exists){
+      await _db.collection("Users").doc(user.id).set(user.toJson());
+    } on FirebaseAuthException catch (e) {
+      throw TFirebaseAuthException(e.code).message;
+    } on FirebaseException catch (e) {
+      throw TFirebaseException(e.code).message;
+    } on FormatException catch (_) {
+      throw const TFormatException();
+    } on PlatformException catch (e) {
+      throw TPlatformException(e.code).message;
+    } catch (e) {
+      throw 'Something went wrong. Please try again.';
+    }
+  }
+
+  /// Function to fetch user details based on user ID
+  Future<UserModel> fetchUserDetails() async {
+    try {
+      final userId = AuthenticationRepository.instance.authUser?.uid;
+      if (userId == null) throw 'User not authenticated';
+
+      final documentSnapshot = await _db.collection("Users").doc(userId).get();
+      if (documentSnapshot.exists) {
         return UserModel.fromSnapshot(documentSnapshot);
-      }else {
+      } else {
         return UserModel.empty();
       }
     } on FirebaseAuthException catch (e) {
@@ -58,9 +60,8 @@ class UserRepository extends GetxController{
     }
   }
 
-
-    /// Function to save user data to fireStore
-  Future<void> updateUserDetails(UserModel updateUser)async{
+  /// Function to update user data in Firestore
+  Future<void> updateUserDetails(UserModel updateUser) async {
     try {
       await _db.collection("Users").doc(updateUser.id).update(updateUser.toJson());
     } on FirebaseException catch (e) {
@@ -74,10 +75,13 @@ class UserRepository extends GetxController{
     }
   }
 
-    /// update any field in specific User Collection
-  Future<void> updateSingleField(Map<String, dynamic> json)async{
+  /// Function to update any field in a specific User Collection
+  Future<void> updateSingleField(Map<String, dynamic> json) async {
     try {
-      await _db.collection("Users").doc(AuthenticationRepository.instance.authUser?.uid).update(json);
+      final userId = AuthenticationRepository.instance.authUser?.uid;
+      if (userId == null) throw 'User not authenticated';
+
+      await _db.collection("Users").doc(userId).update(json);
     } on FirebaseException catch (e) {
       throw TFirebaseException(e.code).message;
     } on FormatException catch (_) {
@@ -88,8 +92,9 @@ class UserRepository extends GetxController{
       throw 'Something went wrong. Please try again.';
     }
   }
-  /// Function to remove user data from FireStore
-  Future<void> removeUserRecord(String userId)async{
+
+  /// Function to remove user data from Firestore
+  Future<void> removeUserRecord(String userId) async {
     try {
       await _db.collection("Users").doc(userId).delete();
     } on FirebaseException catch (e) {
@@ -103,27 +108,40 @@ class UserRepository extends GetxController{
     }
   }
 
-      ///Upload any image
+  /// Function to upload any image
+  Future<String> uploadImage(String path, XFile image) async {
+    try {
+      final ref = FirebaseStorage.instance.ref(path).child(image.name);
+      await ref.putFile(File(image.path));
+      final url = await ref.getDownloadURL();
+      return url;
+    } on FirebaseException catch (e) {
+      throw TFirebaseException(e.code).message;
+    } on FormatException catch (_) {
+      throw const TFormatException();
+    } on PlatformException catch (e) {
+      throw TPlatformException(e.code).message;
+    } catch (e) {
+      throw 'Something went wrong. Please try again.';
+    }
+  }
 
-      Future<String> uploadImage(String path, XFile image) async{
-        try {
-          final ref = FirebaseStorage.instance.ref(path).child(image.name);
-          await ref.putFile(File(image.path));
-          final url = await ref.getDownloadURL();
-          return url;
-
-        } on FirebaseException catch (e) {
-          throw TFirebaseException(e.code).message;
-        } on FormatException catch (_) {
-          throw const TFormatException();
-        } on PlatformException catch (e) {
-          throw TPlatformException(e.code).message;
-        } catch (e) {
-          throw 'Something went wrong. Please try again.';
-        }
-      }
-      }
-
-
-
-
+  /// Function to check if admin exists
+  Future<bool> checkIfAdminExists() async {
+    try {
+      final adminQuery = await _db.collection("Users")
+          .where("isAdmin", isEqualTo: true)
+          .limit(1)
+          .get();
+      return adminQuery.docs.isNotEmpty;
+    } on FirebaseException catch (e) {
+      throw TFirebaseException(e.code).message;
+    } on FormatException catch (_) {
+      throw const TFormatException();
+    } on PlatformException catch (e) {
+      throw TPlatformException(e.code).message;
+    } catch (e) {
+      throw 'Something went wrong. Please try again.';
+    }
+  }
+}

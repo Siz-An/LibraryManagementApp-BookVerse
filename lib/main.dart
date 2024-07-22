@@ -8,7 +8,13 @@ import 'api/bookmark/bookMark_Provider.dart';
 import 'api/models/search_history.dart';
 import 'app.dart';
 import 'data/authentication/repository/authentication_repo.dart';
+import 'data/authentication/repository/userRepo.dart'; // Import UserRepository
+import 'features/personalization/controller/user_Controller.dart';
 import 'firebase_options.dart';
+import 'features/home/screens/admin/adminDashbord/admin_dashbord.dart';
+import 'features/home/screens/users/home/home.dart';
+import 'navigation_menu/admin_navigation_menu.dart';
+import 'navigation_menu/navigation_menu.dart';
 
 Future<void> main() async {
   // Widgets Binding
@@ -22,7 +28,14 @@ Future<void> main() async {
 
   // Initialize Firebase & Firebase Auth repo
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform).then(
-          (FirebaseApp value) => Get.put(AuthenticationRepository())
+        (FirebaseApp value) {
+      // Register AuthenticationRepository, UserRepository, and controllers with GetX
+      Get.put(AuthenticationRepository());
+      Get.put(UserRepository());
+      Get.put(UserController());
+      Get.put(AdminNavigationController()); // Register AdminNavigationController
+      Get.put(NavigationController()); // Register NavigationController
+    },
   );
 
   // Setup MultiProvider for SearchHistory and Bookmarks
