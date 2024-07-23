@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import '../features/home/screens/admin/adminDashbord/admin_dashbord.dart';
+import '../features/home/screens/admin/admin_dashbord.dart';
 import '../features/home/screens/admin/adminProfile.dart';
 import '../features/home/screens/admin/manage_books.dart';
 import '../features/home/screens/admin/manage_user.dart';

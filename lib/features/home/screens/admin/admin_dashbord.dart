@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../adminProfile.dart';
-import '../manage_user.dart';
+import 'adminProfile.dart';
+import 'manage_user.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});

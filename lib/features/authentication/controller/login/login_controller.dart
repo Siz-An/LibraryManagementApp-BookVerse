@@ -1,6 +1,6 @@
 import 'package:book_Verse/data/authentication/repository/authentication_repo.dart';
 import 'package:book_Verse/data/authentication/repository/userRepo.dart';
-import 'package:book_Verse/features/home/screens/admin/adminDashbord/admin_dashbord.dart';
+import 'package:book_Verse/features/home/screens/admin/admin_dashbord.dart';
 import 'package:book_Verse/features/home/screens/users/home/home.dart';
 import 'package:book_Verse/utils/constants/image_strings.dart';
 import 'package:book_Verse/utils/popups/fullscreen_loader.dart';

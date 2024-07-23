@@ -48,8 +48,8 @@ class TTexts{
 
 
   // -- Authentication Heading Texts
-  static const String loginTitle = "Welcome User";
-  static const String loginSubTitle = "Go for it choose every Product";
+  static const String loginTitle = "Welcome To BookVerse";
+  static const String loginSubTitle = "Get Your Desired Books";
   static const String signupTitle = "Let's create your Account";
   static const String forgetPasswordTitle = "Everyone Forgets their Password";
   static const String forgetPasswordSubTitle = "Go on Change it";

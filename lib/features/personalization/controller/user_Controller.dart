@@ -14,7 +14,7 @@ import '../../../data/authentication/repository/userRepo.dart';
 import '../../../utils/constants/image_strings.dart';
 import '../../authentication/screens/login/login.dart';
 import '../models/userModels.dart';
-import '../../../features/home/screens/admin/adminDashbord/admin_dashbord.dart';
+import '../../home/screens/admin/admin_dashbord.dart';
 import '../../../features/home/screens/users/home/home.dart';
 
 class UserController extends GetxController {
