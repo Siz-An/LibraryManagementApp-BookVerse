@@ -1,35 +1,34 @@
+
+import 'package:book_Verse/common/network_check/network_manager.dart';
 import 'package:book_Verse/data/authentication/repository/authentication_repo.dart';
-import 'package:book_Verse/data/authentication/repository/userRepo.dart';
-import 'package:book_Verse/features/home/screens/admin/admin_dashbord.dart';
-import 'package:book_Verse/features/home/screens/users/home/home.dart';
-import 'package:book_Verse/utils/constants/image_strings.dart';
+import 'package:book_Verse/features/personalization/controller/user_Controller.dart';
 import 'package:book_Verse/utils/popups/fullscreen_loader.dart';
 import 'package:book_Verse/utils/popups/loaders.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:book_Verse/common/network_check/network_manager.dart';
 
-import '../../../../navigation_menu/admin_navigation_menu.dart';
-import '../../../../navigation_menu/navigation_menu.dart';
-import '../../../personalization/controller/user_Controller.dart';
+import '../../../../utils/constants/image_strings.dart';
 
-class LoginController extends GetxController {
+class LoginController extends GetxController{
+
+  //Variables
   final rememberMe = false.obs;
   final hidePassword = true.obs;
   final localStorage = GetStorage();
   final email = TextEditingController();
   final password = TextEditingController();
-  final selectedRole = 'User'.obs;  // Added observable for role selection
   GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
-  final userController = Get.find<UserController>();
+  final userController = Get.put(UserController());
 
+  /// -- Email and Password signIn
   Future<void> emailAndPasswordSignIn() async {
     try {
       TFullScreenLoader.openLoadingDialogue('Logging you In....', TImages.checkRegistration);
 
+      // checking internet connectivity
       final isConnected = await NetworkManager.instance.isConnected();
-      if (!isConnected) {
+      if (!isConnected) {  // Proceed only if connected to the internet
         TFullScreenLoader.stopLoading();
         TLoaders.errorSnackBar(title: 'No Internet', message: 'Please check your internet connection.');
         return;
@@ -46,50 +45,41 @@ class LoginController extends GetxController {
       }
 
       final userCredentials = await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
-      final userRepo = Get.find<UserRepository>();
-      final user = await userRepo.fetchUserDetails();
 
       TFullScreenLoader.stopLoading();
-      if (selectedRole.value == 'Admin' && user.isAdmin) {
-        Get.offAll(() => AdminNavigationMenu());
-      } else if (selectedRole.value == 'User' && !user.isAdmin) {
-        Get.offAll(() => NavigationMenu());
-      } else {
-        TLoaders.errorSnackBar(title: 'Role Mismatch', message: 'Selected role does not match with user role.');
-      }
+      AuthenticationRepository.instance.screenRedirect();
     } catch (e) {
       TFullScreenLoader.stopLoading();
       TLoaders.errorSnackBar(title: 'Oh Snap', message: e.toString());
     }
   }
 
+  /// -- Google Sign In Authentication
+
   Future<void> googleSignIn() async {
     try {
       TFullScreenLoader.openLoadingDialogue('Logging you in......', TImages.checkRegistration);
-
+      // Checking Internet connection
       final isConnected = await NetworkManager.instance.isConnected();
-      if (!isConnected) {
+      if (!isConnected) {  // Proceed only if connected to the internet
         TFullScreenLoader.stopLoading();
         TLoaders.errorSnackBar(title: 'No Internet', message: 'Please check your internet connection.');
         return;
       }
 
+      // Google authentication
       final userCredentials = await AuthenticationRepository.instance.signInWithGoogle();
-      await userController.saveUserRecord(userCredentials, 'user');
-      final userRepo = Get.find<UserRepository>();
-      final user = await userRepo.fetchUserDetails();
 
+      // Save user records
+      await userController.saveUserRecord(userCredentials);
       TFullScreenLoader.stopLoading();
-      if (selectedRole.value == 'Admin' && user.isAdmin) {
-        Get.offAll(() => AdminNavigationMenu());
-      } else if (selectedRole.value == 'User' && !user.isAdmin) {
-        Get.offAll(() => NavigationMenu());
-      } else {
-        TLoaders.errorSnackBar(title: 'Role Mismatch', message: 'Selected role does not match with user role.');
-      }
+
+      // Redirect
+      AuthenticationRepository.instance.screenRedirect();
     } catch (e) {
       TFullScreenLoader.stopLoading();
       TLoaders.errorSnackBar(title: 'Oh Snap', message: e.toString());
     }
+    }
   }
-}
+

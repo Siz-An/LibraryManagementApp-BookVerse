@@ -1,6 +1,6 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:book_Verse/utils/formatters/formatter.dart';
-
 class UserModel {
   final String id;
   String firstName;
@@ -9,7 +9,6 @@ class UserModel {
   final String email;
   String phoneNumber;
   String profilePicture;
-  bool isAdmin; // New field
 
   UserModel({
     required this.id,
@@ -19,7 +18,6 @@ class UserModel {
     required this.email,
     required this.phoneNumber,
     required this.profilePicture,
-    this.isAdmin = false,
   });
 
   /// Helper Function to Get the full Name
@@ -50,8 +48,7 @@ class UserModel {
       userName: '',
       email: '',
       phoneNumber: '',
-      profilePicture: '',
-      isAdmin: false);
+      profilePicture: '');
 
   /// Convert model to JSON structure for storing data in Firestore
   Map<String, dynamic> toJson() {
@@ -62,7 +59,6 @@ class UserModel {
       'Email': email,
       'PhoneNumber': phoneNumber,
       'ProfilePicture': profilePicture,
-      'isAdmin': isAdmin, // Add to JSON
     };
   }
 
@@ -77,7 +73,6 @@ class UserModel {
         email: data['Email'] ?? '',
         phoneNumber: data['PhoneNumber'] ?? '',
         profilePicture: data['ProfilePicture'] ?? '',
-        isAdmin: data['isAdmin'] ?? false, // Add to model
       );
     } else {
       return UserModel.empty();

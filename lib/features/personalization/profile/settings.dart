@@ -14,8 +14,8 @@ import '../../../common/widgets/proFile/user_profile_tile.dart';
 import '../../../data/authentication/repository/authentication_repo.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/sizes.dart';
-import '../../home/screens/users/mark/markApp.dart';
-import '../../home/screens/users/search/search.dart';
+import '../../home/screens/mark/markApp.dart';
+import '../../home/screens/search/search.dart';
 
 class settingScreen extends StatelessWidget {
   const settingScreen({super.key});
