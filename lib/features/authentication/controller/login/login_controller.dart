@@ -1,6 +1,6 @@
 
 import 'package:book_Verse/common/network_check/network_manager.dart';
-import 'package:book_Verse/data/authentication/repository/authentication_repo.dart';
+import 'package:book_Verse/data/authentication/repository/authentication/authentication_repo.dart';
 import 'package:book_Verse/features/personalization/controller/user_Controller.dart';
 import 'package:book_Verse/utils/popups/fullscreen_loader.dart';
 import 'package:book_Verse/utils/popups/loaders.dart';

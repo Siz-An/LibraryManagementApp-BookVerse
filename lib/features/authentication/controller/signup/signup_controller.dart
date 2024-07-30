@@ -4,7 +4,7 @@ import 'package:book_Verse/features/authentication/screens/signup/verify_email.d
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import '../../../../common/network_check/network_manager.dart';
-import '../../../../data/authentication/repository/authentication_repo.dart';
+import '../../../../data/authentication/repository/authentication/authentication_repo.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/popups/fullscreen_loader.dart';
 import '../../../../utils/popups/loaders.dart';

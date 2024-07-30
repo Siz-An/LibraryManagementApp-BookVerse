@@ -4,7 +4,7 @@ import 'package:book_Verse/common/widgets/sucess_screen/success_screen.dart';
 import 'package:book_Verse/utils/popups/loaders.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import '../../../../data/authentication/repository/authentication_repo.dart';
+import '../../../../data/authentication/repository/authentication/authentication_repo.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/constants/text_strings.dart';
 

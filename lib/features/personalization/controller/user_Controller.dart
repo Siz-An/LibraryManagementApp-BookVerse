@@ -1,5 +1,5 @@
 import 'package:book_Verse/common/network_check/network_manager.dart';
-import 'package:book_Verse/data/authentication/repository/authentication_repo.dart';
+import 'package:book_Verse/data/authentication/repository/authentication/authentication_repo.dart';
 import 'package:book_Verse/features/authentication/screens/login/login.dart';
 import 'package:book_Verse/features/personalization/profile/widgets/re_authenticate_user_login_form.dart';
 import 'package:book_Verse/utils/constants/sizes.dart';

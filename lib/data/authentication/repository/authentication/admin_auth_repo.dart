@@ -1,4 +1,4 @@
-import 'package:book_Verse/data/authentication/repository/userRepo.dart';
+import 'package:book_Verse/data/authentication/repository/adminRepo.dart';
 import 'package:book_Verse/features/authentication/screens/login/login.dart';
 import 'package:book_Verse/navigation_menu/navigation_menu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,15 +8,15 @@ import 'package:get/get.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../../../features/authentication/screens/onboarding.dart';
-import '../../../features/authentication/screens/signup/verify_email.dart';
-import '../../../utils/exceptions/firebase_auth_exception.dart';
-import '../../../utils/exceptions/firebase_exception.dart';
-import '../../../utils/exceptions/format_exception.dart';
-import '../../../utils/exceptions/platform_exception.dart';
+import '../../../../features/authentication/screens/onboarding.dart';
+import '../../../../features/authentication/screens/signup/verify_email.dart';
+import '../../../../utils/exceptions/firebase_auth_exception.dart';
+import '../../../../utils/exceptions/firebase_exception.dart';
+import '../../../../utils/exceptions/format_exception.dart';
+import '../../../../utils/exceptions/platform_exception.dart';
 
-class AuthenticationRepository extends GetxController {
-  static AuthenticationRepository get instance => Get.find();
+class AdminAuthenticationRepository extends GetxController {
+  static AdminAuthenticationRepository get instance => Get.find();
 
   final deviceStorage = GetStorage();
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -67,7 +67,7 @@ class AuthenticationRepository extends GetxController {
     }
   }
 
-  ///---> register
+  ///---> Register
   Future<UserCredential> registerWithEmailAndPassword(String email,
       String password) async {
     try {
@@ -87,7 +87,6 @@ class AuthenticationRepository extends GetxController {
   }
 
   ///----> Send Email Verification
-
   Future<void> sendEmailVerification() async {
     try {
       await _auth.currentUser?.sendEmailVerification();
@@ -104,22 +103,20 @@ class AuthenticationRepository extends GetxController {
     }
   }
 
-  ///---------------GooGle login Start--------------------///
+  ///---------------Google login Start--------------------///
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      //  Triggering the authentication flow
+      // Triggering the authentication flow
       final GoogleSignInAccount? userAccount = await GoogleSignIn().signIn();
 
-      //  Obtain the auth details from the request
-      final GoogleSignInAuthentication? googleAuth = await userAccount
-          ?.authentication;
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication? googleAuth = await userAccount?.authentication;
 
-      //  Creating a new Credentials
+      // Creating new Credentials
       final credentials = GoogleAuthProvider.credential(
           accessToken: googleAuth?.accessToken, idToken: googleAuth?.idToken);
 
-      //  Once Signed in , return UserCredentials
-
+      // Once Signed in, return UserCredentials
       return await _auth.signInWithCredential(credentials);
     } on FirebaseAuthException catch (e) {
       throw TFirebaseAuthException(e.code).message;
@@ -135,8 +132,7 @@ class AuthenticationRepository extends GetxController {
     }
   }
 
-  ///---------------GooGle login end--------------------///
-
+  ///---------------Google login End--------------------///
 
   /// [EmailAuthentication]-----> Forgot Password
   Future<void> sendPasswordResetEmail(String email) async {
@@ -154,7 +150,6 @@ class AuthenticationRepository extends GetxController {
       throw 'Something went wrong. Please try again.';
     }
   }
-
 
   ///-----> Logout
   Future<void> logout() async {
@@ -198,7 +193,7 @@ class AuthenticationRepository extends GetxController {
 
   Future<void> deleteAccount() async {
     try {
-      await UserRepository.instance.removeUserRecord(_auth.currentUser!.uid);
+      await AdminRepository.instance.removeAdminRecord(_auth.currentUser!.uid);
       await _auth.currentUser?.delete();
       Get.offAll(() => const LoginScreen());
     } on FirebaseAuthException catch (e) {
@@ -214,4 +209,3 @@ class AuthenticationRepository extends GetxController {
     }
   }
 }
-

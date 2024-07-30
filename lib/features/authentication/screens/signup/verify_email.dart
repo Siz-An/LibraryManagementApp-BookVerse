@@ -1,4 +1,4 @@
-import 'package:book_Verse/data/authentication/repository/authentication_repo.dart';
+import 'package:book_Verse/data/authentication/repository/authentication/authentication_repo.dart';
 import 'package:book_Verse/features/authentication/controller/signup/verify_emailController.dart';
 import 'package:book_Verse/utils/constants/image_strings.dart';
 import 'package:book_Verse/utils/constants/sizes.dart';

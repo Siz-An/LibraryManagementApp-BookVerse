@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'api/bookmark/bookMark_Provider.dart';
 import 'api/models/search_history.dart';
 import 'app.dart';
-import 'data/authentication/repository/authentication_repo.dart';
+import 'data/authentication/repository/authentication/authentication_repo.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {

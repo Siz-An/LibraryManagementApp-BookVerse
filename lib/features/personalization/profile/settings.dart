@@ -11,7 +11,7 @@ import 'package:get/get_navigation/get_navigation.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../../common/widgets/proFile/user_profile_tile.dart';
-import '../../../data/authentication/repository/authentication_repo.dart';
+import '../../../data/authentication/repository/authentication/authentication_repo.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../home/screens/mark/markApp.dart';
