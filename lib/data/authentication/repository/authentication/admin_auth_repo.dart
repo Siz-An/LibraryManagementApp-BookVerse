@@ -10,6 +10,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../features/authentication/screens/onboarding.dart';
 import '../../../../features/authentication/screens/signup/verify_email.dart';
+import '../../../../navigation_menu/admin_nav.dart';
 import '../../../../utils/exceptions/firebase_auth_exception.dart';
 import '../../../../utils/exceptions/firebase_exception.dart';
 import '../../../../utils/exceptions/format_exception.dart';
@@ -36,7 +37,7 @@ class AdminAuthenticationRepository extends GetxController {
 
     if (user != null) {
       if (user.emailVerified) {
-        Get.offAll(() => const NavigationMenu());
+        Get.offAll(() => const AdminNavigationMenu());
       } else {
         Get.offAll(() => VerifyEmailScreen(email: _auth.currentUser?.email));
       }

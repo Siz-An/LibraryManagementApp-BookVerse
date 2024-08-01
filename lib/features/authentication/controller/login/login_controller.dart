@@ -20,6 +20,7 @@ class LoginController extends GetxController{
   final password = TextEditingController();
   GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
   final userController = Get.put(UserController());
+  final selectedRole = 'User'.obs; // Default to User role
 
   /// -- Email and Password signIn
   Future<void> emailAndPasswordSignIn() async {

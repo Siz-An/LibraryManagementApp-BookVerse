@@ -8,17 +8,18 @@ import 'package:get_storage/get_storage.dart';
 
 import '../../../../data/authentication/repository/authentication/admin_auth_repo.dart';
 import '../../../../utils/constants/image_strings.dart';
+import '../../../personalization/controller/admin_Controller.dart';
 
 class AdminLoginController extends GetxController {
 
-  // Variables
   final rememberMe = false.obs;
   final hidePassword = true.obs;
   final localStorage = GetStorage();
   final email = TextEditingController();
   final password = TextEditingController();
   GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
-  final userController = Get.put(UserController());
+  final adminController = Get.put(AdminController());
+  final selectedRole = 'Admin'.obs; // Default to Admin role
 
   /// -- Email and Password Sign In
   Future<void> emailAndPasswordSignIn() async {
@@ -70,7 +71,7 @@ class AdminLoginController extends GetxController {
       final userCredentials = await AdminAuthenticationRepository.instance.signInWithGoogle();
 
       // Save user records
-      await userController.saveUserRecord(userCredentials);
+      await adminController.saveAdminRecord(userCredentials);
       TFullScreenLoader.stopLoading();
 
       // Redirect
