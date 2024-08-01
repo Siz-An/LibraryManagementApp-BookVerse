@@ -48,13 +48,6 @@ class AdminSignupController extends GetxController {
     }
 
     // Privacy policy check
-    if (!privacyPolicy.value) {
-      TLoaders.warningSnackBar(
-          title: 'Accept Privacy Policy',
-          message: 'To create an account, you must accept the privacy policy and terms of use.');
-      TFullScreenLoader.stopLoading();
-      return;
-    }
 
     try {
       // Register admin in the Firebase authentication
