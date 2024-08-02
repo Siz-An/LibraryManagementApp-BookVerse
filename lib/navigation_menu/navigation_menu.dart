@@ -1,14 +1,14 @@
 
-import 'package:book_Verse/features/home/screens/mark/markApp.dart';
-import 'package:book_Verse/features/home/screens/received/received.dart';
 import 'package:book_Verse/features/personalization/profile/settings.dart';
 import 'package:book_Verse/utils/constants/colors.dart';
 import 'package:book_Verse/utils/helpers/helper_function.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import '../features/home/screens/home/home.dart';
-import '../features/home/screens/search/search.dart';
+import '../features/home/screens/user/home/home.dart';
+import '../features/home/screens/user/mark/markApp.dart';
+import '../features/home/screens/user/received/received.dart';
+import '../features/home/screens/user/search/search.dart';
 
 
 
