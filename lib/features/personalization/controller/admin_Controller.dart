@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../data/authentication/repository/adminRepo.dart';
+import '../../../data/authentication/repository/authentication/admin_auth_repo.dart';
 import '../../../utils/constants/image_strings.dart';
 import '../models/adminModels.dart';
 
@@ -67,7 +68,7 @@ class AdminController extends GetxController {
               email: userCredentials.user!.email ?? ' ',
               phoneNumber: userCredentials.user!.phoneNumber ?? ' ',
               profilePicture: userCredentials.user!.photoURL ?? ' ',
-              role: 'admin', // You can set the role as needed
+              role: 'Admin', // You can set the role as needed
               permissions: ['view', 'edit', 'delete']); // Example permissions
 
           // save admin data
@@ -105,8 +106,8 @@ class AdminController extends GetxController {
       TFullScreenLoader.openLoadingDialogue('Processing', TImages.checkRegistration);
 
       /// First Re-Auth Admin
-      final auth = AuthenticationRepository.instance;
-      final provider = auth.authUser!.providerData.map((e) => e.providerId).first;
+      final auth = AdminAuthenticationRepository.instance;
+      final provider = auth.authAdmin!.providerData.map((e) => e.providerId).first;
       if (provider.isNotEmpty) {
         //Re verify Email
         if (provider == 'google.com') {
@@ -141,8 +142,8 @@ class AdminController extends GetxController {
         TFullScreenLoader.stopLoading();
         return;
       }
-      await AuthenticationRepository.instance.reAuthenticateWithEmailAndPassword(verifyEmail.text.trim(), verifyPassword.text.trim());
-      await AuthenticationRepository.instance.deleteAccount();
+      await AdminAuthenticationRepository.instance.reAuthenticateWithEmailAndPassword(verifyEmail.text.trim(), verifyPassword.text.trim());
+      await AdminAuthenticationRepository.instance.deleteAccount();
       TFullScreenLoader.stopLoading();
       Get.offAll(() => const LoginScreen());
     } catch (e) {

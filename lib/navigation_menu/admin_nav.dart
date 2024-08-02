@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import '../features/home/screens/admin/ChatScreen.dart';
 import '../features/home/screens/admin/dashboard.dart';
 import '../features/home/screens/admin/reportsScreen.dart';
 import '../features/home/screens/admin/settingScreen.dart';
@@ -28,6 +29,7 @@ class AdminNavigationMenu extends StatelessWidget {
             NavigationDestination(icon: Icon(Iconsax.add), label: 'Dashboard'),
             NavigationDestination(icon: Icon(Iconsax.user), label: 'Users'),
             NavigationDestination(icon: Icon(Iconsax.chart), label: 'Reports'),
+            NavigationDestination(icon: Icon(Iconsax.book), label: 'Chats'),
             NavigationDestination(icon: Icon(Iconsax.setting), label: 'Settings'),
           ],
         ),
@@ -44,6 +46,7 @@ class AdminNavigationController extends GetxController {
     const DashboardScreen(),
     const UsersScreen(),
     const ReportsScreen(),
+    const NotificationScreen(),
     const SettingsScreen(),
   ];
 }

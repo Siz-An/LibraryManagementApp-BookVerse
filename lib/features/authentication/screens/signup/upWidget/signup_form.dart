@@ -134,6 +134,7 @@ class _TSignupformState extends State<TSignupform> {
             ),
           ),
           const SizedBox(height: TSizes.spaceBtwSections),
+          const Divider(),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

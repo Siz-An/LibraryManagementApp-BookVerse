@@ -37,7 +37,7 @@ class AdminRepository extends GetxController {
   /// Function to fetch admin details based on admin ID
   Future<AdminModel> fetchAdminDetails() async {
     try {
-      final documentSnapshot = await _db.collection("Admins").doc(AdminAuthenticationRepository.instance.authUser?.uid).get();
+      final documentSnapshot = await _db.collection("Admins").doc(AdminAuthenticationRepository.instance.authAdmin?.uid).get();
       if (documentSnapshot.exists) {
         return AdminModel.fromSnapshot(documentSnapshot);
       } else {
@@ -74,7 +74,7 @@ class AdminRepository extends GetxController {
   /// Function to update any field in specific Admin Collection
   Future<void> updateSingleField(Map<String, dynamic> json) async {
     try {
-      await _db.collection("Admins").doc(AdminAuthenticationRepository.instance.authUser?.uid).update(json);
+      await _db.collection("Admins").doc(AdminAuthenticationRepository.instance.authAdmin?.uid).update(json);
     } on FirebaseException catch (e) {
       throw TFirebaseException(e.code).message;
     } on FormatException catch (_) {

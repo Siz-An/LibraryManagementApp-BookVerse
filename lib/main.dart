@@ -25,8 +25,13 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Initialize and inject UserAuthenticationRepository and AdminAuthenticationRepository
-  Get.put(AuthenticationRepository());
+
+
+
   Get.put(AdminAuthenticationRepository());
+  Get.put(AuthenticationRepository());
+
+
 
   // Setup MultiProvider for SearchHistory and Bookmarks
   runApp(

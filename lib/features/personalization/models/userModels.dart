@@ -1,6 +1,6 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:book_Verse/utils/formatters/formatter.dart';
+
 class UserModel {
   final String id;
   String firstName;
@@ -9,6 +9,7 @@ class UserModel {
   final String email;
   String phoneNumber;
   String profilePicture;
+  String role; // Added role field
 
   UserModel({
     required this.id,
@@ -18,6 +19,7 @@ class UserModel {
     required this.email,
     required this.phoneNumber,
     required this.profilePicture,
+    required this.role, // Added role to constructor
   });
 
   /// Helper Function to Get the full Name
@@ -42,13 +44,15 @@ class UserModel {
 
   /// Static Function to create an empty user Model
   static UserModel empty() => UserModel(
-      id: '',
-      firstName: '',
-      lastName: '',
-      userName: '',
-      email: '',
-      phoneNumber: '',
-      profilePicture: '');
+    id: '',
+    firstName: '',
+    lastName: '',
+    userName: '',
+    email: '',
+    phoneNumber: '',
+    profilePicture: '',
+    role: '', // Default empty role
+  );
 
   /// Convert model to JSON structure for storing data in Firestore
   Map<String, dynamic> toJson() {
@@ -59,6 +63,7 @@ class UserModel {
       'Email': email,
       'PhoneNumber': phoneNumber,
       'ProfilePicture': profilePicture,
+      'Role': role, // Added role to JSON conversion
     };
   }
 
@@ -73,6 +78,7 @@ class UserModel {
         email: data['Email'] ?? '',
         phoneNumber: data['PhoneNumber'] ?? '',
         profilePicture: data['ProfilePicture'] ?? '',
+        role: data['Role'] ?? '', // Added role field
       );
     } else {
       return UserModel.empty();

@@ -65,7 +65,8 @@ class AdminSignupController extends GetxController {
         userName: userName.text.trim(),
         email: email.text.trim(),
         phoneNumber: phoneNumber.text.trim(),
-        profilePicture: '', role: '', permissions: [],
+        profilePicture: '',
+        role: 'Admin', permissions: [],
       );
 
       final adminRepo = Get.put(AdminRepository());

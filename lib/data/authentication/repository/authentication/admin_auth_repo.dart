@@ -22,10 +22,11 @@ class AdminAuthenticationRepository extends GetxController {
   final deviceStorage = GetStorage();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  User? get authUser => _auth.currentUser;
+  User? get authAdmin => _auth.currentUser;
 
   @override
   void onReady() {
+    super.onReady();
     // Remove splash screen on app launch
     FlutterNativeSplash.remove();
     // Redirect to appropriate screen based on authentication status
@@ -49,12 +50,10 @@ class AdminAuthenticationRepository extends GetxController {
     }
   }
 
-  ///---> Login
-  Future<UserCredential> loginWithEmailAndPassword(String email,
-      String password) async {
+  // Methods for authentication operations
+  Future<UserCredential> loginWithEmailAndPassword(String email, String password) async {
     try {
-      return await _auth.signInWithEmailAndPassword(
-          email: email, password: password);
+      return await _auth.signInWithEmailAndPassword(email: email, password: password);
     } on FirebaseAuthException catch (e) {
       throw TFirebaseAuthException(e.code).message;
     } on FirebaseException catch (e) {
@@ -68,12 +67,9 @@ class AdminAuthenticationRepository extends GetxController {
     }
   }
 
-  ///---> Register
-  Future<UserCredential> registerWithEmailAndPassword(String email,
-      String password) async {
+  Future<UserCredential> registerWithEmailAndPassword(String email, String password) async {
     try {
-      return await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
+      return await _auth.createUserWithEmailAndPassword(email: email, password: password);
     } on FirebaseAuthException catch (e) {
       throw TFirebaseAuthException(e.code).message;
     } on FirebaseException catch (e) {
@@ -87,7 +83,6 @@ class AdminAuthenticationRepository extends GetxController {
     }
   }
 
-  ///----> Send Email Verification
   Future<void> sendEmailVerification() async {
     try {
       await _auth.currentUser?.sendEmailVerification();
@@ -104,20 +99,14 @@ class AdminAuthenticationRepository extends GetxController {
     }
   }
 
-  ///---------------Google login Start--------------------///
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      // Triggering the authentication flow
       final GoogleSignInAccount? userAccount = await GoogleSignIn().signIn();
-
-      // Obtain the auth details from the request
       final GoogleSignInAuthentication? googleAuth = await userAccount?.authentication;
-
-      // Creating new Credentials
       final credentials = GoogleAuthProvider.credential(
-          accessToken: googleAuth?.accessToken, idToken: googleAuth?.idToken);
-
-      // Once Signed in, return UserCredentials
+        accessToken: googleAuth?.accessToken,
+        idToken: googleAuth?.idToken,
+      );
       return await _auth.signInWithCredential(credentials);
     } on FirebaseAuthException catch (e) {
       throw TFirebaseAuthException(e.code).message;
@@ -133,9 +122,6 @@ class AdminAuthenticationRepository extends GetxController {
     }
   }
 
-  ///---------------Google login End--------------------///
-
-  /// [EmailAuthentication]-----> Forgot Password
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
@@ -152,7 +138,6 @@ class AdminAuthenticationRepository extends GetxController {
     }
   }
 
-  ///-----> Logout
   Future<void> logout() async {
     try {
       await GoogleSignIn().signOut();
@@ -171,13 +156,9 @@ class AdminAuthenticationRepository extends GetxController {
     }
   }
 
-  ///----> ReAuth User
-  Future<void> reAuthenticateWithEmailAndPassword(String email,
-      String password) async {
+  Future<void> reAuthenticateWithEmailAndPassword(String email, String password) async {
     try {
-      // Create Credentials
-      AuthCredential credential = EmailAuthProvider.credential(
-          email: email, password: password);
+      AuthCredential credential = EmailAuthProvider.credential(email: email, password: password);
       await _auth.currentUser!.reauthenticateWithCredential(credential);
     } on FirebaseAuthException catch (e) {
       throw TFirebaseAuthException(e.code).message;

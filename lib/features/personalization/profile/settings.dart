@@ -3,6 +3,7 @@ import 'package:book_Verse/common/widgets/appbar/appbar.dart';
 import 'package:book_Verse/common/widgets/custom_shapes/primary_header_container.dart';
 import 'package:book_Verse/common/widgets/proFile/settings_menu.dart';
 import 'package:book_Verse/common/widgets/texts/section_heading.dart';
+import 'package:book_Verse/features/home/screens/user/userChat.dart';
 import 'package:book_Verse/features/personalization/profile/widgets/users_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -50,11 +51,11 @@ class settingScreen extends StatelessWidget {
                 const SizedBox(height: TSizes.spaceBtwItems),
 
                 // Settings
+                TSettingMenu(icon: Iconsax.notification, title: 'Notification', subTitle: 'Please check Notification Daily ', onTap: ()=> Get.to(() => AdminNotificationScreen())),
                 TSettingMenu(icon: Iconsax.bookmark, title: 'BookMark', subTitle: 'List books that the user has BookMarked', onTap: () => Get.to(() => BookmarkScreen())),
                 TSettingMenu(icon: Iconsax.archive_tick, title: 'Issue', subTitle: 'List books that the Librarian has Issued', onTap: (){},),
                 TSettingMenu(icon: Iconsax.receipt, title: 'Return History', subTitle: 'Books that the user has returned', onTap: (){},),
                 TSettingMenu(icon: Iconsax.alarm, title: 'Book Return Notice', subTitle: 'List books that the user have to return', onTap: (){},),
-                TSettingMenu(icon: Iconsax.export, title: 'Exchange', subTitle: 'User can exchange books among themselves.', onTap: (){},),
                 TSettingMenu(icon: Iconsax.search_normal, title: 'Search Screen', subTitle: 'Search Books in the Google API', onTap: ()=> Get.to(() => SearchScreen())),
 
 
