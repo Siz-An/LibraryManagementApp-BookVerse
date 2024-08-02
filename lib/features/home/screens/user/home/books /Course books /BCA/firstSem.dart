@@ -1,12 +1,12 @@
 import 'package:book_Verse/common/widgets/appbar/appbar.dart';
-import 'package:book_Verse/features/home/screens/home/books%20/Course%20books%20/BCA/firstSem/firstBooks.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../../../../common/widgets/texts/section_heading.dart';
-import '../../../../../../../utils/constants/sizes.dart';
+import '../../../../../../../../common/widgets/texts/section_heading.dart';
+import '../../../../../../../../utils/constants/sizes.dart';
+
 import '../widgets/courseMenu.dart';
+import 'firstSem/firstBooks.dart';
 
 class firstSem extends StatelessWidget {
   const firstSem({super.key});

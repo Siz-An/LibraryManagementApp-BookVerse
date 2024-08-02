@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
-import '../../../../../common/widgets/image_text_widgets/vertical_image_text.dart';
-import '../../../../../utils/constants/image_strings.dart';
+import '../../../../../../common/widgets/image_text_widgets/vertical_image_text.dart';
+import '../../../../../../utils/constants/image_strings.dart';
 
 class THomeCategory extends StatelessWidget {
   const THomeCategory({
