@@ -9,6 +9,7 @@ import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/popups/fullscreen_loader.dart';
 import '../../../../utils/popups/loaders.dart';
 import '../../../personalization/models/adminModels.dart';
+import '../../screens/signup/admin_verify_email.dart';
 
 class AdminSignupController extends GetxController {
   static AdminSignupController get instance => Get.find();
@@ -76,7 +77,7 @@ class AdminSignupController extends GetxController {
           message: 'Your admin account has been created! Please verify it.');
 
       // Move to verify screen
-      Get.to(() => VerifyEmailScreen(email: email.text.trim()));
+      Get.to(() => AdminVerifyEmailScreen(email: email.text.trim()));
     } catch (e) {
       TFullScreenLoader.stopLoading();
       // Show error message
