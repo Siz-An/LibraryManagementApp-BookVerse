@@ -1,9 +1,9 @@
-import 'package:book_Verse/features/home/screens/user/home/widget/gerne.dart';
 import 'package:book_Verse/features/home/screens/user/home/widget/home_appbar.dart';
 import 'package:book_Verse/features/home/screens/user/home/widget/promo_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../../books/CourseSection/courseSelection.dart';
+import '../../../../../books/genre_book_detail_screen.dart';
 import '../../../../../common/widgets/custom_shapes/primary_header_container.dart';
 import '../../../../../common/widgets/texts/section_heading.dart';
 import '../../../../../utils/constants/image_strings.dart';
@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
             const TPrimaryHeaderContainer(
               child: Column(
                 children: [
-                  SizedBox(height: TSizes.sm,),
+                  SizedBox(height: TSizes.sm),
                   THomeAppBar(),
                   SizedBox(height: TSizes.spaceBtwSections),
                 ],
@@ -57,6 +57,9 @@ class HomeScreen extends StatelessWidget {
                         .where('isCourseBook', isEqualTo: true)
                         .snapshots(),
                     builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      }
                       if (!snapshot.hasData) {
                         return const Center(child: CircularProgressIndicator());
                       }
@@ -134,6 +137,9 @@ class HomeScreen extends StatelessWidget {
                         .where('isCourseBook', isEqualTo: false)
                         .snapshots(),
                     builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      }
                       if (!snapshot.hasData) {
                         return const Center(child: CircularProgressIndicator());
                       }
@@ -142,12 +148,16 @@ class HomeScreen extends StatelessWidget {
                       // Group books by genre
                       final Map<String, List<QueryDocumentSnapshot>> groupedBooks = {};
                       for (var book in books) {
-                        final genre = book['genre'] as String?;
-                        if (genre != null) {
-                          if (!groupedBooks.containsKey(genre)) {
-                            groupedBooks[genre] = [];
+                        final genres = book['genre'] as List<dynamic>?;
+                        if (genres != null) {
+                          for (var genre in genres) {
+                            if (genre is String) {
+                              if (!groupedBooks.containsKey(genre)) {
+                                groupedBooks[genre] = [];
+                              }
+                              groupedBooks[genre]!.add(book);
+                            }
                           }
-                          groupedBooks[genre]!.add(book);
                         }
                       }
 
@@ -170,10 +180,7 @@ class HomeScreen extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => BookListScreen(
-                                    isCourseBook: false,
-                                    filter: genre,
-                                  ),
+                                  builder: (context) => GenreBookDetailScreen(genre: genre),
                                 ),
                               );
                             },
@@ -207,5 +214,3 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-
-

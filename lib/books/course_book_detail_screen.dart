@@ -27,14 +27,16 @@ class CourseBookDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(
-              imageUrl,
-              width: double.infinity,
-              height: 250,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Center(child: Text('Image not available', style: TextStyle(color: Colors.red)));
-              },
+            Center(
+              child: Image.network(
+                imageUrl,
+                width: 190,
+                height: 250,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Center(child: Text('Image not available', style: TextStyle(color: Colors.red)));
+                },
+              ),
             ),
             const SizedBox(height: 16),
             Text(

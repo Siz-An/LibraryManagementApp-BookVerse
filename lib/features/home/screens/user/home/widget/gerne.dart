@@ -54,7 +54,7 @@ class BookListScreen extends StatelessWidget {
                 'title': title,
                 'writer': bookData['writer'] ?? 'Unknown Writer',
                 'imageUrl': bookData['imageUrl'] ?? '',
-                'course': bookData['course'] ?? '',
+                'genre': bookData['genre'] ?? '',
                 'summary': bookData['summary'] ?? '',
                 'totalCopies': 0,
               };
@@ -69,7 +69,7 @@ class BookListScreen extends StatelessWidget {
               final title = bookData['title'] as String;
               final writer = bookData['writer'] as String;
               final imageUrl = bookData['imageUrl'] as String;
-              final course = bookData['course'] as String;
+              final genre = bookData['genre'] as String;
               final summary = bookData['summary'] as String;
               final totalCopies = bookData['totalCopies'] as int;
 
@@ -92,7 +92,7 @@ class BookListScreen extends StatelessWidget {
                         title: title,
                         writer: writer,
                         imageUrl: imageUrl,
-                        course: course,
+                        course: genre, // Changed 'course' to 'genre' to match the use case
                         summary: summary,
                       ),
                     ),

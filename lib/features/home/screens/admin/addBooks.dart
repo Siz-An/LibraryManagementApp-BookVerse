@@ -48,10 +48,15 @@ class _AddBooksState extends State<AddBooks> {
           imageUrl = await snapshot.ref.getDownloadURL();
         }
 
+        // Split the genre text by commas and trim whitespace
+        List<String>? genres = !_isCourseBook
+            ? _genreController.text.split(',').map((e) => e.trim()).toList()
+            : null;
+
         await FirebaseFirestore.instance.collection('books').add({
           'title': _titleController.text,
           'writer': _writerController.text,
-          'genre': !_isCourseBook ? _genreController.text : null,
+          'genre': genres, // Store the list of genres
           'course': _isCourseBook ? _courseController.text : null,
           'grade': _isCourseBook && _gradeController.text.isNotEmpty ? _gradeController.text : null,
           'imageUrl': _image != null ? imageUrl : null,
@@ -164,7 +169,7 @@ class _AddBooksState extends State<AddBooks> {
                     TextFormField(
                       controller: _genreController,
                       decoration: const InputDecoration(
-                        labelText: 'Genre',
+                        labelText: 'Genre (comma-separated)',
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
