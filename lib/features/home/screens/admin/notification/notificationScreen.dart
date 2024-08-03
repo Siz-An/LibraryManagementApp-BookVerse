@@ -13,23 +13,41 @@ class _NotificationScreenState extends State<NotificationScreen> {
   final TextEditingController _messageController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  bool _isSending = false; // To prevent multiple sends
 
   void _sendNotification() async {
-    if (_messageController.text.isNotEmpty) {
+    if (_messageController.text.isNotEmpty && !_isSending) {
+      setState(() {
+        _isSending = true;
+      });
+
       final user = _auth.currentUser;
       if (user != null) {
-        // Assuming you have a way to get recipient user IDs
-        // You can modify this to fetch user IDs based on some criteria
-        final recipientUserIds = ['user1Id', 'user2Id']; // Replace with actual recipient IDs
+        // Assuming you have a way to get a single recipient user ID
+        final recipientUserId = 'user1Id'; // Replace with actual recipient ID
 
-        for (String userId in recipientUserIds) {
+        try {
           await _firestore.collection('notifications').add({
             'message': _messageController.text,
             'sender': user.email,
-            'recipientId': userId,
+            'recipientId': recipientUserId,
             'timestamp': FieldValue.serverTimestamp(),
           });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Notification sent successfully')),
+          );
+        } catch (e) {
+          print('Error sending notification: $e');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to send notification')),
+          );
+        } finally {
+          setState(() {
+            _isSending = false;
+          });
         }
+
         _messageController.clear();
       }
     }
@@ -54,7 +72,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ),
             ElevatedButton(
               onPressed: _sendNotification,
-              child: const Text('Send Notification'),
+              child: _isSending
+                  ? const CircularProgressIndicator()
+                  : const Text('Send Notification'),
             ),
           ],
         ),

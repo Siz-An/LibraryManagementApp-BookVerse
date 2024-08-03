@@ -1,9 +1,10 @@
+import 'package:book_Verse/features/home/screens/user/search/search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import '../features/home/screens/admin/ChatScreen.dart';
+import '../features/home/screens/admin/addBooks.dart';
 import '../features/home/screens/admin/dashboard.dart';
-import '../features/home/screens/admin/reportsScreen.dart';
+import '../features/home/screens/admin/editScreen.dart';
 import '../features/home/screens/admin/settingScreen.dart';
 import '../features/home/screens/admin/userScreens.dart';
 import '../utils/constants/colors.dart';
@@ -28,8 +29,8 @@ class AdminNavigationMenu extends StatelessWidget {
           destinations: const [
             NavigationDestination(icon: Icon(Iconsax.add), label: 'Dashboard'),
             NavigationDestination(icon: Icon(Iconsax.user), label: 'Users'),
-            NavigationDestination(icon: Icon(Iconsax.chart), label: 'Reports'),
-            NavigationDestination(icon: Icon(Iconsax.book), label: 'Chats'),
+            NavigationDestination(icon: Icon(Iconsax.book_1), label: 'Add Books'),
+            NavigationDestination(icon: Icon(Iconsax.edit), label: 'Edit'),
             NavigationDestination(icon: Icon(Iconsax.setting), label: 'Settings'),
           ],
         ),
@@ -43,10 +44,10 @@ class AdminNavigationController extends GetxController {
   final Rx<int> selectedIndex = 0.obs;
 
   final screens = [
-    const DashboardScreen(),
+    const Dashboard(),
     const UsersScreen(),
-    const ReportsScreen(),
-    const NotificationScreen(),
+    const AddBooks(),
+     SearchBookScreen(),
     const SettingsScreen(),
   ];
 }

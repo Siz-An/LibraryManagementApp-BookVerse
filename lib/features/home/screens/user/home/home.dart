@@ -1,22 +1,13 @@
-// Import grades list from grades.dart
 import 'package:book_Verse/features/home/screens/user/home/widget/gerne.dart';
-import 'package:book_Verse/features/home/screens/user/home/widget/grade.dart';
 import 'package:book_Verse/features/home/screens/user/home/widget/home_appbar.dart';
 import 'package:book_Verse/features/home/screens/user/home/widget/promo_slider.dart';
 import 'package:flutter/material.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../../books/CourseSection/courseSelection.dart';
 import '../../../../../common/widgets/custom_shapes/primary_header_container.dart';
-import '../../../../../common/widgets/custom_shapes/rounded_container.dart';
-import '../../../../../common/widgets/images/t_circular_image.dart';
-import '../../../../../common/widgets/layouts/grid_layout.dart';
-import '../../../../../common/widgets/texts/T_genreTitle.dart';
 import '../../../../../common/widgets/texts/section_heading.dart';
-import '../../../../../utils/constants/colors.dart';
-import '../../../../../utils/constants/enums.dart';
 import '../../../../../utils/constants/image_strings.dart';
 import '../../../../../utils/constants/sizes.dart';
-import '../../../../../utils/helpers/helper_function.dart';
-import 'books /Course books /BCA/firstSem.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -27,155 +18,183 @@ class HomeScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-
-            /// ---> Header
+            // Header
             const TPrimaryHeaderContainer(
               child: Column(
                 children: [
                   SizedBox(height: TSizes.sm,),
-                  /// ---> Appbar
-                   THomeAppBar(), // Example placeholder
-                 // SizedBox(height: TSizes.spaceBtwSections),
-
-                  /// ---> searchBar
-                 // TSearchContainer(text: 'Search in Library'),
-                 // SizedBox(height: TSizes.spaceBtwSections),
-
-                  /// ---> categories <-----
-                  Padding(
-                    padding: EdgeInsets.only(left: TSizes.defaultSpace),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        /// Heading
-                        // TSectionHeading(title: 'Popular Genre', showActionButton: false, textColor: Colors.white,),
-                        SizedBox(height: TSizes.spaceBtwItems),
-
-                        /// Categories
-                        // THomeCategory() // Example placeholder
-                      ],
-                    ),
-                  ),
+                  THomeAppBar(),
                   SizedBox(height: TSizes.spaceBtwSections),
                 ],
               ),
             ),
 
-            /// ----> Body Part
+            // Body Part
             Padding(
               padding: const EdgeInsets.all(TSizes.defaultSpace),
               child: Column(
                 children: [
-                  const TPromoSlide( // Example placeholder
-                       banner: [
-                          TImages.promoBanner1,
-                         TImages.promoBanner2,
+                  const TPromoSlide(
+                      banner: [
+                        TImages.promoBanner1,
+                        TImages.promoBanner2,
                         TImages.promoBanner3,
                         TImages.promoBanner4
-                       ]
-                   ),
+                      ]
+                  ),
                   const SizedBox(height: TSizes.spaceBtwItems),
 
-                  ///----> Heading
+                  // Course Books Section
                   TSectionHeading(
                     title: '| Course Books',
                     showActionButton: true,
                     onPressed: () {},
                   ),
-                  const SizedBox(height: TSizes.spaceBtwItems),
 
-                  /// ----> Grade section
-                  TGridLayout(
-                    itemCount: grades.length,
-                    mainAxisExtent: 80,
-                    itemBuilder: (_, index) {
-                      final grade = grades[index];
-                      return GestureDetector(
-                        onTap: () {
-                          // Example navigation to a specific grade screen
-                           Navigator.push(context, MaterialPageRoute(builder: (_) => firstSem()));
-                        },
-                        child: TRoundedContainer(
-                          padding: const EdgeInsets.all(TSizes.md),
-                          showBorder: true,
-                          backgroundColor: Colors.transparent,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                grade['name'],
-                                style: const TextStyle(
-                                  fontSize: TSizes.fontSizeMd,
-                                  fontWeight: FontWeight.bold,
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('books')
+                        .where('isCourseBook', isEqualTo: true)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      final books = snapshot.data!.docs;
+
+                      // Group books by grade
+                      final Map<String, List<QueryDocumentSnapshot>> groupedBooks = {};
+                      for (var book in books) {
+                        final grade = book['grade'] as String?;
+                        if (grade != null) {
+                          if (!groupedBooks.containsKey(grade)) {
+                            groupedBooks[grade] = [];
+                          }
+                          groupedBooks[grade]!.add(book);
+                        }
+                      }
+
+                      final grades = groupedBooks.keys.toList();
+
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: TSizes.cardRadiusSm,
+                          mainAxisSpacing: TSizes.cardRadiusSm,
+                          childAspectRatio: 3,
+                        ),
+                        itemCount: grades.length,
+                        itemBuilder: (context, index) {
+                          final grade = grades[index];
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CourseSelectionScreen(grade: grade),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(TSizes.sm),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.black, width: 2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  grade,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
-                              Text(
-                                '${grade['semesters']} Semesters',
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
+
                   const SizedBox(height: TSizes.spaceBtwItems),
 
-                  ///----> Heading
+                  // Genre Section
                   TSectionHeading(
-                    title: '| Genre ',
+                    title: '| Genre',
                     showActionButton: true,
                     onPressed: () {},
                   ),
-                  const SizedBox(height: TSizes.spaceBtwItems),
 
-                  TGridLayout(
-                    itemCount: genres.length,
-                    mainAxisExtent: 80,
-                    itemBuilder: (_, index) {
-                      final genre = genres[index];
-                      return GestureDetector(
-                        onTap: () {
-                          // Example action when tapping on a genre
-                          // print('Selected genre: ${genre['name']}');
-                        },
-                        child: TRoundedContainer(
-                          padding: const EdgeInsets.all(TSizes.sm),
-                          showBorder: true,
-                          backgroundColor: Colors.transparent,
-                          child: Row(
-                            children: [
-                              /// Icon
-                              Flexible(
-                                child: TCircularImage(
-                                  isNetworkImage: false,
-                                  image: genre['icon'],
-                                  backgroundColor: Colors.transparent,
-                                  overlayColor: THelperFunction.isDarkMode(context)
-                                      ? TColors.white
-                                      : TColors.black,
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('books')
+                        .where('isCourseBook', isEqualTo: false)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      final books = snapshot.data!.docs;
+
+                      // Group books by genre
+                      final Map<String, List<QueryDocumentSnapshot>> groupedBooks = {};
+                      for (var book in books) {
+                        final genre = book['genre'] as String?;
+                        if (genre != null) {
+                          if (!groupedBooks.containsKey(genre)) {
+                            groupedBooks[genre] = [];
+                          }
+                          groupedBooks[genre]!.add(book);
+                        }
+                      }
+
+                      final genres = groupedBooks.keys.toList();
+
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: TSizes.cardRadiusSm,
+                          mainAxisSpacing: TSizes.cardRadiusSm,
+                          childAspectRatio: 3,
+                        ),
+                        itemCount: genres.length,
+                        itemBuilder: (context, index) {
+                          final genre = genres[index];
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BookListScreen(
+                                    isCourseBook: false,
+                                    filter: genre,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(TSizes.sm),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.black, width: 2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  genre,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TGenreTitleWithVerification(
-                                    title: genre['name'],
-                                    genreTextSizes: TextSizes.large,
-                                  ),
-                                  Text(
-                                    '${genre['books']} books',
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
@@ -188,3 +207,5 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
+
+
