@@ -1,21 +1,19 @@
-
 import 'package:book_Verse/common/widgets/appbar/appbar.dart';
 import 'package:book_Verse/common/widgets/custom_shapes/primary_header_container.dart';
 import 'package:book_Verse/common/widgets/proFile/settings_menu.dart';
 import 'package:book_Verse/common/widgets/texts/section_heading.dart';
-import 'package:book_Verse/features/home/screens/user/userChat.dart';
 import 'package:book_Verse/features/personalization/profile/widgets/users_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:iconsax/iconsax.dart';
-
 import '../../../common/widgets/proFile/user_profile_tile.dart';
 import '../../../data/authentication/repository/authentication/authentication_repo.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../home/screens/user/mark/markApp.dart';
+import '../../home/screens/user/notification.dart';
 import '../../home/screens/user/search/search.dart';
 
 class settingScreen extends StatelessWidget {

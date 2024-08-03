@@ -13,7 +13,8 @@ class AddBooks extends StatefulWidget {
 
 class _AddBooksState extends State<AddBooks> {
   final _formKey = GlobalKey<FormState>();
-  final _idController = TextEditingController(); // Added for book ID
+  final _numberOfBooksController = TextEditingController();
+  final _idController = TextEditingController();
   final _titleController = TextEditingController();
   final _writerController = TextEditingController();
   final _genreController = TextEditingController();
@@ -33,9 +34,11 @@ class _AddBooksState extends State<AddBooks> {
     });
   }
 
-  Future<void> _addBook() async {
+  Future<void> _addBooks() async {
     if (_formKey.currentState!.validate()) {
       try {
+        int numberOfBooks = int.parse(_numberOfBooksController.text);
+
         String imageUrl = '';
         if (_image != null) {
           String fileName = _image!.path.split('/').last;
@@ -45,7 +48,7 @@ class _AddBooksState extends State<AddBooks> {
           imageUrl = await snapshot.ref.getDownloadURL();
         }
 
-        await FirebaseFirestore.instance.collection('books').doc(_idController.text).set({
+        await FirebaseFirestore.instance.collection('books').add({
           'title': _titleController.text,
           'writer': _writerController.text,
           'genre': !_isCourseBook ? _genreController.text : null,
@@ -54,14 +57,16 @@ class _AddBooksState extends State<AddBooks> {
           'imageUrl': _image != null ? imageUrl : null,
           'isCourseBook': _isCourseBook,
           'summary': _summaryController.text,
+          'numberOfCopies': numberOfBooks, // Added field for number of copies
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Book added successfully')),
+          const SnackBar(content: Text('Books added successfully')),
         );
 
         // Clear the form for the next entry
-        _idController.clear(); // Clear book ID field
+        _numberOfBooksController.clear();
+        _idController.clear();
         _titleController.clear();
         _writerController.clear();
         _genreController.clear();
@@ -73,7 +78,7 @@ class _AddBooksState extends State<AddBooks> {
         });
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add book: $e')),
+          SnackBar(content: Text('Failed to add books: $e')),
         );
       }
     }
@@ -93,17 +98,26 @@ class _AddBooksState extends State<AddBooks> {
           child: ListView(
             children: [
               TextFormField(
-                controller: _idController,
+                controller: _numberOfBooksController,
                 decoration: const InputDecoration(
-                  labelText: 'Book ID',
+                  labelText: 'Number of Copies',
                   border: OutlineInputBorder(),
                 ),
+                keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value!.isEmpty) {
-                    return 'Please enter a book ID';
+                    return 'Please enter the number of copies';
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _idController,
+                decoration: const InputDecoration(
+                  labelText: 'Book ID (optional)',
+                  border: OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 10),
               SwitchListTile(
@@ -222,9 +236,9 @@ class _AddBooksState extends State<AddBooks> {
                 ),
               const SizedBox(height: 20),
               ElevatedButton.icon(
-                onPressed: _addBook,
+                onPressed: _addBooks,
                 icon: const Icon(Icons.add),
-                label: const Text('Add Book'),
+                label: const Text('Add Books'),
               ),
             ],
           ),
