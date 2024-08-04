@@ -109,17 +109,15 @@ class _SearchBookScreenState extends State<SearchBookScreen> {
           children: [
             TextField(
               controller: _searchController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Enter Book Title or ID',
                 border: OutlineInputBorder(),
-                suffixIcon: Icon(Icons.search),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: _searchBook,
+                ),
               ),
               onSubmitted: (_) => _searchBook(),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _searchBook,
-              child: const Text('Search'),
             ),
             const SizedBox(height: 16),
             if (_bookFound && _bookData != null)
@@ -180,6 +178,10 @@ class _SearchBookScreenState extends State<SearchBookScreen> {
                             }
                           },
                           child: const Text('Edit Book'),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white, backgroundColor: Colors.green, // Text color
+                            minimumSize: Size(150, 50), // Button size
+                          ),
                         ),
                         ElevatedButton(
                           onPressed: () {
@@ -209,6 +211,10 @@ class _SearchBookScreenState extends State<SearchBookScreen> {
                             }
                           },
                           child: const Text('Delete Book'),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white, backgroundColor: Colors.red, // Text color
+                            minimumSize: Size(150, 50), // Button size
+                          ),
                         ),
                       ],
                     ),

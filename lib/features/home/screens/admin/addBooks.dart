@@ -224,26 +224,52 @@ class _AddBooksState extends State<AddBooks> {
                 },
               ),
               const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _pickImage,
-                icon: const Icon(Icons.image),
-                label: const Text('Pick Image'),
-              ),
               if (_image != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Image.file(
-                    _image!,
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text('Image'),
+                      const SizedBox(height: 10),
+                      Image.file(
+                        _image!,
+                        height: 150, // Reduced height
+                        width: 150,
+                        fit: BoxFit.cover,
+                      ),
+                    ],
                   ),
                 ),
               const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _addBooks,
-                icon: const Icon(Icons.add),
-                label: const Text('Add Books'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _pickImage,
+                      icon: const Icon(Icons.image),
+                      label: const Text('Pick Image'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green, // Background color
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10), // Space between buttons
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _addBooks,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add Books'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green, // Background color
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

@@ -244,36 +244,64 @@ class _EditBookScreenState extends State<EditBookScreen> {
                 },
               ),
               const SizedBox(height: 20),
+              if (_image != null || (_imageUrl != null && _imageUrl!.isNotEmpty))
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey, width: 2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      children: [
+                        const Text('Image', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        SizedBox(
+                          height: 120, // Reduced size
+                          width: 120, // Reduced size
+                          child: _image != null
+                              ? Image.file(_image!, fit: BoxFit.cover)
+                              : Image.network(_imageUrl!, fit: BoxFit.cover),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 10),
               ElevatedButton.icon(
                 onPressed: _pickImage,
                 icon: const Icon(Icons.image),
                 label: const Text('Pick Image'),
-              ),
-              if (_image != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Image.file(
-                    _image!,
-                    height: 180,
-                    width: 190,
-                    fit: BoxFit.cover,
-                  ),
-                )
-              else if (_imageUrl != null && _imageUrl!.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Image.network(
-                    _imageUrl!,
-                    height: 180,
-                    width: 190,
-                    fit: BoxFit.cover,
-                  ),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, backgroundColor: Colors.blue, // Text color
+                  minimumSize: const Size(120, 40), // Adjust button size
                 ),
+              ),
               const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _updateBook,
-                icon: const Icon(Icons.save),
-                label: const Text('Save Changes'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: _updateBook,
+                    icon: const Icon(Icons.save),
+                    label: const Text('Save Changes'),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white, backgroundColor: Colors.green, // Text color
+                      minimumSize: const Size(150, 40), // Adjust button size
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.cancel),
+                    label: const Text('Cancel'),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white, backgroundColor: Colors.red, // Text color
+                      minimumSize: const Size(150, 40), // Adjust button size
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

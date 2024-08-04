@@ -60,7 +60,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         title: const Text('Send Notification'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(10.0),
         child: Column(
           children: <Widget>[
             Expanded(
@@ -70,11 +70,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 maxLines: null, // Allow multiple lines of text
               ),
             ),
-            ElevatedButton(
-              onPressed: _sendNotification,
-              child: _isSending
-                  ? const CircularProgressIndicator()
-                  : const Text('Send Notification'),
+            Padding(
+              padding: const EdgeInsets.only(top: 50.0), // Add space above the button
+              child: ElevatedButton(
+                onPressed: _sendNotification,
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, backgroundColor: Colors.teal, // Text color
+                  minimumSize: const Size(double.infinity, 48), // Full-width button
+                ),
+                child: _isSending
+                    ? const CircularProgressIndicator()
+                    : const Text('Send Notification'),
+              ),
             ),
           ],
         ),
