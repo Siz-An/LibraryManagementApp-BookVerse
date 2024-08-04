@@ -24,6 +24,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
   final _copiesController = TextEditingController(); // Controller for number of copies
   final _picker = ImagePicker();
   File? _image;
+  String? _imageUrl; // To store the image URL from Firestore
   bool _isCourseBook = false;
 
   @override
@@ -39,7 +40,6 @@ class _EditBookScreenState extends State<EditBookScreen> {
         final data = doc.data()!;
         _titleController.text = data['title'] ?? '';
         _writerController.text = data['writer'] ?? '';
-        _genreController.text = data['genre'] ?? '';
         _courseController.text = data['course'] ?? '';
         _gradeController.text = data['grade'] ?? '';
         _summaryController.text = data['summary'] ?? '';
@@ -47,10 +47,12 @@ class _EditBookScreenState extends State<EditBookScreen> {
 
         _isCourseBook = data['isCourseBook'] ?? false;
 
-        if (data['imageUrl'] != null) {
-          // Load the image if available
-          _image = File(data['imageUrl']);
+        if (!_isCourseBook && data['genre'] != null) {
+          _genreController.text = (data['genre'] as List).join(', ');
         }
+
+        // Load the image URL from Firestore
+        _imageUrl = data['imageUrl'];
 
         setState(() {});
       }
@@ -73,7 +75,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
   Future<void> _updateBook() async {
     if (_formKey.currentState!.validate()) {
       try {
-        String imageUrl = '';
+        String imageUrl = _imageUrl ?? '';
         if (_image != null) {
           String fileName = _image!.path.split('/').last;
           TaskSnapshot snapshot = await FirebaseStorage.instance
@@ -82,13 +84,18 @@ class _EditBookScreenState extends State<EditBookScreen> {
           imageUrl = await snapshot.ref.getDownloadURL();
         }
 
+        // Split the genre text by commas and trim whitespace
+        List<String>? genres = !_isCourseBook
+            ? _genreController.text.split(',').map((e) => e.trim()).toList()
+            : null;
+
         await FirebaseFirestore.instance.collection('books').doc(widget.bookId).update({
           'title': _titleController.text,
           'writer': _writerController.text,
-          'genre': !_isCourseBook ? _genreController.text : null,
+          'genre': genres, // Store the list of genres
           'course': _isCourseBook ? _courseController.text : null,
           'grade': _isCourseBook && _gradeController.text.isNotEmpty ? _gradeController.text : null,
-          'imageUrl': _image != null ? imageUrl : null,
+          'imageUrl': imageUrl,
           'isCourseBook': _isCourseBook,
           'summary': _summaryController.text,
           'numberOfCopies': int.tryParse(_copiesController.text) ?? 0, // Save number of copies
@@ -164,7 +171,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
                     TextFormField(
                       controller: _genreController,
                       decoration: const InputDecoration(
-                        labelText: 'Genre',
+                        labelText: 'Genre (comma-separated)',
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
@@ -247,8 +254,18 @@ class _EditBookScreenState extends State<EditBookScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Image.file(
                     _image!,
-                    height: 200,
-                    width: double.infinity,
+                    height: 180,
+                    width: 190,
+                    fit: BoxFit.cover,
+                  ),
+                )
+              else if (_imageUrl != null && _imageUrl!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Image.network(
+                    _imageUrl!,
+                    height: 180,
+                    width: 190,
                     fit: BoxFit.cover,
                   ),
                 ),
