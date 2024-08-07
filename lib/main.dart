@@ -4,13 +4,11 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:provider/provider.dart';
-import 'api/bookmark/bookMark_Provider.dart';
-import 'api/models/search_history.dart';
 import 'app.dart';
 import 'data/authentication/repository/authentication/admin_auth_repo.dart';
 import 'data/authentication/repository/authentication/authentication_repo.dart';
+import 'features/home/screens/user/mark/provider.dart';
 import 'firebase_options.dart';
-
 Future<void> main() async {
   // Widgets Binding
   final WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -33,14 +31,11 @@ Future<void> main() async {
 
 
 
-
-
   // Setup MultiProvider for SearchHistory and Bookmarks
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => SearchHistory()),
-        ChangeNotifierProvider(create: (_) => Bookmarks()), // Add Bookmarks provider
+        ChangeNotifierProvider(create: (_) => BookmarkProvider()),
       ],
       child: const App(),
     ),

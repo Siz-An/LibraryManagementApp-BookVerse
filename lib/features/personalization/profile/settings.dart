@@ -50,7 +50,7 @@ class settingScreen extends StatelessWidget {
 
                 // Settings
                 TSettingMenu(icon: Iconsax.notification, title: 'Notification', subTitle: 'Please check Notification Daily ', onTap: ()=> Get.to(() => AdminNotificationScreen())),
-                TSettingMenu(icon: Iconsax.bookmark, title: 'BookMark', subTitle: 'List books that the user has BookMarked', onTap: () => Get.to(() => BookmarkScreen())),
+                TSettingMenu(icon: Iconsax.bookmark, title: 'BookMark', subTitle: 'List books that the user has BookMarked', onTap: () => Get.to(() => MarkApp())),
                 TSettingMenu(icon: Iconsax.archive_tick, title: 'Issue', subTitle: 'List books that the Librarian has Issued', onTap: (){},),
                 TSettingMenu(icon: Iconsax.receipt, title: 'Return History', subTitle: 'Books that the user has returned', onTap: (){},),
                 TSettingMenu(icon: Iconsax.alarm, title: 'Book Return Notice', subTitle: 'List books that the user have to return', onTap: (){},),
