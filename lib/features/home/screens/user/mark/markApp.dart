@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 import 'package:book_Verse/features/home/screens/user/mark/provider.dart';
 import 'package:book_Verse/features/home/screens/user/mark/requestssss.dart'; // Update this import
-import '../../../../../books/course_book_detail_screen.dart'; // Import the CourseBookDetailScreen
+import '../../../../../books/detailScreen/course_book_detail_screen.dart'; // Import the CourseBookDetailScreen
 
 class MarkApp extends StatelessWidget {
   const MarkApp({super.key});

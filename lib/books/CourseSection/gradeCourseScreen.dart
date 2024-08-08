@@ -1,7 +1,8 @@
-import 'package:book_Verse/features/home/screens/user/home/widget/gerne.dart';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../../../utils/constants/sizes.dart';
+import '../../features/home/screens/user/home/widget/bookList_Screen.dart';
 
 class CourseGradesScreen extends StatelessWidget {
   final String course;

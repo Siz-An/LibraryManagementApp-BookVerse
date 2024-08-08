@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../features/home/screens/user/home/widget/gerne.dart';
-import '../course_book_detail_screen.dart';
+import '../../features/home/screens/user/home/widget/bookList_Screen.dart';
+import '../detailScreen/course_book_detail_screen.dart';
 
 class CourseSelectionScreen extends StatelessWidget {
   final String grade;

@@ -2,8 +2,9 @@ import 'package:book_Verse/features/home/screens/user/home/widget/home_appbar.da
 import 'package:book_Verse/features/home/screens/user/home/widget/promo_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../../books/detailScreen/genre_book_detail_screen.dart';
+import '../../../../../books/popular_books.dart';  // Import the new file
 import '../../../../../books/CourseSection/courseSelection.dart';
-import '../../../../../books/genre_book_detail_screen.dart';
 import '../../../../../common/widgets/custom_shapes/primary_header_container.dart';
 import '../../../../../common/widgets/texts/section_heading.dart';
 import '../../../../../utils/constants/image_strings.dart';
@@ -31,23 +32,14 @@ class HomeScreen extends StatelessWidget {
 
             // Body Part
             Padding(
-              padding: const EdgeInsets.all(TSizes.defaultSpace),
+              padding: const EdgeInsets.all(TSizes.cardRadiusSm),
               child: Column(
                 children: [
-                  const TPromoSlide(
-                      banner: [
-                        TImages.promoBanner1,
-                        TImages.promoBanner2,
-                        TImages.promoBanner3,
-                        TImages.promoBanner4
-                      ]
-                  ),
-                  const SizedBox(height: TSizes.spaceBtwItems),
+                  const TPopularBooks(),
 
                   // Course Books Section
                   TSectionHeading(
                     title: '| Course Books',
-                    showActionButton: true,
                     onPressed: () {},
                   ),
 
@@ -127,7 +119,6 @@ class HomeScreen extends StatelessWidget {
                   // Genre Section
                   TSectionHeading(
                     title: '| Genre',
-                    showActionButton: true,
                     onPressed: () {},
                   ),
 

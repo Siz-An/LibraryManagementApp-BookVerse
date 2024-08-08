@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
-import '../features/home/screens/user/mark/provider.dart';
+import '../../features/home/screens/user/mark/provider.dart';
 
 class CourseBookDetailScreen extends StatefulWidget {
   final String title;

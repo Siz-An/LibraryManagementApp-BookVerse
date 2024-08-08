@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../../../../books/course_book_detail_screen.dart';
+import '../../../../../../books/detailScreen/course_book_detail_screen.dart';
 
 class BookListScreen extends StatelessWidget {
   final bool isCourseBook;
