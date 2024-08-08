@@ -5,8 +5,9 @@ import 'package:iconsax/iconsax.dart';
 import '../features/home/screens/admin/addBooks.dart';
 import '../features/home/screens/admin/dashboard.dart';
 import '../features/home/screens/admin/editScreen.dart';
+import '../features/home/screens/admin/requests.dart';
 import '../features/home/screens/admin/settingScreen.dart';
-import '../features/home/screens/admin/userScreens.dart';
+import '../features/home/screens/admin/userRequest/userScreens.dart';
 import '../utils/constants/colors.dart';
 import '../utils/helpers/helper_function.dart';
 
@@ -45,7 +46,7 @@ class AdminNavigationController extends GetxController {
 
   final screens = [
     const Dashboard(),
-    const UsersScreen(),
+     Requests(),
     const AddBooks(),
      SearchBookScreen(),
     const SettingsScreen(),

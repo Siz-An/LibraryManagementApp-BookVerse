@@ -69,6 +69,17 @@ class _AddBooksState extends State<AddBooks> {
           const SnackBar(content: Text('Books added successfully')),
         );
 
+        // Show dialog to confirm sending a notification
+        bool sendNotification = await _showNotificationDialog();
+
+        if (sendNotification) {
+          await FirebaseFirestore.instance.collection('notifications').add({
+            'title': 'New Book Added',
+            'message': 'A new book titled "${_titleController.text}" has been added.',
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
+
         // Clear the form for the next entry
         _numberOfBooksController.clear();
         _idController.clear();
@@ -87,6 +98,32 @@ class _AddBooksState extends State<AddBooks> {
         );
       }
     }
+  }
+
+  Future<bool> _showNotificationDialog() async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Send Notification'),
+          content: const Text('Do you want to send a notification about the new book?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Don't send notification
+              },
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true); // Send notification
+              },
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    ) ?? false;
   }
 
   @override

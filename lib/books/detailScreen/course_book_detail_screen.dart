@@ -77,7 +77,7 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
   void _toggleBookmark() {
     if (isOutOfStock) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('This book is out of stock and cannot be Added.')),
+        SnackBar(content: Text('This book is out of stock and cannot be added.')),
       );
       return;
     }
@@ -155,7 +155,7 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${widget.title} removed')));
       } catch (error) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to remove : $error')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to remove: $error')));
       }
     }
   }
@@ -174,32 +174,34 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Image.network(
-                widget.imageUrl,
-                width: 190,
-                height: 250,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Center(child: Text('Image not available', style: TextStyle(color: Colors.red)));
-                },
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Image.network(
+                  widget.imageUrl,
+                  width: 190,
+                  height: 280,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Center(child: Text('Image not available', style: TextStyle(color: Colors.red)));
+                  },
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text('Title: ${widget.title}', style: Theme.of(context).textTheme.bodySmall),
-            Text('Writer: ${widget.writer}', style: Theme.of(context).textTheme.bodySmall),
-            Text('Course: ${widget.course}', style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 16),
-            Text('Summary:', style: Theme.of(context).textTheme.bodySmall),
-            Text(widget.summary),
-            if (isOutOfStock) ...[
               const SizedBox(height: 16),
-              Text('This book is currently out of stock.', style: TextStyle(color: Colors.red)),
+              Text('Title: ${widget.title}', style: Theme.of(context).textTheme.bodySmall),
+              Text('Writer: ${widget.writer}', style: Theme.of(context).textTheme.bodySmall),
+              Text('Course: ${widget.course}', style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 16),
+              Text('Summary:', style: Theme.of(context).textTheme.bodySmall),
+              Text(widget.summary),
+              if (isOutOfStock) ...[
+                const SizedBox(height: 16),
+                Text('This book is currently out of stock.', style: TextStyle(color: Colors.red)),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

@@ -8,11 +8,14 @@ class AdminNotificationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Notifications'),
+        title: const Text('Notifications'),
         centerTitle: true,
       ),
       body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('notifications').orderBy('timestamp').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('notifications')
+            .orderBy('timestamp')
+            .snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -22,10 +25,20 @@ class AdminNotificationScreen extends StatelessWidget {
           return ListView.builder(
             itemCount: notifications.length,
             itemBuilder: (context, index) {
-              final notification = notifications[index];
+              final notification = notifications[index].data() as Map<String, dynamic>;
+              final message = notification['message'] ?? 'No message';
+              final sender = notification.containsKey('sender') ? notification['sender'] : 'Unknown sender';
+
               return ListTile(
-                title: Text(notification['message']),
-                subtitle: Text('From: ${notification['sender']}'),
+                title: Text(message),
+                subtitle: Text('From: $sender'),
+                onTap: () async {
+                  // Mark notification as read
+                  await FirebaseFirestore.instance
+                      .collection('notifications')
+                      .doc(notifications[index].id)
+                      .update({'isRead': true});
+                },
               );
             },
           );

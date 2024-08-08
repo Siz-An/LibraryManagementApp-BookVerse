@@ -14,6 +14,7 @@ import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../home/screens/user/mark/markApp.dart';
 import '../../home/screens/user/notification.dart';
+import '../../home/screens/user/received/rejected.dart';
 import '../../home/screens/user/search/search.dart';
 
 class settingScreen extends StatelessWidget {
@@ -51,7 +52,7 @@ class settingScreen extends StatelessWidget {
                 // Settings
                 TSettingMenu(icon: Iconsax.notification, title: 'Notification', subTitle: 'Please check Notification Daily ', onTap: ()=> Get.to(() => AdminNotificationScreen())),
                 TSettingMenu(icon: Iconsax.bookmark, title: 'BookMark', subTitle: 'List books that the user has BookMarked', onTap: () => Get.to(() => MarkApp())),
-                TSettingMenu(icon: Iconsax.archive_tick, title: 'Issue', subTitle: 'List books that the Librarian has Issued', onTap: (){},),
+                TSettingMenu(icon: Iconsax.archive_tick, title: 'Issue', subTitle: 'List books that the Librarian has Issued', onTap: () => Get.to(() => TRejectedBooks()),),
                 TSettingMenu(icon: Iconsax.receipt, title: 'Return History', subTitle: 'Books that the user has returned', onTap: (){},),
                 TSettingMenu(icon: Iconsax.alarm, title: 'Book Return Notice', subTitle: 'List books that the user have to return', onTap: (){},),
                 TSettingMenu(icon: Iconsax.search_normal, title: 'Search Screen', subTitle: 'Search Books in the Google API', onTap: ()=> Get.to(() => SearchScreen())),

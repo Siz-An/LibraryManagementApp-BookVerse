@@ -3,11 +3,12 @@ import 'package:book_Verse/features/personalization/controller/user_Controller.d
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'package:iconsax/iconsax.dart';
 import '../../../../../../common/widgets/appbar/appbar.dart';
 import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/shimmer.dart';
 import '../../../../../../utils/constants/text_strings.dart';
+import '../../notification.dart';
 import '../../search/search.dart';
 
 class THomeAppBar extends StatelessWidget {
@@ -33,7 +34,9 @@ class THomeAppBar extends StatelessWidget {
         ],
       ),
       actions:  [
-        TCartCounterIcons(onPressed: () => Get.to(()=> SearchScreen()),iconColor: TColors.white,)
+        TCartCounterIcons(onPressed: () => Get.to(()=> SearchScreen()),iconColor: TColors.white, icon: Iconsax.search_normal,),
+        TCartCounterIcons(onPressed: () => Get.to(()=> AdminNotificationScreen()),iconColor: TColors.white, icon: Iconsax.notification,),
+
       ],
     );
   }

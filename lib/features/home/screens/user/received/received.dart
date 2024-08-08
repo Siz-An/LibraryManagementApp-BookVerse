@@ -2,82 +2,55 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class Received extends StatelessWidget {
+import '../../../../../utils/constants/sizes.dart';
+
+class Received extends StatefulWidget {
   const Received({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Issued Books'),
-      ),
-      body: FutureBuilder<QuerySnapshot>(
-        future: FirebaseFirestore.instance.collection('issuedbooks').orderBy('issuedAt', descending: true).get(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No books have been issued.'));
-          }
+  _CombinedBooksState createState() => _CombinedBooksState();
+}
 
-          final issuedBooks = snapshot.data!.docs;
+class _CombinedBooksState extends State<Received> {
+  late Future<List<QueryDocumentSnapshot>> _issuedBooksFuture;
+  late Future<List<QueryDocumentSnapshot>> _rejectedBooksFuture;
 
-          // Group books by issue date
-          final groupedBooks = <String, List<Map<String, dynamic>>>{};
-          final dateFormat = DateFormat('yyyy-MM-dd'); // Format to display only the date
+  @override
+  void initState() {
+    super.initState();
+    _fetchIssuedBooks();
+    _fetchRejectedBooks();
+  }
 
-          for (var doc in issuedBooks) {
-            final data = doc.data() as Map<String, dynamic>;
-            final issuedAt = (data['issuedAt'] as Timestamp).toDate();
-            final dateOnly = dateFormat.format(issuedAt);
+  void _fetchIssuedBooks() {
+    _issuedBooksFuture = FirebaseFirestore.instance
+        .collection('issuedbooks')
+        .orderBy('issuedAt', descending: true)
+        .get()
+        .then((snapshot) => snapshot.docs);
+  }
 
-            if (!groupedBooks.containsKey(dateOnly)) {
-              groupedBooks[dateOnly] = [];
-            }
-            groupedBooks[dateOnly]!.add(data);
-          }
+  void _fetchRejectedBooks() {
+    _rejectedBooksFuture = FirebaseFirestore.instance
+        .collection('deniedbooks')
+        .get()
+        .then((snapshot) => snapshot.docs);
+  }
 
-          return ListView(
-            children: groupedBooks.entries.map((entry) {
-              final issueDate = entry.key;
-              final books = entry.value;
-
-              return ExpansionTile(
-                title: Text('Issued on $issueDate'),
-                children: books.map((book) {
-                  return FutureBuilder<String>(
-                    future: _fetchAdminUsername(book['adminId']),
-                    builder: (context, adminSnapshot) {
-                      String adminUsername = 'Unknown Admin';
-                      if (adminSnapshot.connectionState == ConnectionState.waiting) {
-                        adminUsername = 'Loading...';
-                      } else if (adminSnapshot.hasError) {
-                        adminUsername = 'Error fetching admin';
-                      } else if (adminSnapshot.hasData) {
-                        adminUsername = adminSnapshot.data ?? 'Unknown Admin';
-                      }
-
-                      return ListTile(
-                        leading: book['imageUrl'] != null && book['imageUrl']!.isNotEmpty
-                            ? Image.network(book['imageUrl'], width: 50, height: 50, fit: BoxFit.cover)
-                            : const Icon(Icons.book),
-                        title: Text(book['title'] ?? 'Unknown Title'),
-                        subtitle: Text('Issued by $adminUsername'),
-                        onTap: () => _showBookDetails(context, book['bookId']),
-                      );
-                    },
-                  );
-                }).toList(),
-              );
-            }).toList(),
-          );
-        },
-      ),
-    );
+  void _removeRejectedBook(String docId) async {
+    try {
+      await FirebaseFirestore.instance.collection('deniedbooks').doc(docId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Book removed from rejected list.')),
+      );
+      setState(() {
+        _fetchRejectedBooks(); // Refresh the list by fetching the data again
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error removing book: $e')),
+      );
+    }
   }
 
   Future<String> _fetchAdminUsername(String? adminId) async {
@@ -107,16 +80,19 @@ class Received extends StatelessWidget {
         context: context,
         builder: (context) => AlertDialog(
           title: Text(bookData['title'] ?? 'Unknown Title'),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (bookData['imageUrl'] != null && bookData['imageUrl']!.isNotEmpty)
-                Image.network(bookData['imageUrl'], height: 150, fit: BoxFit.cover),
-              Text('Author: ${bookData['writer'] ?? 'Unknown'}'),
-              Text('Course: ${bookData['course'] ?? 'Unknown'}'),
-              Text('Summary: ${bookData['summary'] ?? 'No summary available'}'),
-            ],
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (bookData['imageUrl'] != null && bookData['imageUrl']!.isNotEmpty)
+                  Image.network(bookData['imageUrl'], height: 150, fit: BoxFit.cover),
+                SizedBox(height: 10), // Add some spacing between the image and text
+                Text('Author: ${bookData['writer'] ?? 'Unknown'}'),
+                Text('Course: ${bookData['course'] ?? 'Unknown'}'),
+                Text('Summary: ${bookData['summary'] ?? 'No summary available'}'),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -131,5 +107,191 @@ class Received extends StatelessWidget {
         const SnackBar(content: Text('Book details not found.')),
       );
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Books'),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Heading for Issued Books
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Issued Books',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            // Issued Books Section
+            FutureBuilder<List<QueryDocumentSnapshot>>(
+              future: _issuedBooksFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No books have been issued.'));
+                }
+
+                final issuedBooks = snapshot.data!;
+
+                // Group books by issue date
+                final groupedBooks = <String, List<Map<String, dynamic>>>{};
+                final dateFormat = DateFormat('yyyy-MM-dd'); // Format to display only the date
+
+                for (var doc in issuedBooks) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final issuedAt = (data['issuedAt'] as Timestamp).toDate();
+                  final dateOnly = dateFormat.format(issuedAt);
+
+                  if (!groupedBooks.containsKey(dateOnly)) {
+                    groupedBooks[dateOnly] = [];
+                  }
+                  groupedBooks[dateOnly]!.add(data);
+                }
+
+                return Column(
+                  children: groupedBooks.entries.map((entry) {
+                    final issueDate = entry.key;
+                    final books = entry.value;
+
+                    return ExpansionTile(
+                      title: Text('Issued on $issueDate'),
+                      children: books.map((book) {
+                        return FutureBuilder<String>(
+                          future: _fetchAdminUsername(book['adminId']),
+                          builder: (context, adminSnapshot) {
+                            String adminUsername = 'Unknown Admin';
+                            if (adminSnapshot.connectionState == ConnectionState.waiting) {
+                              adminUsername = 'Loading...';
+                            } else if (adminSnapshot.hasError) {
+                              adminUsername = 'Error fetching admin';
+                            } else if (adminSnapshot.hasData) {
+                              adminUsername = adminSnapshot.data ?? 'Unknown Admin';
+                            }
+
+                            return ListTile(
+                              leading: book['imageUrl'] != null && book['imageUrl']!.isNotEmpty
+                                  ? Image.network(book['imageUrl'], width: 50, height: 50, fit: BoxFit.cover)
+                                  : const Icon(Icons.book),
+                              title: Text(book['title'] ?? 'Unknown Title'),
+                              subtitle: Text('Issued by $adminUsername'),
+                              onTap: () => _showBookDetails(context, book['bookId']),
+                            );
+                          },
+                        );
+                      }).toList(),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+            SizedBox(height: TSizes.spaceBtwSections),
+
+            // Heading for Rejected Books
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Rejected Books',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            // Rejected Books Section
+            FutureBuilder<List<QueryDocumentSnapshot>>(
+              future: _rejectedBooksFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No books have been rejected.'));
+                }
+
+                final rejectedBooks = snapshot.data!;
+
+                // Group books by rejection date
+                final groupedBooks = <String, List<Map<String, dynamic>>>{};
+                final dateFormat = DateFormat('yyyy-MM-dd'); // Format to display only the date
+
+                for (var doc in rejectedBooks) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final bookData = data['book'] as Map<String, dynamic>?;
+                  final rejectedAt = (data['timestamp'] as Timestamp?)?.toDate();
+
+                  if (bookData == null || rejectedAt == null) {
+                    continue; // Skip documents without valid book data or timestamp
+                  }
+
+                  final dateOnly = dateFormat.format(rejectedAt);
+
+                  if (!groupedBooks.containsKey(dateOnly)) {
+                    groupedBooks[dateOnly] = [];
+                  }
+                  groupedBooks[dateOnly]!.add({
+                    ...bookData,
+                    'docId': doc.id, // Add the document ID to the book data
+                    'comment': data['comment'], // Add comment to book data
+                    'timestamp': rejectedAt,
+                  });
+                }
+
+                return Column(
+                  children: groupedBooks.entries.map((entry) {
+                    final rejectionDate = entry.key;
+                    final books = entry.value;
+
+                    return ExpansionTile(
+                      title: Text('Rejected on $rejectionDate'),
+                      children: books.map((book) {
+                        return FutureBuilder<String>(
+                          future: _fetchAdminUsername(book['adminId']),
+                          builder: (context, adminSnapshot) {
+                            String adminUsername = 'Unknown Admin';
+                            if (adminSnapshot.connectionState == ConnectionState.waiting) {
+                              adminUsername = 'Loading...';
+                            } else if (adminSnapshot.hasError) {
+                              adminUsername = 'Error fetching admin';
+                            } else if (adminSnapshot.hasData) {
+                              adminUsername = adminSnapshot.data ?? 'Unknown Admin';
+                            }
+
+                            return ListTile(
+                              leading: book['imageUrl'] != null && book['imageUrl']!.isNotEmpty
+                                  ? Image.network(book['imageUrl'], width: 50, height: 50, fit: BoxFit.cover)
+                                  : const Icon(Icons.book),
+                              title: Text(book['title'] ?? 'Unknown Title'),
+                              subtitle: Text('Rejected by $adminUsername\nComment: ${book['comment'] ?? 'No comment'}'),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _removeRejectedBook(book['docId']),
+                              ),
+                              onTap: () => _showBookDetails(context, book['bookId']),
+                            );
+                          },
+                        );
+                      }).toList(),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

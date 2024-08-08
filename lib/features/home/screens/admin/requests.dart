@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../../../../../common/widgets/appbar/appbar.dart';
-import 'bookRequest.dart';
+import '../../../../common/widgets/appbar/appbar.dart';
+import 'userRequest/bookRequest.dart';
 
 class Requests extends StatelessWidget {
   @override
@@ -12,8 +12,7 @@ class Requests extends StatelessWidget {
     if (user == null) {
       return Scaffold(
         appBar: TAppBar(
-          title: const Text('User Requests'),
-          showBackArrow: true,
+          title: const Text('Book Requests'),
         ),
         body: const Center(child: Text('User not logged in.')),
       );
@@ -30,7 +29,6 @@ class Requests extends StatelessWidget {
           return Scaffold(
             appBar: TAppBar(
               title: const Text('User Requests'),
-              showBackArrow: true,
             ),
             body: const Center(child: CircularProgressIndicator()),
           );
@@ -40,7 +38,6 @@ class Requests extends StatelessWidget {
           return Scaffold(
             appBar: TAppBar(
               title: const Text('User Requests'),
-              showBackArrow: true,
             ),
             body: const Center(child: Text('No requests found.')),
           );
@@ -54,7 +51,6 @@ class Requests extends StatelessWidget {
               return Scaffold(
                 appBar: TAppBar(
                   title: const Text('User Requests'),
-                  showBackArrow: true,
                 ),
                 body: const Center(child: CircularProgressIndicator()),
               );
@@ -64,7 +60,6 @@ class Requests extends StatelessWidget {
               return Scaffold(
                 appBar: TAppBar(
                   title: const Text('User Requests'),
-                  showBackArrow: true,
                 ),
                 body: const Center(child: Text('User not found.')),
               );
@@ -78,7 +73,6 @@ class Requests extends StatelessWidget {
             return Scaffold(
               appBar: TAppBar(
                 title: const Text('User Requests'),
-                showBackArrow: true,
               ),
               body: Padding(
                 padding: const EdgeInsets.all(16.0),
