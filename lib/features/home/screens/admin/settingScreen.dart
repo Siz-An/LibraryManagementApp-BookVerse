@@ -1,4 +1,5 @@
 import 'package:book_Verse/data/authentication/repository/authentication/admin_auth_repo.dart';
+import 'package:book_Verse/features/home/screens/admin/userRequest/requests.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -50,7 +51,7 @@ class SettingsScreen extends StatelessWidget {
                     icon: Iconsax.receipt,
                     title: 'Return History',
                     subTitle: 'Books that the user has returned',
-                    onTap: () {},
+                    onTap: () => Get.to(() => Requests()),
                   ),
                   TSettingMenu(
                     icon: Iconsax.alarm,

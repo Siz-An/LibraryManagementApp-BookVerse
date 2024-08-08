@@ -24,10 +24,15 @@ class _TLoginFormState extends State<TLoginForm> {
     final userController = Get.put(LoginController());
     final adminController = Get.put(AdminLoginController());
 
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Form(
       key: (_selectedRole == 'User') ? userController.loginFormKey : adminController.loginFormKey,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: TSizes.spaceBtwSections),
+        padding: EdgeInsets.symmetric(
+          vertical: screenWidth < 600 ? TSizes.spaceBtwSections : TSizes.spaceBtwSections * 1.5,
+          horizontal: screenWidth < 600 ? 16.0 : 32.0,
+        ),
         child: Column(
           children: [
             Row(
@@ -50,18 +55,18 @@ class _TLoginFormState extends State<TLoginForm> {
                 ),
               ],
             ),
-            const SizedBox(height: TSizes.spaceBtwInputFields),
+            SizedBox(height: screenWidth < 600 ? TSizes.spaceBtwInputFields : TSizes.spaceBtwInputFields * 1.5),
 
             /// Email
             TextFormField(
               controller: (_selectedRole == 'User') ? userController.email : adminController.email,
               validator: (value) => TValidator.validateEmail(value),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 prefixIcon: Icon(Iconsax.direct_right),
                 labelText: TTexts.email,
               ),
             ),
-            const SizedBox(height: TSizes.spaceBtwInputFields),
+            SizedBox(height: screenWidth < 600 ? TSizes.spaceBtwInputFields : TSizes.spaceBtwInputFields * 1.5),
 
             /// Password
             Obx(
@@ -87,7 +92,7 @@ class _TLoginFormState extends State<TLoginForm> {
                 ),
               ),
             ),
-            const SizedBox(height: TSizes.spaceBtwInputFields / 2),
+            SizedBox(height: screenWidth < 600 ? TSizes.spaceBtwInputFields / 2 : TSizes.spaceBtwInputFields / 2 * 1.5),
 
             /// Remember Me & Forget Password
             Row(
@@ -118,7 +123,7 @@ class _TLoginFormState extends State<TLoginForm> {
                 ),
               ],
             ),
-            const SizedBox(height: TSizes.spaceBtwSections),
+            SizedBox(height: screenWidth < 600 ? TSizes.spaceBtwSections : TSizes.spaceBtwSections * 1.5),
 
             /// Sign In Button
             SizedBox(
@@ -134,7 +139,7 @@ class _TLoginFormState extends State<TLoginForm> {
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.green, // Text color of the button
-                  padding: EdgeInsets.symmetric(vertical: 17.0), // Add some padding
+                  padding: EdgeInsets.symmetric(vertical: screenWidth < 600 ? 12.0 : 17.0), // Add some padding
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0), // Border radius
                     side: BorderSide(color: Colors.green, width: 2.0), // Outline color and width
@@ -143,7 +148,7 @@ class _TLoginFormState extends State<TLoginForm> {
                 child: const Text(TTexts.signIn),
               ),
             ),
-            const SizedBox(height: TSizes.spaceBtwItems),
+            SizedBox(height: screenWidth < 600 ? TSizes.spaceBtwItems / 2 : TSizes.spaceBtwItems),
 
             /// Create an Account Button
             SizedBox(
