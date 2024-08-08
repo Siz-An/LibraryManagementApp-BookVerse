@@ -97,7 +97,7 @@ class Requests extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                     child: Container(
-                      width: 200, // Smaller width for compact design
+                      width: 250, // Smaller width for compact design
                       height: 100,
                       padding: const EdgeInsets.all(8.0), // Reduced padding
                       decoration: BoxDecoration(

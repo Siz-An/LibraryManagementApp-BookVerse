@@ -9,7 +9,6 @@ import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/shimmer.dart';
 import '../../../../../../utils/constants/text_strings.dart';
 import '../../search/search.dart';
-import '../../search/userSearch.dart';
 
 class THomeAppBar extends StatelessWidget {
   const THomeAppBar({
@@ -34,7 +33,7 @@ class THomeAppBar extends StatelessWidget {
         ],
       ),
       actions:  [
-        TCartCounterIcons(onPressed: () => Get.to(()=> UserSearch()),iconColor: TColors.white,)
+        TCartCounterIcons(onPressed: () => Get.to(()=> SearchScreen()),iconColor: TColors.white,)
       ],
     );
   }

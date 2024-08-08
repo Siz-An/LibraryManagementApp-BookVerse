@@ -79,6 +79,8 @@ class _TPopularBooksState extends State<TPopularBooks> {
         SizedBox(height: 10),
         _isLoading
             ? const Center(child: CircularProgressIndicator())
+            : _bookmarkedBooks.isEmpty
+            ? Center(child: Text('No popular books found.'))
             : SizedBox(
           height: 300, // Set a fixed height for the carousel
           child: CarouselSlider.builder(
