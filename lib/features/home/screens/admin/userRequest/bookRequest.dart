@@ -94,11 +94,27 @@ class _UserRequestsScreenState extends State<UserRequestsScreen> {
         );
       },
     );
-  }Future<void> _acceptBook(BuildContext context, String requestId, Map<String, dynamic> book) async {
+  }
+
+  Future<void> _acceptBook(BuildContext context, String requestId, Map<String, dynamic> book) async {
     final bookTitle = book['title'];
     final bookId = book['bookId']; // Use bookId for identifying the book in the 'books' collection
 
+    final admin = FirebaseAuth.instance.currentUser;
+    if (admin == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Admin user not logged in.')),
+      );
+      return;
+    }
+    final adminId = admin.uid; // Admin user ID
+
     try {
+      // Fetch the userId from the request document
+      final requestDoc = FirebaseFirestore.instance.collection('requests').doc(requestId);
+      final requestSnapshot = await requestDoc.get();
+      final userId = requestSnapshot['userId'];
+
       // Check if the book is already issued
       final issuedBooksSnapshot = await FirebaseFirestore.instance
           .collection('issuedbooks')
@@ -115,6 +131,8 @@ class _UserRequestsScreenState extends State<UserRequestsScreen> {
           'course': book['course'],
           'summary': book['summary'],
           'bookId': bookId,
+          'userId': userId, // Add the userId of the requester
+          'adminId': adminId, // Optionally add the adminId
           'issuedAt': FieldValue.serverTimestamp(),
         });
 
@@ -134,10 +152,7 @@ class _UserRequestsScreenState extends State<UserRequestsScreen> {
         }
 
         // Update or delete the request document
-        final requestDoc = FirebaseFirestore.instance.collection('requests').doc(requestId);
-        final requestSnapshot = await requestDoc.get();
         final books = List<Map<String, dynamic>>.from(requestSnapshot['books']);
-
         books.removeWhere((b) => b['title'] == bookTitle);
 
         if (books.isEmpty) {
@@ -161,7 +176,6 @@ class _UserRequestsScreenState extends State<UserRequestsScreen> {
       );
     }
   }
-
 
   Future<void> _denyBook(BuildContext context, String requestId, Map<String, dynamic> book, String comment) async {
     final deniedBook = {
