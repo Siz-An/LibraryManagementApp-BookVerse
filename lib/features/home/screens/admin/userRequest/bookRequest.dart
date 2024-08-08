@@ -184,17 +184,22 @@ class _UserRequestsScreenState extends State<UserRequestsScreen> {
       'timestamp': Timestamp.now(),
     };
 
+    // Add the book to the deniedbooks collection
     await FirebaseFirestore.instance.collection('deniedbooks').add(deniedBook);
 
+    // Remove the book from the request document
     final requestDoc = FirebaseFirestore.instance.collection('requests').doc(requestId);
     final requestSnapshot = await requestDoc.get();
     final books = List<Map<String, dynamic>>.from(requestSnapshot['books']);
 
+    // Remove the book from the list
     books.removeWhere((b) => b['title'] == book['title']);
 
     if (books.isEmpty) {
+      // If no books are left in the request, delete the request document
       await requestDoc.delete();
     } else {
+      // Otherwise, update the request document with the remaining books
       await requestDoc.update({'books': books});
     }
   }
@@ -322,10 +327,18 @@ class _UserRequestsScreenState extends State<UserRequestsScreen> {
               children: [
                 ElevatedButton(
                   onPressed: () => _acceptAllRequests(context),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size(150, 50),
+                    backgroundColor: Colors.green, // Set the background color to green
+                  ),
                   child: const Text('Accept All'),
                 ),
                 ElevatedButton(
                   onPressed: () => _denyAllRequests(context),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size(150, 50),
+                    backgroundColor: Colors.green, // Set the background color to green
+                  ),
                   child: const Text('Deny All'),
                 ),
               ],

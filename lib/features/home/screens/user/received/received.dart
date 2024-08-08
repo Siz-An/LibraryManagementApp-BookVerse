@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 import '../../../../../utils/constants/sizes.dart';
 
 class Received extends StatefulWidget {
@@ -35,6 +34,64 @@ class _CombinedBooksState extends State<Received> {
         .collection('deniedbooks')
         .get()
         .then((snapshot) => snapshot.docs);
+  }
+
+  Future<void> _showReturnDialog(BuildContext context, Map<String, dynamic> book) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Return'),
+          content: Text('Are you sure you want to return the book "${book['title']}"?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _returnBook(book);
+              },
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _returnBook(Map<String, dynamic> book) async {
+    try {
+      // Add the book to the returnbooks collection
+      await FirebaseFirestore.instance.collection('returnbooks').add({
+        'title': book['title'],
+        'writer': book['writer'],
+        'imageUrl': book['imageUrl'],
+        'course': book['course'],
+        'summary': book['summary'],
+        'bookId': book['bookId'],
+        'returnedAt': FieldValue.serverTimestamp(),
+      });
+
+      // Remove the book from the issuedbooks collection
+      await FirebaseFirestore.instance.collection('issuedbooks').doc(book['bookId']).delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Book "${book['title']}" has been returned.')),
+      );
+
+      // Refresh the list of issued books
+      setState(() {
+        _fetchIssuedBooks();
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error returning book: $e')),
+      );
+    }
   }
 
   void _removeRejectedBook(String docId) async {
@@ -185,6 +242,10 @@ class _CombinedBooksState extends State<Received> {
                                   : const Icon(Icons.book),
                               title: Text(book['title'] ?? 'Unknown Title'),
                               subtitle: Text('Issued by $adminUsername'),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.arrow_back, color: Colors.blue),
+                                onPressed: () => _showReturnDialog(context, book),
+                              ),
                               onTap: () => _showBookDetails(context, book['bookId']),
                             );
                           },
@@ -276,7 +337,7 @@ class _CombinedBooksState extends State<Received> {
                               title: Text(book['title'] ?? 'Unknown Title'),
                               subtitle: Text('Rejected by $adminUsername\nComment: ${book['comment'] ?? 'No comment'}'),
                               trailing: IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
+                                icon: const Icon(Icons.check, color: Colors.red),
                                 onPressed: () => _removeRejectedBook(book['docId']),
                               ),
                               onTap: () => _showBookDetails(context, book['bookId']),

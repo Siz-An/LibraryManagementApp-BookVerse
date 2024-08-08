@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_slider/carousel_slider.dart'; // Update with correct import path
 
 import '../common/widgets/texts/section_heading.dart';
+import 'detailScreen/course_book_detail_screen.dart';
 
 class TPopularBooks extends StatefulWidget {
   const TPopularBooks({super.key});
@@ -65,6 +66,27 @@ class _TPopularBooksState extends State<TPopularBooks> {
     }
   }
 
+  void _navigateToDetailPage(Map<String, dynamic> book) {
+    final title = book['title'] ?? 'Unknown Title';
+    final writer = book['writer'] ?? 'Unknown Writer';
+    final imageUrl = book['imageUrl'] ?? 'https://example.com/placeholder.jpg'; // Provide a placeholder image URL
+    final course = book['course'] ?? 'No course info available';
+    final summary = book['summary'] ?? 'No summary available';
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CourseBookDetailScreen(
+          title: title,
+          writer: writer,
+          imageUrl: imageUrl,
+          course: course,
+          summary: summary,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -87,43 +109,49 @@ class _TPopularBooksState extends State<TPopularBooks> {
             itemCount: _bookmarkedBooks.length,
             itemBuilder: (context, index, realIndex) {
               final book = _bookmarkedBooks[index];
-              final imageUrl = book['imageUrl']; // Ensure 'imageUrl' key exists
-              final title = book['title'];
-              final writer = book['writer'];
+              final imageUrl = book['imageUrl'] ?? 'https://example.com/placeholder.jpg'; // Ensure 'imageUrl' key exists
+              final title = book['title'] ?? 'Unknown Title';
+              final writer = book['writer'] ?? 'Unknown Writer';
 
-              return Container(
-                margin: EdgeInsets.symmetric(horizontal: 5),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min, // Make Column size flexible
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        imageUrl,
-                        width: 150,
-                        height: 200,
-                        fit: BoxFit.cover,
+              return GestureDetector(
+                onTap: () => _navigateToDetailPage(book),
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 5),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min, // Make Column size flexible
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          imageUrl,
+                          width: 150,
+                          height: 220,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(child: Text('Image not available', style: TextStyle(color: Colors.red)));
+                          },
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                      SizedBox(height: 10),
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      writer,
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
+                      SizedBox(height: 5),
+                      Text(
+                        writer,
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },
