@@ -23,10 +23,16 @@ class BookmarkScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final bookmarks = Provider.of<BookmarkProvider>(context).bookmarks;
 
+    // Filter out bookmarks with null or empty titles
+    final filteredBookmarks = bookmarks.where((book) {
+      final title = book['title'];
+      return title != null && title.isNotEmpty;
+    }).toList();
+
     // Group bookmarks by title and count the number of copies
     final bookCounts = <String, int>{};
-    for (var book in bookmarks) {
-      final title = book['title'];
+    for (var book in filteredBookmarks) {
+      final title = book['title']!;
       bookCounts[title] = (bookCounts[title] ?? 0) + 1;
     }
 
@@ -41,7 +47,7 @@ class BookmarkScreen extends StatelessWidget {
           children: [
             Text(
               'Your Bookmarks',
-              style: Theme.of(context).textTheme.headlineMedium, // Adjust the style as needed
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -53,15 +59,25 @@ class BookmarkScreen extends StatelessWidget {
                   final title = bookCounts.keys.elementAt(index);
                   final count = bookCounts[title]!;
 
-                  // Find the book details for this title (assuming there's only one unique book with that title in the list)
-                  final book = bookmarks.firstWhere((b) => b['title'] == title);
+                  // Find the book details for this title
+                  final book = filteredBookmarks.firstWhere(
+                        (b) => b['title'] == title,
+                    orElse: () => {
+                      'title': '', // This should never be used
+                      'writer': '',
+                      'imageUrl': '',
+                      'course': '',
+                      'summary': '',
+                      'bookId': '', // Ensure this is included
+                    },
+                  );
 
                   return ListTile(
                     title: Text('$title (Copies: $count)'),
-                    subtitle: Text(book['writer']),
-                    leading: book['imageUrl'] != null && book['imageUrl'].isNotEmpty
+                    subtitle: Text(book['writer'] ?? ''),
+                    leading: (book['imageUrl'] ?? '').isNotEmpty
                         ? Image.network(
-                      book['imageUrl'],
+                      book['imageUrl']!,
                       width: 50,
                       height: 50,
                       fit: BoxFit.cover,
@@ -77,19 +93,20 @@ class BookmarkScreen extends StatelessWidget {
                       },
                     ),
                     onTap: () {
-                      // Navigate to the CourseBookDetailScreen when tapped
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CourseBookDetailScreen(
-                            title: book['title'],
-                            writer: book['writer'],
-                            imageUrl: book['imageUrl'] ?? '', // Handle possible null values
-                            course: book['course'] ?? '', // Handle possible null values
-                            summary: book['summary'] ?? '', // Handle possible null values
+                      if (title.isNotEmpty) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CourseBookDetailScreen(
+                              title: book['title'] ?? '',
+                              writer: book['writer'] ?? '',
+                              imageUrl: book['imageUrl'] ?? '',
+                              course: book['course'] ?? '',
+                              summary: book['summary'] ?? '',
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      }
                     },
                   );
                 },
@@ -98,7 +115,7 @@ class BookmarkScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'Requested Books',
-              style: Theme.of(context).textTheme.headlineMedium, // Adjust the style as needed
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -106,17 +123,17 @@ class BookmarkScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const RequestedListScreen(), // Ensure you have the correct screen
+                    builder: (context) => const RequestedListScreen(),
                   ),
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green, // Button color
-                minimumSize: Size(double.infinity, 50), // Resize the button
+                backgroundColor: Colors.green,
+                minimumSize: Size(double.infinity, 50),
               ),
               child: const Text('View Requested Books'),
             ),
-            const SizedBox(height: 80), // Add space for the FloatingActionButton
+            const SizedBox(height: 80),
           ],
         ),
       ),
@@ -157,16 +174,85 @@ class BookmarkScreen extends StatelessWidget {
     final userId = user.uid;
     final bookmarks = Provider.of<BookmarkProvider>(context, listen: false).bookmarks;
 
-    try {
-      await FirebaseFirestore.instance.collection('requests').add({
-        'userId': userId,
-        'books': bookmarks,
-        'requestedAt': FieldValue.serverTimestamp(),
-      });
+    // Get the list of book titles from the bookmarks
+    final bookmarkTitles = bookmarks
+        .where((book) => (book['title'] ?? '').isNotEmpty)
+        .map((book) => book['title']!)
+        .toSet()
+        .toList();
 
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Bookmarked books saved to requests')));
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save bookmarks: $error')));
+    // Check for duplicate bookmarks
+    final uniqueBookmarks = <Map<String, dynamic>>[];
+    final seenTitles = <String>{};
+
+    for (var book in bookmarks) {
+      final title = book['title'] ?? '';
+      if (title.isNotEmpty && !seenTitles.contains(title)) {
+        uniqueBookmarks.add(book);
+        seenTitles.add(title);
+      }
+    }
+
+    // Check if any of the requested books are already issued
+    final issuedBooksSnapshot = await FirebaseFirestore.instance
+        .collection('issuedbooks')
+        .where('userId', isEqualTo: userId)
+        .get();
+
+    final issuedBooksTitles = issuedBooksSnapshot.docs.map((doc) => doc.data()['title'] as String).toSet();
+
+    final alreadyIssuedBooks = uniqueBookmarks
+        .where((book) => issuedBooksTitles.contains(book['title'] ?? ''))
+        .map((book) => book['title'] ?? '')
+        .toSet();
+
+    // Check if any of the requested books are already in the requests collection
+    final existingRequestsSnapshot = await FirebaseFirestore.instance
+        .collection('requests')
+        .where('userId', isEqualTo: userId)
+        .get();
+
+    final existingRequests = existingRequestsSnapshot.docs
+        .expand((doc) => (doc.data()['books'] as List)
+        .map((book) => book['title'] ?? ''))
+        .toSet();
+
+    final alreadyRequestedBooks = uniqueBookmarks
+        .where((book) => existingRequests.contains(book['title'] ?? ''))
+        .map((book) => book['title'] ?? '')
+        .toSet();
+
+    if (alreadyIssuedBooks.isNotEmpty || alreadyRequestedBooks.isNotEmpty) {
+      // Show a popup with the already issued or requested books
+      final issuesMessage = alreadyIssuedBooks.isNotEmpty ? 'The following books are already issued to you:\n${alreadyIssuedBooks.join(', ')}\n' : '';
+      final requestsMessage = alreadyRequestedBooks.isNotEmpty ? 'The following books are already in your requests:\n${alreadyRequestedBooks.join(', ')}' : '';
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Books Already Processed'),
+          content: Text('$issuesMessage$requestsMessage'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Proceed to save the unique bookmarks to the requests collection
+      try {
+        await FirebaseFirestore.instance.collection('requests').add({
+          'userId': userId,
+          'books': uniqueBookmarks,
+          'requestedAt': FieldValue.serverTimestamp(),
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Bookmarked books saved to requests')));
+      } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save bookmarks: $error')));
+      }
     }
   }
 }
