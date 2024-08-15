@@ -50,6 +50,7 @@ dependencies:
   cached_network_image: ^3.3.1
   cloud_functions: ^5.0.3
   file_picker: ^8.0.6
+  parallax: ^1.0.3
 
 
 # Product Specifier
