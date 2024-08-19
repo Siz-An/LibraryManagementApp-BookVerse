@@ -59,13 +59,13 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyB-oOIWy_ZznXjeXQGZ7ByT4mOHGyeqgC4',
-    appId: '1:808424067899:ios:76e8d418c16fe808079d1e',
+    appId: '1:808424067899:ios:a099213ab38bb90e079d1e',
     messagingSenderId: '808424067899',
     projectId: 'bookverse-8ac90',
     storageBucket: 'bookverse-8ac90.appspot.com',
     androidClientId: '808424067899-k8h5tg2rroov2srnmmo214uci1v28lml.apps.googleusercontent.com',
-    iosClientId: '808424067899-vo3nf45oq3qd9etr87jhkh8qhdv57a5l.apps.googleusercontent.com',
-    iosBundleId: 'com.example.bookVerse',
+    iosClientId: '808424067899-i9h64cektcigatohd02bg5hjg8mrdt82.apps.googleusercontent.com',
+    iosBundleId: 'com.example.flappyBird',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
