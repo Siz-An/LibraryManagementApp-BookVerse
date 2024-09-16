@@ -46,7 +46,7 @@ class AdminNavigationController extends GetxController {
 
   final screens = [
     const Dashboard(),
-     Requests(),
+    AdminUserRequestsScreen(),
     const AddBooks(),
      SearchBookScreen(),
     const SettingsScreen(),
