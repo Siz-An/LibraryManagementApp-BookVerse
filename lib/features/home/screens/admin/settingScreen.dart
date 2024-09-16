@@ -1,5 +1,6 @@
 import 'package:book_Verse/data/authentication/repository/authentication/admin_auth_repo.dart';
 import 'package:book_Verse/features/home/screens/admin/requests.dart';
+import 'package:book_Verse/features/home/screens/admin/returnedbooks/bookreturn.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -57,7 +58,7 @@ class SettingsScreen extends StatelessWidget {
                     icon: Iconsax.alarm,
                     title: 'Book Return Notice',
                     subTitle: 'List books that the user has to return',
-                    onTap: () {},
+                    onTap: () => Get.to(() => AcceptReturnedBooksScreen()),
                   ),
                   TSettingMenu(
                     icon: Iconsax.export,
