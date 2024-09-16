@@ -12,6 +12,7 @@ import '../../../common/widgets/proFile/user_profile_tile.dart';
 import '../../../data/authentication/repository/authentication/authentication_repo.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/sizes.dart';
+import '../../home/screens/user/bookreturnsss.dart';
 import '../../home/screens/user/mark/markApp.dart';
 import '../../home/screens/user/notification.dart';
 import '../../home/screens/user/received/rejected.dart';
@@ -54,7 +55,7 @@ class settingScreen extends StatelessWidget {
                 TSettingMenu(icon: Iconsax.bookmark, title: 'BookMark', subTitle: 'List books that the user has BookMarked', onTap: () => Get.to(() => MarkApp())),
                 TSettingMenu(icon: Iconsax.archive_tick, title: 'Issue', subTitle: 'List books that the Librarian has Issued', onTap: () => Get.to(() => MarkApp()),),
                 TSettingMenu(icon: Iconsax.receipt, title: 'Return History', subTitle: 'Books that the user has returned', onTap: (){},),
-                TSettingMenu(icon: Iconsax.alarm, title: 'Book Return Notice', subTitle: 'List books that the user have to return', onTap: (){},),
+                TSettingMenu(icon: Iconsax.alarm, title: 'Book Return Notice', subTitle: 'List books that the user have to return', onTap: () => Get.to(() => ToBeReturnedBooksScreen()),),
                 TSettingMenu(icon: Iconsax.search_normal, title: 'Search Screen', subTitle: 'Search Books in the Google API', onTap: ()=> Get.to(() => SearchScreen())),
 
 

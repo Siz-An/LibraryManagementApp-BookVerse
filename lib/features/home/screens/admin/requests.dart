@@ -1,132 +1,74 @@
+import 'package:book_Verse/features/home/screens/admin/userRequest/userScreens.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-import '../../../../common/widgets/appbar/appbar.dart';
-import 'userRequest/bookRequest.dart';
-
-class Requests extends StatelessWidget {
+class AdminUserRequestsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return Scaffold(
-        appBar: TAppBar(
-          title: const Text('Book Requests'),
-        ),
-        body: const Center(child: Text('User not logged in.')),
-      );
-    }
-    final userId = user.uid;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('User Requests'),
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('requests').snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('requests')
-          .where('userId', isEqualTo: userId)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Scaffold(
-            appBar: TAppBar(
-              title: const Text('User Requests'),
-            ),
-            body: const Center(child: CircularProgressIndicator()),
-          );
-        }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('No requests found.'));
+          }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Scaffold(
-            appBar: TAppBar(
-              title: const Text('User Requests'),
-            ),
-            body: const Center(child: Text('No requests found.')),
-          );
-        }
+          final requests = snapshot.data!.docs;
+          final users = requests.map((request) => request['userId']).toSet(); // Get unique user IDs
 
-        // User has made requests, now fetch and display user details
-        return FutureBuilder<DocumentSnapshot>(
-          future: FirebaseFirestore.instance.collection('Users').doc(userId).get(),
-          builder: (context, userSnapshot) {
-            if (userSnapshot.connectionState == ConnectionState.waiting) {
-              return Scaffold(
-                appBar: TAppBar(
-                  title: const Text('User Requests'),
-                ),
-                body: const Center(child: CircularProgressIndicator()),
-              );
-            }
+          return ListView.builder(
+            itemCount: users.length,
+            itemBuilder: (context, index) {
+              final userId = users.elementAt(index);
 
-            if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
-              return Scaffold(
-                appBar: TAppBar(
-                  title: const Text('User Requests'),
-                ),
-                body: const Center(child: Text('User not found.')),
-              );
-            }
-
-            final userData = userSnapshot.data!.data() as Map<String, dynamic>;
-            final name = userData['UserName'];
-            final phoneNumber = userData['PhoneNumber'];
-            final email = userData['Email'];
-
-            return Scaffold(
-              appBar: TAppBar(
-                title: const Text('User Requests'),
-              ),
-              body: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => UserRequestsScreen(),
-                      ),
+              // Fetch user details from 'users' collection using userId
+              return FutureBuilder<DocumentSnapshot>(
+                future: FirebaseFirestore.instance.collection('Users').doc(userId).get(), // Fetch from 'users' collection
+                builder: (context, userSnapshot) {
+                  if (!userSnapshot.hasData) {
+                    return const ListTile(
+                      title: Text('Loading...'),
                     );
-                  },
-                  child: Card(
-                    elevation: 2.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                  }
+
+                  final userData = userSnapshot.data!.data() as Map<String, dynamic>?;
+
+                  // Display user details: username, email, phone number
+                  return ListTile(
+                    title: Text(userData != null && userData['UserName'] != null
+                        ? userData['UserName']
+                        : 'Unknown User'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Email: ${userData != null && userData['Email'] != null ? userData['Email'] : 'N/A'}'),
+                        Text('Phone: ${userData != null && userData['PhoneNumber'] != null ? userData['PhoneNumber'] : 'N/A'}'),
+                      ],
                     ),
-                    child: Container(
-                      width: 250, // Smaller width for compact design
-                      height: 100,
-                      padding: const EdgeInsets.all(8.0), // Reduced padding
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10.0),
-                        color: Colors.grey[200], // Lighter background for a softer look
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Name: $name',
-                            style: TextStyle(fontSize: 14, color: Colors.black87),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Phone: $phoneNumber',
-                            style: TextStyle(fontSize: 14, color: Colors.black87),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Email: $email',
-                            style: TextStyle(fontSize: 14, color: Colors.black87),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
+                    trailing: const Icon(Icons.arrow_forward),
+                    onTap: () {
+                      // Navigate to UserRequestedBooksScreen when user is clicked
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UserRequestedBooksScreen(userId: userId, adminId: '',),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
-
-

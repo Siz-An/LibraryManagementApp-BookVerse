@@ -51,7 +51,7 @@ class SettingsScreen extends StatelessWidget {
                     icon: Iconsax.receipt,
                     title: 'Return History',
                     subTitle: 'Books that the user has returned',
-                    onTap: () => Get.to(() => Requests()),
+                    onTap: () => Get.to(() => AdminUserRequestsScreen()),
                   ),
                   TSettingMenu(
                     icon: Iconsax.alarm,
