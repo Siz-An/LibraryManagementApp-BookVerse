@@ -21,18 +21,18 @@ class AdminNavigationMenu extends StatelessWidget {
     return Scaffold(
       bottomNavigationBar: Obx(
             () => NavigationBar(
-          height: 60,
-          elevation: 0,
-          selectedIndex: controller.selectedIndex.value,
-          onDestinationSelected: (index) => controller.selectedIndex.value = index,
-          backgroundColor: darkMode ? TColors.black : Colors.white.withOpacity(0.1),
-          indicatorColor: darkMode ? TColors.white.withOpacity(0.3) : TColors.black.withOpacity(0.3),
-          destinations: const [
-            NavigationDestination(icon: Icon(Iconsax.add), label: 'Dashboard'),
-            NavigationDestination(icon: Icon(Iconsax.user), label: 'Users'),
-            NavigationDestination(icon: Icon(Iconsax.book_1), label: 'Add Books'),
-            NavigationDestination(icon: Icon(Iconsax.edit), label: 'Edit'),
-            NavigationDestination(icon: Icon(Iconsax.setting), label: 'Settings'),
+            height: 60,
+            elevation: 0,
+            selectedIndex: controller.selectedIndex.value,
+            onDestinationSelected: (index) => controller.selectedIndex.value = index,
+            backgroundColor: darkMode ? TColors.black : Colors.white.withOpacity(0.1),
+            indicatorColor: darkMode ? TColors.white.withOpacity(0.3) : TColors.black.withOpacity(0.3),
+            destinations: const [
+              NavigationDestination(icon: Icon(Iconsax.add), label: 'Dashboard'),
+              NavigationDestination(icon: Icon(Iconsax.user), label: 'Users'),
+              NavigationDestination(icon: Icon(Iconsax.book_1), label: 'Add Books'),
+              NavigationDestination(icon: Icon(Iconsax.edit), label: 'Edit'),
+              NavigationDestination(icon: Icon(Iconsax.setting), label: 'Settings'),
           ],
         ),
       ),

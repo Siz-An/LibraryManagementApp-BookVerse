@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserRequestedBooksScreen extends StatelessWidget {
   final String userId;
-  final String adminId; // Add adminId to constructor
+  final String adminId;
 
   const UserRequestedBooksScreen({required this.userId, required this.adminId});
 
@@ -16,7 +16,7 @@ class UserRequestedBooksScreen extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('requests')
-            .where('userId', isEqualTo: userId)
+            .where('userId', isEqualTo: userId) // Ensures only books requested by this user
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -30,7 +30,7 @@ class UserRequestedBooksScreen extends StatelessWidget {
           final requests = snapshot.data!.docs;
           List<Map<String, dynamic>> books = [];
 
-          // Collect all the books from the requests
+          // Collect all the books from the requests for this user
           for (var request in requests) {
             List<Map<String, dynamic>> requestBooks = List<Map<String, dynamic>>.from(request['books']);
             books.addAll(requestBooks);
@@ -62,12 +62,12 @@ class UserRequestedBooksScreen extends StatelessWidget {
                     // Accept Button
                     IconButton(
                       icon: const Icon(Icons.check, color: Colors.green),
-                      onPressed: () => acceptBook(context, book, requests, adminId), // Pass adminId
+                      onPressed: () => acceptBook(context, book, requests, adminId),
                     ),
                     // Reject Button
                     IconButton(
                       icon: const Icon(Icons.close, color: Colors.red),
-                      onPressed: () => rejectBook(context, book, requests, adminId), // Pass adminId
+                      onPressed: () => rejectBook(context, book, requests, adminId),
                     ),
                   ],
                 ),
@@ -79,24 +79,50 @@ class UserRequestedBooksScreen extends StatelessWidget {
     );
   }
 
-  // Function to accept the book and add it to the "issuedBooks" collection with adminId
+  // Function to accept the book and issue it to the specific user (not to all users)
   void acceptBook(BuildContext context, Map<String, dynamic> book, List<DocumentSnapshot> requests, String adminId) async {
-    await FirebaseFirestore.instance.collection('issuedBooks').add({
-      'userId': userId,
-      'adminId': adminId, // Add adminId
-      'bookId': book['bookId'], // Adding bookId to the issuedBooks collection
-      'title': book['title'],
-      'writer': book['writer'],
-      'imageUrl': book['imageUrl'],
-      'issueDate': Timestamp.now(), // Store the current time as issue date
-    });
+    final bookId = book['bookId'];
+    final specificUserId = userId; // Ensure the book is issued only to the user who requested it
 
-    // Remove the book from requests collection
-    await removeBookFromRequests(book, requests);
+    // Check if the book exists in the 'books' collection and has copies left
+    final bookDoc = await FirebaseFirestore.instance.collection('books').doc(bookId).get();
+    if (bookDoc.exists) {
+      final bookData = bookDoc.data() as Map<String, dynamic>;
+      final int numberOfCopies = bookData['numberOfCopies'];
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Book accepted and issued!')),
-    );
+      if (numberOfCopies > 0) {
+        // Issue the book by adding it to the 'issuedBooks' collection for this specific user
+        await FirebaseFirestore.instance.collection('issuedBooks').add({
+          'userId': specificUserId, // Only issue the book to this specific user
+          'adminId': adminId,
+          'bookId': bookId,
+          'title': book['title'],
+          'writer': book['writer'],
+          'imageUrl': book['imageUrl'],
+          'issueDate': Timestamp.now(),
+        });
+
+        // Decrease the number of copies by 1
+        await FirebaseFirestore.instance.collection('books').doc(bookId).update({
+          'numberOfCopies': numberOfCopies - 1,
+        });
+
+        // Remove the book from this user's requests collection
+        await removeBookFromRequests(book, requests);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Book accepted, issued, and number of copies updated!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No more copies available for this book.')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Book not found in the database.')),
+      );
+    }
   }
 
   // Function to reject the book and add a comment with adminId
@@ -122,9 +148,10 @@ class UserRequestedBooksScreen extends StatelessWidget {
             TextButton(
               onPressed: () async {
                 if (reasonController.text.isNotEmpty) {
+                  // Add the rejection reason to the rejectedBooks collection with the specific user
                   await FirebaseFirestore.instance.collection('rejectedBooks').add({
-                    'userId': userId,
-                    'adminId': adminId, // Add adminId
+                    'userId': userId, // Rejecting only for this user
+                    'adminId': adminId, // The admin who rejected the book
                     'bookId': book['bookId'], // Adding bookId to the rejectedBooks collection
                     'title': book['title'],
                     'writer': book['writer'],
@@ -133,7 +160,7 @@ class UserRequestedBooksScreen extends StatelessWidget {
                     'rejectionDate': Timestamp.now(), // Store the current time as rejection date
                   });
 
-                  // Remove the book from requests collection
+                  // Remove the book from this user's requests collection
                   await removeBookFromRequests(book, requests);
 
                   Navigator.pop(context);
@@ -155,7 +182,7 @@ class UserRequestedBooksScreen extends StatelessWidget {
     );
   }
 
-  // Function to remove a book from the requests collection
+  // Function to remove a book from the requests collection for a specific user
   Future<void> removeBookFromRequests(Map<String, dynamic> book, List<DocumentSnapshot> requests) async {
     for (var request in requests) {
       List<Map<String, dynamic>> requestBooks = List<Map<String, dynamic>>.from(request['books']);

@@ -1,26 +1,26 @@
-
-import 'package:book_Verse/features/personalization/profile/settings.dart';
-import 'package:book_Verse/utils/constants/colors.dart';
-import 'package:book_Verse/utils/helpers/helper_function.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+
 import '../features/home/screens/user/home/home.dart';
 import '../features/home/screens/user/mark/markApp.dart';
 import '../features/home/screens/user/received/received.dart';
 import '../features/home/screens/user/search/search.dart';
-
-
+import '../features/personalization/profile/settings.dart';
+import '../utils/constants/colors.dart';
+import '../utils/helpers/helper_function.dart';
 
 class NavigationMenu extends StatelessWidget {
-  const NavigationMenu({super.key});
+  final String userId;
+
+  NavigationMenu({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(NavigationController());
+    final NavigationController controller = Get.put(NavigationController(userId));
     final darkMode = THelperFunction.isDarkMode(context);
-    return Scaffold(
 
+    return Scaffold(
       bottomNavigationBar: Obx(
             () => NavigationBar(
           height: 60,
@@ -35,22 +35,33 @@ class NavigationMenu extends StatelessWidget {
             NavigationDestination(icon: Icon(Iconsax.home), label: 'Home'),
             NavigationDestination(icon: Icon(Iconsax.book), label: 'Received'),
             NavigationDestination(icon: Icon(Iconsax.user), label: 'Profile'),
-
-          ],),
+          ],
+        ),
       ),
       body: Obx(() => controller.screens[controller.selectedIndex.value]),
     );
   }
-
 }
 
-class NavigationController extends GetxController{
+class NavigationController extends GetxController {
   final Rx<int> selectedIndex = 2.obs;
+  final String userId;
 
-  final screens  = [
-    const SearchScreen(),
-    const MarkApp(),
-    const HomeScreen(),
-    const Received(),
-    const settingScreen()];
+  NavigationController(this.userId) {
+    updateScreens();
+  }
+
+  final RxList<Widget> screens = <Widget>[].obs;
+
+  void updateScreens() {
+    screens
+      ..clear()
+      ..addAll([
+        const SearchScreen(),
+        const MarkApp(),
+        const HomeScreen(),
+        Received(userId: userId), // Pass userId to Received screen
+        const SettingScreen(),
+      ]);
+  }
 }

@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class ToBeReturnedBooksScreen extends StatelessWidget {
-  const ToBeReturnedBooksScreen({super.key});
+  final String userId;
 
+  const ToBeReturnedBooksScreen({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,10 @@ class ToBeReturnedBooksScreen extends StatelessWidget {
               SizedBox(
                 height: MediaQuery.of(context).size.height * 0.8, // Adjust height as needed
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('toBeReturnedBooks').snapshots(),
+                  stream: FirebaseFirestore.instance
+                      .collection('toBeReturnedBooks')
+                      .where('userId', isEqualTo: userId) // Filter by userId
+                      .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -87,7 +91,6 @@ class ToBeReturnedBooksScreen extends StatelessWidget {
                                   ],
                                 ),
                               ),
-
                             ],
                           ),
                         );

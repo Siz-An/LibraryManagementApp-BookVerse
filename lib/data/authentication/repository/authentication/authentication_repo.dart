@@ -1,19 +1,20 @@
-import 'package:book_Verse/data/authentication/repository/userRepo.dart';
 import 'package:book_Verse/features/authentication/screens/login/login.dart';
+import 'package:book_Verse/features/authentication/screens/signup/verify_email.dart';
+import 'package:book_Verse/features/authentication/screens/onboarding.dart';
 import 'package:book_Verse/navigation_menu/navigation_menu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../../../../features/authentication/screens/onboarding.dart';
-import '../../../../features/authentication/screens/signup/verify_email.dart';
 import '../../../../utils/exceptions/firebase_auth_exception.dart';
 import '../../../../utils/exceptions/firebase_exception.dart';
 import '../../../../utils/exceptions/format_exception.dart';
 import '../../../../utils/exceptions/platform_exception.dart';
+import '../userRepo.dart';
 
 class AuthenticationRepository extends GetxController {
   static AuthenticationRepository get instance => Get.find();
@@ -26,9 +27,7 @@ class AuthenticationRepository extends GetxController {
   @override
   void onReady() {
     super.onReady();
-    // Remove splash screen on app launch
     FlutterNativeSplash.remove();
-    // Redirect to appropriate screen based on authentication status
     screenRedirect();
   }
 
@@ -37,9 +36,10 @@ class AuthenticationRepository extends GetxController {
 
     if (user != null) {
       if (user.emailVerified) {
-        Get.offAll(() => const NavigationMenu());
+        final userId = user.uid; // Get userId from Firebase
+        Get.offAll(() => NavigationMenu(userId: userId)); // Pass userId to NavigationMenu
       } else {
-        Get.offAll(() => VerifyEmailScreen(email: _auth.currentUser?.email));
+        Get.offAll(() => VerifyEmailScreen(email: user.email));
       }
     } else {
       deviceStorage.writeIfNull('IsFirstTime', true);
@@ -49,7 +49,6 @@ class AuthenticationRepository extends GetxController {
     }
   }
 
-  // Methods for authentication operations
   Future<UserCredential> loginWithEmailAndPassword(String email, String password) async {
     try {
       return await _auth.signInWithEmailAndPassword(email: email, password: password);

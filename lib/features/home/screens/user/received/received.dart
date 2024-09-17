@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class Received extends StatelessWidget {
-  const Received({super.key});
+  final String userId; // Add userId to the constructor
 
-  // Function to move book data to 'toBeReturnedBooks' and remove from 'issuedBooks'
+  const Received({Key? key, required this.userId}) : super(key: key);
+
   Future<void> _confirmReturnBook(BuildContext context, String docId, Map<String, dynamic> data) async {
-    // Show confirmation dialog
     final bool? isConfirmed = await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -28,30 +28,27 @@ class Received extends StatelessWidget {
       },
     );
 
-    // If user confirms return
     if (isConfirmed == true) {
       final toBeReturnedBooksCollection = FirebaseFirestore.instance.collection('toBeReturnedBooks');
       final issuedBooksCollection = FirebaseFirestore.instance.collection('issuedBooks');
 
-      // Add data to 'toBeReturnedBooks'
+      // Add the book to the 'toBeReturnedBooks' collection
       await toBeReturnedBooksCollection.add(data);
 
-      // Remove from 'issuedBooks'
+      // Remove the book from the 'issuedBooks' collection
       await issuedBooksCollection.doc(docId).delete();
     }
   }
 
-  // Function to handle book removal from 'rejectedBooks'
   Future<void> _removeBook(String docId) async {
     final rejectedBooksCollection = FirebaseFirestore.instance.collection('rejectedBooks');
 
-    // Remove book from 'rejectedBooks'
+    // Remove the rejected book document from Firestore
     await rejectedBooksCollection.doc(docId).delete();
   }
 
   @override
   Widget build(BuildContext context) {
-    // DateFormat instance to format dates
     final DateFormat dateFormat = DateFormat('dd MMMM yyyy');
 
     return Scaffold(
@@ -70,9 +67,12 @@ class Received extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               SizedBox(
-                height: MediaQuery.of(context).size.height * 0.4, // Adjust height as needed
+                height: MediaQuery.of(context).size.height * 0.4, // Adjust the height as needed
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('issuedBooks').snapshots(),
+                  stream: FirebaseFirestore.instance
+                      .collection('issuedBooks')
+                      .where('userId', isEqualTo: userId) // Filter by userId
+                      .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -87,7 +87,7 @@ class Received extends StatelessWidget {
                     return ListView(
                       children: snapshot.data!.docs.map((doc) {
                         final data = doc.data() as Map<String, dynamic>;
-                        final docId = doc.id; // Get the document ID for deletion
+                        final docId = doc.id;
 
                         return Container(
                           padding: const EdgeInsets.all(8.0),
@@ -141,9 +141,12 @@ class Received extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               SizedBox(
-                height: MediaQuery.of(context).size.height * 0.4, // Adjust height as needed
+                height: MediaQuery.of(context).size.height * 0.4, // Adjust the height as needed
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('rejectedBooks').snapshots(),
+                  stream: FirebaseFirestore.instance
+                      .collection('rejectedBooks')
+                      .where('userId', isEqualTo: userId) // Filter by userId
+                      .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -158,7 +161,7 @@ class Received extends StatelessWidget {
                     return ListView(
                       children: snapshot.data!.docs.map((doc) {
                         final data = doc.data() as Map<String, dynamic>;
-                        final docId = doc.id; // Get the document ID for deletion
+                        final docId = doc.id;
 
                         return Container(
                           padding: const EdgeInsets.all(8.0),
@@ -194,10 +197,10 @@ class Received extends StatelessWidget {
                               IconButton(
                                 icon: const Icon(Icons.check),
                                 onPressed: () {
+                                  // Remove the rejected book from Firestore
                                   _removeBook(docId);
                                 },
                               ),
-
                             ],
                           ),
                         );
