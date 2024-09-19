@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class Received extends StatelessWidget {
-  final String userId; // Add userId to the constructor
+  final String userId;
 
   const Received({Key? key, required this.userId}) : super(key: key);
 
@@ -32,8 +32,11 @@ class Received extends StatelessWidget {
       final toBeReturnedBooksCollection = FirebaseFirestore.instance.collection('toBeReturnedBooks');
       final issuedBooksCollection = FirebaseFirestore.instance.collection('issuedBooks');
 
-      // Add the book to the 'toBeReturnedBooks' collection
-      await toBeReturnedBooksCollection.add(data);
+      // Add the book to the 'toBeReturnedBooks' collection with the return date
+      await toBeReturnedBooksCollection.add({
+        ...data, // Spread the existing book data
+        'returnedDate': Timestamp.now(), // Add the current timestamp as the returned date
+      });
 
       // Remove the book from the 'issuedBooks' collection
       await issuedBooksCollection.doc(docId).delete();
@@ -67,11 +70,11 @@ class Received extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               SizedBox(
-                height: MediaQuery.of(context).size.height * 0.4, // Adjust the height as needed
+                height: MediaQuery.of(context).size.height * 0.4,
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('issuedBooks')
-                      .where('userId', isEqualTo: userId) // Filter by userId
+                      .where('userId', isEqualTo: userId)
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -141,11 +144,11 @@ class Received extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               SizedBox(
-                height: MediaQuery.of(context).size.height * 0.4, // Adjust the height as needed
+                height: MediaQuery.of(context).size.height * 0.4,
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('rejectedBooks')
-                      .where('userId', isEqualTo: userId) // Filter by userId
+                      .where('userId', isEqualTo: userId)
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {

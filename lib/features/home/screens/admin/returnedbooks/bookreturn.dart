@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class AcceptReturnedBooksScreen extends StatelessWidget {
-  const AcceptReturnedBooksScreen({super.key});
+  final String userId;
 
-  // Function to handle accepting a book return
-  Future<void> _acceptReturn(String docId, String bookId) async {
+  const AcceptReturnedBooksScreen({required this.userId, super.key});
+
+  // Function to handle accepting a book return and storing data in "DATA" collection
+  Future<void> _acceptReturn(String docId, String bookId, Map<String, dynamic> bookData) async {
     final toBeReturnedBooksCollection = FirebaseFirestore.instance.collection('toBeReturnedBooks');
     final booksCollection = FirebaseFirestore.instance.collection('books');
+    final usersCollection = FirebaseFirestore.instance.collection('Users');
+    final dataCollection = FirebaseFirestore.instance.collection('DATA');
 
     try {
       // Remove the book from 'toBeReturnedBooks'
@@ -23,197 +27,163 @@ class AcceptReturnedBooksScreen extends StatelessWidget {
           transaction.update(bookDoc, {'numberOfCopies': currentCopies + 1});
         }
       });
+
+      // Get user details from 'Users' collection
+      final userDoc = await usersCollection.doc(userId).get();
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+
+        // Prepare data for 'DATA' collection
+        final acceptedDate = DateTime.now();
+        await dataCollection.add({
+          'UserId': userId, // Insert userId here
+          'UserName': userData['UserName'],
+          'Email': userData['Email'],
+          'PhoneNumber': userData['PhoneNumber'],
+          'Image': bookData['imageUrl'],
+          'BookName': bookData['title'],
+          'IssueDate': bookData['issueDate'],
+          'AcceptedDate': acceptedDate,
+        });
+
+        print('Book return accepted and data stored successfully.');
+      } else {
+        print('User not found.');
+      }
     } catch (e) {
       print("Error accepting return and updating copies: $e");
     }
   }
 
-  Future<Map<String, dynamic>> _getUserDetails(String userId) async {
-    final userDoc = FirebaseFirestore.instance.collection('Users').doc(userId);
-    final snapshot = await userDoc.get();
-    if (snapshot.exists) {
-      final data = snapshot.data() as Map<String, dynamic>;
-      return {
-        'UserName': data['UserName'] ?? 'Unknown User',
-        'PhoneNumber': data['PhoneNumber'] ?? 'Unknown Phone Number',
-        'Email': data['Email'] ?? 'Unknown Email',
-      };
-    }
-    return {
-      'UserName': 'Unknown User',
-      'PhoneNumber': 'Unknown Phone Number',
-      'Email': 'Unknown Email',
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
-    // DateFormat instance to format dates
     final DateFormat dateFormat = DateFormat('dd MMMM yyyy');
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Accept Returned Books'),
+        title: const Text('Books to be Returned'),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'BOOKS TO ACCEPT RETURN:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.8, // Adjust height as needed
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('toBeReturnedBooks').snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    }
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(child: Text('No books to accept.'));
-                    }
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('toBeReturnedBooks')
+            .where('userId', isEqualTo: userId)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('No books to accept for return.'));
+          }
 
-                    return FutureBuilder(
-                      future: Future.wait(snapshot.data!.docs.map((doc) async {
-                        final data = doc.data() as Map<String, dynamic>;
-                        final userId = data["userId"] as String;
-                        final userDetails = await _getUserDetails(userId);
-                        return {
-                          'data': data,
-                          'userDetails': userDetails,
-                          'docId': doc.id,
-                          'bookId': data["bookId"] as String,
-                        };
-                      }).toList()),
-                      builder: (context, futureSnapshot) {
-                        if (futureSnapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
-                        if (futureSnapshot.hasError) {
-                          return Center(child: Text('Error: ${futureSnapshot.error}'));
-                        }
-                        if (!futureSnapshot.hasData || futureSnapshot.data!.isEmpty) {
-                          return const Center(child: Text('No books to accept.'));
-                        }
+          final books = snapshot.data!.docs;
 
-                        final books = futureSnapshot.data as List<Map<String, dynamic>>;
+          return ListView.builder(
+            itemCount: books.length,
+            itemBuilder: (context, index) {
+              final data = books[index].data() as Map<String, dynamic>;
+              final docId = books[index].id;
+              final bookId = data['bookId'] as String;
 
-                        return ListView(
-                          children: books.map((book) {
-                            final data = book['data'] as Map<String, dynamic>;
-                            final userDetails = book['userDetails'] as Map<String, dynamic>;
-                            final docId = book['docId'] as String;
-                            final bookId = book['bookId'] as String;
+              final issueDate = data["issueDate"] != null
+                  ? (data["issueDate"] as Timestamp).toDate()
+                  : null;
+              final requestedReturnDate = data["requestedReturnDate"] != null
+                  ? (data["requestedReturnDate"] as Timestamp).toDate()
+                  : null;
+              final returnDate = data["returnDate"] != null
+                  ? (data["returnDate"] as Timestamp).toDate()
+                  : null;
 
-                            // Check if the issueDate, requestedReturnDate, and returnDate fields are not null
-                            final issueDate = data["issueDate"] != null
-                                ? (data["issueDate"] as Timestamp).toDate()
-                                : null;
-                            final requestedReturnDate = data["requestedReturnDate"] != null
-                                ? (data["requestedReturnDate"] as Timestamp).toDate()
-                                : null;
-                            final returnDate = data["returnDate"] != null
-                                ? (data["returnDate"] as Timestamp).toDate()
-                                : null;
-
-                            return Container(
-                              padding: const EdgeInsets.all(8.0),
-                              margin: const EdgeInsets.only(bottom: 10),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(8),
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Book cover image
+                      if (data["imageUrl"] != null)
+                        Image.network(
+                          data["imageUrl"] as String,
+                          width: 80,
+                          height: 120,
+                          fit: BoxFit.cover,
+                        )
+                      else
+                        const SizedBox(
+                          width: 80,
+                          height: 120,
+                          child: Placeholder(),
+                        ),
+                      const SizedBox(width: 10),
+                      // Book details
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              data['title'] as String,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // User details section
-                                  Text(
-                                    'User: ${userDetails['UserName']}',
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                  ),
-                                  Text('Phone: ${userDetails['PhoneNumber']}'),
-                                  Text('Email: ${userDetails['Email']}'),
-                                  const SizedBox(height: 10),
-                                  // Book details section
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Image.network(
-                                        data["imageUrl"] as String,
-                                        width: 100,
-                                        height: 150,
-                                        fit: BoxFit.cover,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              data["title"] as String,
-                                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                            ),
-                                            Text('Writer: ${data["writer"] as String}'),
-                                            if (issueDate != null)
-                                              Text('Issue Date: ${dateFormat.format(issueDate)}'),
-                                            if (requestedReturnDate != null)
-                                              Text('Requested Return Date: ${dateFormat.format(requestedReturnDate)}'),
-                                            if (returnDate != null)
-                                              Text('Return Date: ${dateFormat.format(returnDate)}'),
-                                            Text('Book ID: $bookId'), // Display Book ID
-                                          ],
-                                        ),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.check_circle, color: Colors.green),
-                                        onPressed: () {
-                                          // Show a confirmation dialog before accepting the book return
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) => AlertDialog(
-                                              title: const Text('Accept Book Return'),
-                                              content: const Text('Are you sure you want to accept this returned book?'),
-                                              actions: [
-                                                TextButton(
-                                                  child: const Text('Cancel'),
-                                                  onPressed: () => Navigator.of(context).pop(),
-                                                ),
-                                                TextButton(
-                                                  child: const Text('OK'),
-                                                  onPressed: () {
-                                                    // Accept the book return and update the number of copies
-                                                    _acceptReturn(docId, bookId);
-                                                    Navigator.of(context).pop(); // Close the dialog
-                                                  },
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                            ),
+                            Text('Writer: ${data["writer"] as String}'),
+                            if (issueDate != null)
+                              Text('Issue Date: ${dateFormat.format(issueDate)}'),
+                            if (requestedReturnDate != null)
+                              Text('Requested Return Date: ${dateFormat.format(requestedReturnDate)}'),
+                            if (returnDate != null)
+                              Text(
+                                'Return Date: ${dateFormat.format(returnDate)}',
+                                style: const TextStyle(color: Colors.red),
+                              )
+                            else
+                              const Text(
+                                'Return Date: Not yet returned',
+                                style: TextStyle(color: Colors.grey),
                               ),
-                            );
-                          }).toList(),
-                        );
-                      },
-                    );
-                  },
+                          ],
+                        ),
+                      ),
+                      // Accept button
+                      IconButton(
+                        icon: const Icon(Icons.check_circle, color: Colors.green),
+                        onPressed: () {
+                          // Confirm return
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Accept Book Return'),
+                              content: const Text('Are you sure you want to accept this returned book?'),
+                              actions: [
+                                TextButton(
+                                  child: const Text('Cancel'),
+                                  onPressed: () => Navigator.of(context).pop(),
+                                ),
+                                TextButton(
+                                  child: const Text('OK'),
+                                  onPressed: () {
+                                    _acceptReturn(docId, bookId, data);
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
+              );
+            },
+          );
+        },
       ),
     );
   }

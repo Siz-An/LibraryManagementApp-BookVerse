@@ -187,7 +187,7 @@ class BookmarkScreen extends StatelessWidget {
 
     // Check if any of the requested books are already issued
     final issuedBooksSnapshot = await FirebaseFirestore.instance
-        .collection('issuedbooks')
+        .collection('issuedBooks')
         .where('userId', isEqualTo: userId)
         .get();
 

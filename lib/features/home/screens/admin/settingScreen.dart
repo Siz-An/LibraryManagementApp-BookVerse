@@ -1,11 +1,13 @@
 import 'package:book_Verse/data/authentication/repository/authentication/admin_auth_repo.dart';
 import 'package:book_Verse/features/home/screens/admin/requests.dart';
 import 'package:book_Verse/features/home/screens/admin/returnedbooks/bookreturn.dart';
+import 'package:book_Verse/features/home/screens/admin/returnedbooks/bookreturnUserScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../../common/widgets/proFile/settings_menu.dart';
 import '../../../../utils/constants/sizes.dart';
+import '../DataForAdmin/datas.dart';
 import 'BookIssue/Issuing.dart';
 import 'editScreen.dart';
 import 'notification/notificationScreen.dart';
@@ -58,13 +60,13 @@ class SettingsScreen extends StatelessWidget {
                     icon: Iconsax.alarm,
                     title: 'Book Return Notice',
                     subTitle: 'List books that the user has to return',
-                    onTap: () => Get.to(() => AcceptReturnedBooksScreen()),
+                    onTap: () => Get.to(() => AcceptReturnUsersScreen()),
                   ),
                   TSettingMenu(
                     icon: Iconsax.export,
-                    title: 'Exchange',
-                    subTitle: 'User can exchange books among themselves.',
-                    onTap: () {},
+                    title: 'DATA',
+                    subTitle: 'DATA available here',
+                    onTap: ()=> Get.to(() => IssuedBooksPage()),
                   ),
                   TSettingMenu(
                     icon: Iconsax.search_normal,
