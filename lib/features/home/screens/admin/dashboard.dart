@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'USersScreen/allUser.dart';
+import 'allbooks.dart'; // Import the new users screen
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -19,9 +21,9 @@ class _DashboardState extends State<Dashboard> {
 
   void _loadData() {
     _futureData = Future.wait([
-      FirebaseFirestore.instance.collection('Books').get(),
+      FirebaseFirestore.instance.collection('books').get(),
       FirebaseFirestore.instance.collection('Users').get(),
-      FirebaseFirestore.instance.collection('IssuedBooks').get(),
+      FirebaseFirestore.instance.collection('issuedBooks').get(),
       FirebaseFirestore.instance.collection('ReturnedBooks').get(),
     ]);
   }
@@ -61,8 +63,8 @@ class _DashboardState extends State<Dashboard> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              _buildStatCard('Total Number of Books', totalBooks.toString()),
-              _buildStatCard('Total Number of Users', totalUsers.toString()),
+              _buildStatCard('Total Number of Books', totalBooks.toString(), context, AllBooksScreenadmin()),
+              _buildStatCard('Total Number of Users', totalUsers.toString(), context, AllUsersScreen()),
               _buildNotificationsCard(),
               _buildIssuedBooksCard(issuedBooks),
               _buildReturnedBooksCard(returnedBooks),
@@ -73,14 +75,24 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildStatCard(String title, String value) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 4,
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        title: Text(title),
-        trailing: Text(value, style: TextStyle(fontWeight: FontWeight.bold)),
+  Widget _buildStatCard(String title, String value, BuildContext context, [Widget? navigateTo]) {
+    return GestureDetector(
+      onTap: () {
+        if (navigateTo != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => navigateTo),
+          );
+        }
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        elevation: 4,
+        child: ListTile(
+          contentPadding: const EdgeInsets.all(16),
+          title: Text(title),
+          trailing: Text(value, style: TextStyle(fontWeight: FontWeight.bold)),
+        ),
       ),
     );
   }

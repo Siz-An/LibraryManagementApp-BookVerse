@@ -8,6 +8,7 @@ import 'package:iconsax/iconsax.dart';
 import '../../../../common/widgets/proFile/settings_menu.dart';
 import '../../../../utils/constants/sizes.dart';
 import '../DataForAdmin/datas.dart';
+import '../DataForAdmin/usersdata.dart';
 import 'BookIssue/Issuing.dart';
 import 'editScreen.dart';
 import 'notification/notificationScreen.dart';
@@ -66,7 +67,7 @@ class SettingsScreen extends StatelessWidget {
                     icon: Iconsax.export,
                     title: 'DATA',
                     subTitle: 'DATA available here',
-                    onTap: ()=> Get.to(() => IssuedBooksPage()),
+                    onTap: ()=> Get.to(() => UserListPage()),
                   ),
                   TSettingMenu(
                     icon: Iconsax.search_normal,

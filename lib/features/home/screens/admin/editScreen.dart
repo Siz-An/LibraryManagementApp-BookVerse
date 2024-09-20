@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'booksEditing/editBooks.dart';
+import '../user/search/BooksAll.dart';
+import 'allbooks.dart';
+import 'booksEditing/editBooks.dart';// Import the new screen
 
 class SearchBookScreen extends StatefulWidget {
   @override
@@ -101,6 +103,15 @@ class _SearchBookScreenState extends State<SearchBookScreen> {
               });
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.list),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AllBooksScreenadmin()),
+              );
+            },
+          ),
         ],
       ),
       body: Padding(
@@ -168,7 +179,6 @@ class _SearchBookScreenState extends State<SearchBookScreen> {
                                   builder: (context) => EditBookScreen(bookId: _bookId!),
                                 ),
                               ).then((_) {
-                                // Refresh the page when returning from the edit screen
                                 setState(() {
                                   _bookFound = false;
                                   _bookData = null;
@@ -179,8 +189,8 @@ class _SearchBookScreenState extends State<SearchBookScreen> {
                           },
                           child: const Text('Edit Book'),
                           style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white, backgroundColor: Colors.green, // Text color
-                            minimumSize: Size(150, 50), // Button size
+                            foregroundColor: Colors.white, backgroundColor: Colors.green,
+                            minimumSize: Size(150, 50),
                           ),
                         ),
                         ElevatedButton(
@@ -212,8 +222,8 @@ class _SearchBookScreenState extends State<SearchBookScreen> {
                           },
                           child: const Text('Delete Book'),
                           style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white, backgroundColor: Colors.red, // Text color
-                            minimumSize: Size(150, 50), // Button size
+                            foregroundColor: Colors.white, backgroundColor: Colors.red,
+                            minimumSize: Size(150, 50),
                           ),
                         ),
                       ],
