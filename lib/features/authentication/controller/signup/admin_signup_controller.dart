@@ -23,7 +23,7 @@ class AdminSignupController extends GetxController {
   final password = TextEditingController();
   final phoneNumber = TextEditingController();
   final userName = TextEditingController();
-  GlobalKey<FormState> signupFormKey = GlobalKey<FormState>();
+  GlobalKey<FormState> adminsignupFormKey = GlobalKey<FormState>();
 
   void signup() async {
     // Start loading
@@ -42,7 +42,7 @@ class AdminSignupController extends GetxController {
     }
 
     // Form Validation
-    if (!signupFormKey.currentState!.validate()) {
+    if (!adminsignupFormKey.currentState!.validate()) {
       TFullScreenLoader.stopLoading();
       return;
     }

@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import '../../../../common/network_check/network_manager.dart';
 import '../../../../data/authentication/repository/authentication/authentication_repo.dart';
+import '../../../../data/authentication/repository/userRepo.dart';
 import '../../../../utils/constants/image_strings.dart';
 import '../../../../utils/popups/fullscreen_loader.dart';
 import '../../../../utils/popups/loaders.dart';
@@ -23,7 +24,7 @@ class SignupController extends GetxController {
   final password = TextEditingController();
   final phoneNumber = TextEditingController();
   final userName = TextEditingController();
-  GlobalKey<FormState> signupFormKey = GlobalKey<FormState>();
+  GlobalKey<FormState> usersignupFormKey = GlobalKey<FormState>();
 
   void signup() async {
     // Start loading
@@ -42,7 +43,7 @@ class SignupController extends GetxController {
     }
 
     // Form Validation
-    if (!signupFormKey.currentState!.validate()) {
+    if (!usersignupFormKey.currentState!.validate()) {
       TFullScreenLoader.stopLoading();
       return;
     }
@@ -75,7 +76,7 @@ class SignupController extends GetxController {
         role: 'User',
       );
 
-      final userRepo = Get.put(UserRepo());
+      final userRepo = Get.put(UserRepository());
       await userRepo.saveUserRecord(newUser);
 
       // Show success Method

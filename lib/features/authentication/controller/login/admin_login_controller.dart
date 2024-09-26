@@ -17,7 +17,7 @@ class AdminLoginController extends GetxController {
   final localStorage = GetStorage();
   final email = TextEditingController();
   final password = TextEditingController();
-  GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
+  GlobalKey<FormState> adminloginFormKey = GlobalKey<FormState>();
   final adminController = Get.put(AdminController());
   final selectedRole = 'Admin'.obs; // Default to Admin role
 
@@ -34,7 +34,7 @@ class AdminLoginController extends GetxController {
         return;
       }
 
-      if (!loginFormKey.currentState!.validate()) {
+      if (!adminloginFormKey.currentState!.validate()) {
         TFullScreenLoader.stopLoading();
         return;
       }

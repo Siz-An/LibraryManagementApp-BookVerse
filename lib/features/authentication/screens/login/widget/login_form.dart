@@ -10,7 +10,7 @@ import '../../../../../utils/constants/text_strings.dart';
 import '../../signup/signup.dart';
 
 class TLoginForm extends StatefulWidget {
-  const TLoginForm({super.key});
+  const TLoginForm({super.key, required GlobalKey<FormState> formKey});
 
   @override
   _TLoginFormState createState() => _TLoginFormState();
@@ -27,7 +27,7 @@ class _TLoginFormState extends State<TLoginForm> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Form(
-      key: (_selectedRole == 'User') ? userController.loginFormKey : adminController.loginFormKey,
+      key: (_selectedRole == 'User') ? userController.userloginFormKey : adminController.adminloginFormKey,
       child: Padding(
         padding: EdgeInsets.symmetric(
           vertical: screenWidth < 600 ? TSizes.spaceBtwSections : TSizes.spaceBtwSections * 1.5,

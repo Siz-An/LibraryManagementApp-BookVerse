@@ -9,7 +9,7 @@ import '../../../../../utils/constants/sizes.dart';
 import '../../../../../utils/constants/text_strings.dart';
 
 class TSignupform extends StatefulWidget {
-  const TSignupform({super.key});
+  const TSignupform({super.key, required GlobalKey<FormState> formKey});
 
   @override
   _TSignupformState createState() => _TSignupformState();
@@ -24,7 +24,7 @@ class _TSignupformState extends State<TSignupform> {
     final adminController = Get.put(AdminSignupController());
 
     return Form(
-      key: (_selectedRole == 'User') ? userController.signupFormKey : adminController.signupFormKey,
+      key: (_selectedRole == 'User') ? userController.usersignupFormKey : adminController.adminsignupFormKey,
       child: Column(
         children: [
           Row(
