@@ -5,9 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../../books/detailScreen/genre_book_detail_screen.dart';
 import '../../../../../books/popular_books.dart';  // Import the new file
 import '../../../../../books/CourseSection/courseSelection.dart';
+import '../../../../../books/randombooks.dart';
 import '../../../../../common/widgets/custom_shapes/primary_header_container.dart';
 import '../../../../../common/widgets/texts/section_heading.dart';
-import '../../../../../utils/constants/image_strings.dart';
 import '../../../../../utils/constants/sizes.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -36,7 +36,7 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 children: [
                   const TPopularBooks(),
-
+                  const TRandomBooks(),
                   // Course Books Section
                   TSectionHeading(
                     title: '| Course Books',
