@@ -164,6 +164,7 @@ class BookmarkScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to remove bookmark: $error')));
     }
   }
+
   Future<void> _saveBookmarksToRequests(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -221,42 +222,48 @@ class BookmarkScreen extends StatelessWidget {
         .map((book) => book['title'] ?? '')
         .toSet();
 
+    final newlyAddedBooks = nonIssuedBooks
+        .where((book) => !existingRequests.contains(book['title'] ?? ''))
+        .toList();
+
     // Prepare the messages
     final issuedMessage = alreadyIssuedBooks.isNotEmpty
         ? 'The following books are already issued:\n${alreadyIssuedBooks.join(', ')}\n'
         : '';
     final requestsMessage = alreadyRequestedBooks.isNotEmpty
-        ? 'The following books are already in your requests:\n${alreadyRequestedBooks.join(', ')}'
+        ? 'The following books are already in your requests:\n${alreadyRequestedBooks.join(', ')}\n'
         : '';
-
-    String additionalMessage = '';
-    if (nonIssuedBooks.isNotEmpty && alreadyRequestedBooks.isEmpty) {
-      final nonIssuedTitles = nonIssuedBooks.map((book) => book['title'] ?? '').join(', ');
-      additionalMessage = 'Only these books have been added to your requests:\n$nonIssuedTitles';
-    }
+    final addedMessage = newlyAddedBooks.isNotEmpty
+        ? 'The following books have been added to your requests:\n${newlyAddedBooks.map((book) => book['title']).join(', ')}\n'
+        : 'No new books were added to your requests.';
 
     // Show a dialog with the messages
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Books Status'),
-        content: Text('$issuedMessage$requestsMessage$additionalMessage'),
+        content: Text('$issuedMessage$requestsMessage$addedMessage'),
         actions: [
           TextButton(
             onPressed: () async {
               Navigator.of(context).pop();
-              // Proceed to save the non-issued books that are not already requested
-              if (nonIssuedBooks.isNotEmpty && alreadyRequestedBooks.isEmpty) {
+
+              // Save newly added books to requests
+              if (newlyAddedBooks.isNotEmpty) {
                 try {
                   await FirebaseFirestore.instance.collection('requests').add({
                     'userId': userId,
-                    'books': nonIssuedBooks,
+                    'books': newlyAddedBooks,
                     'requestedAt': FieldValue.serverTimestamp(),
                   });
 
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Bookmarked books saved to requests')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Selected books added to your requests')),
+                  );
                 } catch (error) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save bookmarks: $error')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to add requests: $error')),
+                  );
                 }
               }
             },
@@ -266,5 +273,4 @@ class BookmarkScreen extends StatelessWidget {
       ),
     );
   }
-
 }
