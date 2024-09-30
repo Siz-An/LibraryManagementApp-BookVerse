@@ -382,6 +382,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.4.1"
+  flutter_data_table:
+    dependency: "direct main"
+    description:
+      name: flutter_data_table
+      sha256: "3628034ff4cbb2cf0850ea4ee505618a3636ba460ddfd7658e5065aaeb8dc52b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   flutter_lints:
     dependency: "direct dev"
     description:

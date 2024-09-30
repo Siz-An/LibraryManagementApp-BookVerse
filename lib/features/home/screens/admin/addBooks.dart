@@ -14,7 +14,6 @@ class AddBooks extends StatefulWidget {
 class _AddBooksState extends State<AddBooks> {
   final _formKey = GlobalKey<FormState>();
   final _numberOfBooksController = TextEditingController();
-  final _idController = TextEditingController();
   final _titleController = TextEditingController();
   final _writerController = TextEditingController();
   final _genreController = TextEditingController();
@@ -38,8 +37,8 @@ class _AddBooksState extends State<AddBooks> {
     if (_formKey.currentState!.validate()) {
       try {
         int numberOfBooks = int.parse(_numberOfBooksController.text);
-
         String imageUrl = '';
+
         if (_image != null) {
           String fileName = _image!.path.split('/').last;
           TaskSnapshot snapshot = await FirebaseStorage.instance
@@ -48,50 +47,36 @@ class _AddBooksState extends State<AddBooks> {
           imageUrl = await snapshot.ref.getDownloadURL();
         }
 
-        // Split the genre text by commas and trim whitespace
         List<String>? genres = !_isCourseBook
-            ? _genreController.text.split(',').map((e) => e.trim()).toList()
+            ? _genreController.text.split(',').map((e) => e.trim().toUpperCase()).toList() // Convert genres to uppercase
             : null;
 
         await FirebaseFirestore.instance.collection('books').add({
-          'title': _titleController.text,
-          'writer': _writerController.text,
-          'genre': genres, // Store the list of genres
-          'course': _isCourseBook ? _courseController.text : null,
-          'grade': _isCourseBook && _gradeController.text.isNotEmpty ? _gradeController.text : null,
+          'title': _titleController.text.toUpperCase(), // Convert title to uppercase
+          'writer': _writerController.text.toUpperCase(), // Convert writer to uppercase
+          'genre': genres,
+          'course': _isCourseBook ? _courseController.text.toUpperCase() : null, // Convert course to uppercase
+          'grade': _isCourseBook && _gradeController.text.isNotEmpty ? _gradeController.text.toUpperCase() : null, // Convert grade to uppercase
           'imageUrl': _image != null ? imageUrl : null,
           'isCourseBook': _isCourseBook,
-          'summary': _summaryController.text,
-          'numberOfCopies': numberOfBooks, // Added field for number of copies
+          'summary': _summaryController.text, // Keep summary in original case
+          'numberOfCopies': numberOfBooks,
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Books added successfully')),
         );
 
-        // Show dialog to confirm sending a notification
         bool sendNotification = await _showNotificationDialog();
-
         if (sendNotification) {
           await FirebaseFirestore.instance.collection('notifications').add({
             'title': 'New Book Added',
-            'message': 'A new book titled "${_titleController.text}" has been added.',
+            'message': 'A new book titled "${_titleController.text.toUpperCase()}" has been added.',
             'timestamp': FieldValue.serverTimestamp(),
           });
         }
 
-        // Clear the form for the next entry
-        _numberOfBooksController.clear();
-        _idController.clear();
-        _titleController.clear();
-        _writerController.clear();
-        _genreController.clear();
-        _courseController.clear();
-        _gradeController.clear();
-        _summaryController.clear();
-        setState(() {
-          _image = null;
-        });
+        _clearForm();
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to add books: $e')),
@@ -126,6 +111,20 @@ class _AddBooksState extends State<AddBooks> {
     ) ?? false;
   }
 
+  void _clearForm() {
+    _numberOfBooksController.clear();
+    _titleController.clear();
+    _writerController.clear();
+    _genreController.clear();
+    _courseController.clear();
+    _gradeController.clear();
+    _summaryController.clear();
+    setState(() {
+      _image = null;
+      _isCourseBook = false; // Reset the course book switch
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,14 +151,6 @@ class _AddBooksState extends State<AddBooks> {
                   }
                   return null;
                 },
-              ),
-              const SizedBox(height: 10),
-              TextFormField(
-                controller: _idController,
-                decoration: const InputDecoration(
-                  labelText: 'Book ID (optional)',
-                  border: OutlineInputBorder(),
-                ),
               ),
               const SizedBox(height: 10),
               SwitchListTile(
@@ -274,7 +265,7 @@ class _AddBooksState extends State<AddBooks> {
                       const SizedBox(height: 10),
                       Image.file(
                         _image!,
-                        height: 150, // Reduced height
+                        height: 150,
                         width: 150,
                         fit: BoxFit.cover,
                       ),
@@ -295,7 +286,7 @@ class _AddBooksState extends State<AddBooks> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10), // Space between buttons
+                  const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: _addBooks,

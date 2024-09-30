@@ -1,5 +1,8 @@
+import 'package:book_Verse/features/home/screens/admin/widgets/adminappbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../../../../common/widgets/custom_shapes/primary_header_container.dart';
+import '../../../../utils/constants/sizes.dart';
 import 'USersScreen/allUser.dart';
 import 'allbooks.dart'; // Import the new users screen
 
@@ -31,46 +34,66 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        centerTitle: true,
-      ),
-      body: FutureBuilder<List<QuerySnapshot>>(
-        future: _futureData,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Header section
+            const TPrimaryHeaderContainer(
+              child: Column(
+                children: [
+                  SizedBox(height: TSizes.sm),
+                  TAdminAppBar(),
+                  SizedBox(height: TSizes.spaceBtwSections),
+                ],
+              ),
+            ),
 
-          if (snapshot.hasError) {
-            return Center(child: Text('Something went wrong'));
-          }
+            // Dashboard content
+            FutureBuilder<List<QuerySnapshot>>(
+              future: _futureData,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
 
-          if (!snapshot.hasData) {
-            return Center(child: Text('No data found'));
-          }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Something went wrong'));
+                }
 
-          final booksSnapshot = snapshot.data![0];
-          final usersSnapshot = snapshot.data![1];
-          final issuedBooksSnapshot = snapshot.data![2];
-          final returnedBooksSnapshot = snapshot.data![3];
+                if (!snapshot.hasData) {
+                  return Center(child: Text('No data found'));
+                }
 
-          final totalBooks = booksSnapshot.size;
-          final totalUsers = usersSnapshot.size;
-          final issuedBooks = issuedBooksSnapshot.docs;
-          final returnedBooks = returnedBooksSnapshot.docs;
+                final booksSnapshot = snapshot.data![0];
+                final usersSnapshot = snapshot.data![1];
+                final issuedBooksSnapshot = snapshot.data![2];
+                final returnedBooksSnapshot = snapshot.data![3];
 
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              _buildStatCard('Total Number of Books', totalBooks.toString(), context, AllBooksScreenadmin()),
-              _buildStatCard('Total Number of Users', totalUsers.toString(), context, AllUsersScreen()),
-              _buildNotificationsCard(),
-              _buildIssuedBooksCard(issuedBooks),
-              _buildReturnedBooksCard(returnedBooks),
-            ],
-          );
-        },
+                final totalBooks = booksSnapshot.size;
+                final totalUsers = usersSnapshot.size;
+                final issuedBooks = issuedBooksSnapshot.docs;
+                final returnedBooks = returnedBooksSnapshot.docs;
+
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          _buildStatCard('Total Number of Books', totalBooks.toString(), context, AllBooksScreenadmin()),
+                          _buildStatCard('Total Number of Users', totalUsers.toString(), context, AllUsersScreen()),
+                          _buildNotificationsCard(),
+                          _buildIssuedBooksCard(issuedBooks),
+                          _buildReturnedBooksCard(returnedBooks),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

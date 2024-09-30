@@ -1,6 +1,4 @@
 import 'package:book_Verse/common/widgets/products/bookmark/bookmark_icon.dart';
-import 'package:book_Verse/features/personalization/controller/user_Controller.dart';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -8,16 +6,17 @@ import '../../../../../../common/widgets/appbar/appbar.dart';
 import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/shimmer.dart';
 import '../../../../../../utils/constants/text_strings.dart';
-import '../../notification.dart';
+import '../../../../personalization/controller/admin_Controller.dart';
+import '../../user/notification.dart';
 
-class THomeAppBar extends StatelessWidget {
-  const THomeAppBar({
+class TAdminAppBar extends StatelessWidget {
+  const TAdminAppBar({
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(UserController());
+    final controller = Get.put(AdminController());
     return TAppBar(
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,13 +26,13 @@ class THomeAppBar extends StatelessWidget {
             if(controller.profileLoading.value){
               return const TShimmerEffect(width: 80, height: 15);
             }else{
-              return Text( controller.user.value.fullName, style: Theme.of(context).textTheme.bodySmall!.apply(color: TColors.white ));
+              return Text( controller.admin.value.fullName, style: Theme.of(context).textTheme.bodySmall!.apply(color: TColors.white ));
             }
           })
         ],
       ),
       actions:  [
-        TCartCounterIcons(onPressed: () => Get.to(()=> AdminNotificationScreen()),iconColor: TColors.white, icon: Iconsax.notification,),
+        TCartCounterIcons(onPressed: () => Get.to(()=> AdminNotificationScreen()),iconColor: TColors.white, icon: Iconsax.user,),
       ],
     );
   }

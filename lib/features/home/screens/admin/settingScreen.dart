@@ -1,95 +1,118 @@
 import 'package:book_Verse/data/authentication/repository/authentication/admin_auth_repo.dart';
 import 'package:book_Verse/features/home/screens/admin/requests.dart';
-import 'package:book_Verse/features/home/screens/admin/returnedbooks/bookreturn.dart';
 import 'package:book_Verse/features/home/screens/admin/returnedbooks/bookreturnUserScreen.dart';
+import 'package:book_Verse/features/home/screens/admin/widgets/adminprofile.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import '../../../../common/widgets/proFile/settings_menu.dart';
+import '../../../../common/widgets/appbar/appbar.dart';
+import '../../../../common/widgets/custom_shapes/primary_header_container.dart';
+import '../../../../common/widgets/texts/section_heading.dart';
 import '../../../../utils/constants/sizes.dart';
-import '../DataForAdmin/datas.dart';
+import '../../../personalization/profile/widgets/users_Screen.dart';
 import '../DataForAdmin/usersdata.dart';
-import 'BookIssue/Issuing.dart';
+import 'BookIssue/users.dart';
 import 'editScreen.dart';
 import 'notification/notificationScreen.dart';
 
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+class AdminSettingsScreen extends StatelessWidget {
+  const AdminSettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: Colors.black),
-      ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: TSizes.defaultSpace),
+      body: SingleChildScrollView(
         child: Column(
+          mainAxisSize: MainAxisSize.min, // Add this to avoid conflicting constraints
           children: [
-            SizedBox(height: TSizes.spaceBtwSections),
-            Text(
-              'Manage Your Settings',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: TSizes.spaceBtwSections),
-            Expanded(
-              child: ListView(
+            ///----> Header
+            TPrimaryHeaderContainer(
+              child: Column(
                 children: [
-                  TSettingMenu(
-                    icon: Iconsax.bookmark,
-                    title: 'Notification',
-                    subTitle: 'Send Notification to Users',
-                    onTap: () => Get.to(() => NotificationScreen()),
-                  ),
-                  TSettingMenu(
-                    icon: Iconsax.archive_tick,
-                    title: 'Issue',
-                    subTitle: 'List books that the Librarian has Issued',
-                    onTap: ()=> Get.to(() => bookIssuing()),
-                  ),
-                  TSettingMenu(
-                    icon: Iconsax.receipt,
-                    title: 'Return History',
-                    subTitle: 'Books that the user has returned',
-                    onTap: () => Get.to(() => AdminUserRequestsScreen()),
-                  ),
-                  TSettingMenu(
-                    icon: Iconsax.alarm,
-                    title: 'Book Return Notice',
-                    subTitle: 'List books that the user has to return',
-                    onTap: () => Get.to(() => AcceptReturnUsersScreen()),
-                  ),
-                  TSettingMenu(
-                    icon: Iconsax.export,
-                    title: 'DATA',
-                    subTitle: 'DATA available here',
-                    onTap: ()=> Get.to(() => UserListPage()),
-                  ),
-                  TSettingMenu(
-                    icon: Iconsax.search_normal,
-                    title: 'Search Screen',
-                    subTitle: 'Chat with Students',
-                    onTap: () => Get.to(() => SearchBookScreen()),
-                  ),
-                  SizedBox(height: TSizes.spaceBtwSections),
-                  ElevatedButton(
-                    onPressed: () {
-                      _showLogoutConfirmationDialog(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, backgroundColor: Colors.green, // Text color
-                      padding: EdgeInsets.symmetric(vertical: 16.0), // Add some padding
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0), // Rounded corners
-                      ),
+                  ///----> App Bar
+                  TAppBar(
+                    title: Text(
+                      'Settings',
+                      style: Theme.of(context).textTheme.headlineMedium!.apply(color: Colors.white),
                     ),
-                    child: const Text('Logout', style: TextStyle(fontSize: 16)),
                   ),
-                  SizedBox(height: TSizes.spaceBtwSections),
+
+                  ///----> UserProfile
+                  TAdminProfileTitle(onPressed: () => Get.to(() => const userScreen())),
+
+                  const SizedBox(height: TSizes.spaceBtwSections),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: TSizes.defaultSpace),
+              child: Column(
+                children: [
+                  ListView(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(), // Prevent scrolling inside scrollable
+                    children: [
+                      TSectionHeading(title: 'Features', showActionButton: false,),
+                      _buildSettingItem(
+                        context,
+                        icon: Iconsax.bookmark,
+                        title: 'Notification',
+                        subTitle: 'Send Notification to Users',
+                        onTap: () => Get.to(() => const NotificationScreen()),
+                      ),
+                      _buildSettingItem(
+                        context,
+                        icon: Iconsax.archive_tick,
+                        title: 'Issue',
+                        subTitle: 'List books that the Librarian has Issued',
+                        onTap: () => Get.to(() => const UsersListScreen()),
+                      ),
+                      _buildSettingItem(
+                        context,
+                        icon: Iconsax.receipt,
+                        title: 'Return History',
+                        subTitle: 'Books that the user has returned',
+                        onTap: () => Get.to(() =>  AdminUserRequestsScreen()),
+                      ),
+                      _buildSettingItem(
+                        context,
+                        icon: Iconsax.alarm,
+                        title: 'Book Return Notice',
+                        subTitle: 'List books that the user has to return',
+                        onTap: () => Get.to(() => const AcceptReturnUsersScreen()),
+                      ),
+                      _buildSettingItem(
+                        context,
+                        icon: Iconsax.export,
+                        title: 'DATA',
+                        subTitle: 'DATA available here',
+                        onTap: () => Get.to(() => const UserListPage()),
+                      ),
+                      _buildSettingItem(
+                        context,
+                        icon: Iconsax.search_normal,
+                        title: 'Search Screen',
+                        subTitle: 'Chat with Students',
+                        onTap: () => Get.to(() =>  SearchBookScreen()),
+                      ),
+                      SizedBox(height: TSizes.spaceBtwSections),
+                      ElevatedButton(
+                        onPressed: () {
+                          _showLogoutConfirmationDialog(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.green,
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        child: const Text('Logout', style: TextStyle(fontSize: 16)),
+                      ),
+                      SizedBox(height: TSizes.spaceBtwSections),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -98,33 +121,44 @@ class SettingsScreen extends StatelessWidget {
       ),
     );
   }
-}
 
-///---> Confirmation Logout Button
-void _showLogoutConfirmationDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Confirm Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          TextButton(
-            child: const Text('Confirm'),
-            onPressed: () {
-              // Call logout method here
-              Get.find<AdminAuthenticationRepository>().logout();
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
+  Widget _buildSettingItem(BuildContext context, {required IconData icon, required String title, required String subTitle, required VoidCallback onTap}) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      child: ListTile(
+        leading: Icon(icon, color: Theme.of(context).primaryColor),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(subTitle),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  ///---> Confirmation Logout Button
+  void _showLogoutConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Confirm'),
+              onPressed: () {
+                Get.find<AdminAuthenticationRepository>().logout();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

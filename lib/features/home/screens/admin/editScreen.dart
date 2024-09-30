@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../user/search/BooksAll.dart';
 import 'allbooks.dart';
-import 'booksEditing/editBooks.dart';// Import the new screen
+import 'booksEditing/editBooks.dart';
 
 class SearchBookScreen extends StatefulWidget {
   @override
@@ -11,79 +10,31 @@ class SearchBookScreen extends StatefulWidget {
 
 class _SearchBookScreenState extends State<SearchBookScreen> {
   final _searchController = TextEditingController();
-  String? _bookId;
-  bool _bookFound = false;
-  Map<String, dynamic>? _bookData;
+  List<DocumentSnapshot> searchResults = [];
 
-  Future<void> _searchBook() async {
-    setState(() {
-      _bookFound = false;
-    });
-
-    final searchQuery = _searchController.text.trim();
-    if (searchQuery.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a book title or ID')),
-      );
+  Future<void> _searchBooks(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        searchResults = [];
+      });
       return;
     }
 
     try {
-      DocumentSnapshot doc;
+      // Fetch all books from Firestore
+      final snapshot = await FirebaseFirestore.instance.collection('books').get();
 
-      if (searchQuery.contains(RegExp(r'^[0-9a-fA-F]{24}$'))) {
-        // Search by ID (assuming IDs are 24-character hex strings)
-        doc = await FirebaseFirestore.instance.collection('books').doc(searchQuery).get();
-      } else {
-        // Search by title
-        final snapshot = await FirebaseFirestore.instance.collection('books')
-            .where('title', isEqualTo: searchQuery)
-            .limit(1)
-            .get();
-        if (snapshot.docs.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No book found with that title')),
-          );
-          return;
-        }
-        doc = snapshot.docs.first;
-      }
-
-      if (doc.exists) {
-        setState(() {
-          _bookId = doc.id;
-          _bookData = doc.data() as Map<String, dynamic>?;
-          _bookFound = true;
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No book found')),
-        );
-      }
+      // Filter results (case-insensitive)
+      setState(() {
+        searchResults = snapshot.docs.where((doc) {
+          final bookTitle = (doc.data() as Map<String, dynamic>)['title'] as String;
+          return bookTitle.toLowerCase().contains(query.toLowerCase());
+        }).toList();
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to search book: $e')),
+        SnackBar(content: Text('Failed to search books: $e')),
       );
-    }
-  }
-
-  Future<void> _deleteBook() async {
-    if (_bookId != null) {
-      try {
-        await FirebaseFirestore.instance.collection('books').doc(_bookId).delete();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Book deleted successfully')),
-        );
-        setState(() {
-          _bookFound = false;
-          _bookData = null;
-          _searchController.clear();
-        });
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete book: $e')),
-        );
-      }
     }
   }
 
@@ -98,8 +49,7 @@ class _SearchBookScreenState extends State<SearchBookScreen> {
             onPressed: () {
               setState(() {
                 _searchController.clear();
-                _bookFound = false;
-                _bookData = null;
+                searchResults = [];
               });
             },
           ),
@@ -123,120 +73,72 @@ class _SearchBookScreenState extends State<SearchBookScreen> {
               decoration: InputDecoration(
                 labelText: 'Enter Book Title or ID',
                 border: OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: _searchBook,
-                ),
+                suffixIcon: Icon(Icons.search),
               ),
-              onSubmitted: (_) => _searchBook(),
+              onChanged: (value) {
+                _searchBooks(value); // Call search method on every keystroke
+              },
             ),
             const SizedBox(height: 16),
-            if (_bookFound && _bookData != null)
-              Expanded(
-                child: ListView(
-                  children: [
-                    ListTile(
-                      title: Text('Title: ${_bookData!['title']}'),
+            Expanded(
+              child: _searchController.text.isEmpty
+                  ? const Center(child: Text('No results found'))
+                  : searchResults.isEmpty
+                  ? const Center(child: Text('No books match your search'))
+                  : ListView.builder(
+                itemCount: searchResults.length,
+                itemBuilder: (context, index) {
+                  final book = searchResults[index].data() as Map<String, dynamic>;
+                  final bookId = searchResults[index].id;
+                  final title = book['title'] ?? 'No title';
+                  final writer = book['writer'] ?? 'Unknown author';
+                  final imageUrl = book['imageUrl'] ?? '';
+
+                  return ListTile(
+                    leading: imageUrl.isEmpty
+                        ? const Icon(Icons.book, size: 50)
+                        : Image.network(
+                      imageUrl,
+                      width: 50,
+                      height: 70,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.book, size: 50);
+                      },
                     ),
-                    ListTile(
-                      title: Text('Writer: ${_bookData!['writer']}'),
-                    ),
-                    ListTile(
-                      title: Text('Genre: ${_bookData!['genre'] ?? 'N/A'}'),
-                    ),
-                    ListTile(
-                      title: Text('Course: ${_bookData!['course'] ?? 'N/A'}'),
-                    ),
-                    ListTile(
-                      title: Text('Grade: ${_bookData!['grade'] ?? 'N/A'}'),
-                    ),
-                    ListTile(
-                      title: Text('Summary: ${_bookData!['summary']}'),
-                    ),
-                    ListTile(
-                      title: Text('Number of Copies: ${_bookData!['numberOfCopies'] ?? 'N/A'}'),
-                    ),
-                    if (_bookData!['imageUrl'] != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 20),
-                        child: Image.network(
-                          _bookData!['imageUrl'],
-                          height: 200,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
+                    title: Text(title),
+                    subtitle: Text(writer),
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Edit Book'),
+                          content: const Text('Do you want to edit this book?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditBookScreen(bookId: bookId),
+                                  ),
+                                );
+                              },
+                              child: const Text('Edit'),
+                            ),
+                          ],
                         ),
-                      ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_bookId != null) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => EditBookScreen(bookId: _bookId!),
-                                ),
-                              ).then((_) {
-                                setState(() {
-                                  _bookFound = false;
-                                  _bookData = null;
-                                  _searchController.clear();
-                                });
-                              });
-                            }
-                          },
-                          child: const Text('Edit Book'),
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white, backgroundColor: Colors.green,
-                            minimumSize: Size(150, 50),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_bookId != null) {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('Confirm Deletion'),
-                                  content: const Text('Are you sure you want to delete this book?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text('Cancel'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () async {
-                                        Navigator.pop(context);
-                                        await _deleteBook();
-                                      },
-                                      child: const Text('Delete'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-                          },
-                          child: const Text('Delete Book'),
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white, backgroundColor: Colors.red,
-                            minimumSize: Size(150, 50),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      );
+                    },
+                  );
+                },
               ),
-            if (!_bookFound)
-              const Expanded(
-                child: Center(
-                  child: Text('Search for a book to see details'),
-                ),
-              ),
+            ),
           ],
         ),
       ),

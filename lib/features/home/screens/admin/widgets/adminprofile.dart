@@ -1,22 +1,23 @@
-import 'package:book_Verse/features/personalization/controller/user_Controller.dart';
+import 'package:book_Verse/features/personalization/controller/admin_Controller.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:get/get.dart';
-import '../../../utils/constants/colors.dart';
-import '../../../utils/constants/image_strings.dart';
-import '../images/t_circular_image.dart';
+import '../../../../../common/widgets/images/t_circular_image.dart';
+import '../../../../../utils/constants/colors.dart';
+import '../../../../../utils/constants/image_strings.dart';
 
-class TUserProfileTitle extends StatelessWidget {
-  const TUserProfileTitle({
+class TAdminProfileTitle extends StatelessWidget {
+  const TAdminProfileTitle({
     super.key, required this.onPressed,
   });
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final controller = UserController.instance;
+    final controller = Get.find<AdminController>();  // Updated instance retrieval
+
     return Obx(() {
-      final networkImage = controller.user.value.profilePicture;
+      final networkImage = controller.admin.value.profilePicture;
       final image = networkImage.isNotEmpty ? networkImage : TImages.user;
       return ListTile(
         leading: TCircularImage(
@@ -27,11 +28,11 @@ class TUserProfileTitle extends StatelessWidget {
           isNetworkImage: networkImage.isNotEmpty,
         ),
         title: Text(
-          controller.user.value.fullName,
+          controller.admin.value.fullName,
           style: Theme.of(context).textTheme.headlineSmall!.apply(color: TColors.white),
         ),
         subtitle: Text(
-          controller.user.value.email,
+          controller.admin.value.email,
           style: Theme.of(context).textTheme.bodySmall!.apply(color: TColors.white),
         ),
         trailing: IconButton(

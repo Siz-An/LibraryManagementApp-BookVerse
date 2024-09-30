@@ -1,4 +1,4 @@
-import 'package:book_Verse/features/home/screens/user/search/search.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -7,7 +7,6 @@ import '../features/home/screens/admin/dashboard.dart';
 import '../features/home/screens/admin/editScreen.dart';
 import '../features/home/screens/admin/requests.dart';
 import '../features/home/screens/admin/settingScreen.dart';
-import '../features/home/screens/admin/userRequest/userScreens.dart';
 import '../utils/constants/colors.dart';
 import '../utils/helpers/helper_function.dart';
 
@@ -49,6 +48,6 @@ class AdminNavigationController extends GetxController {
     AdminUserRequestsScreen(),
     const AddBooks(),
      SearchBookScreen(),
-    const SettingsScreen(),
+    const AdminSettingsScreen(),
   ];
 }
