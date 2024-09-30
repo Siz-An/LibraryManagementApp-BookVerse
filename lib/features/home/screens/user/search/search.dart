@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../../books/detailScreen/course_book_detail_screen.dart';
 import '../../../../../common/widgets/appbar/appbar.dart';
-import 'BooksAll.dart';// Import the book detail screen
+import 'BooksAll.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -23,14 +23,18 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
 
-    final snapshot = await FirebaseFirestore.instance
-        .collection('books')
-        .where('title', isGreaterThanOrEqualTo: query)
-        .where('title', isLessThanOrEqualTo: query + '\uf8ff')
-        .get();
+    // Convert the search query to uppercase
+    final uppercaseQuery = query.toUpperCase();
 
+    // Fetch all books first
+    final snapshot = await FirebaseFirestore.instance.collection('books').get();
+
+    // Filter the results to make the title comparison case-insensitive
     setState(() {
-      searchResults = snapshot.docs;
+      searchResults = snapshot.docs.where((doc) {
+        final bookTitle = (doc.data() as Map<String, dynamic>)['title'] as String;
+        return bookTitle.contains(uppercaseQuery);
+      }).toList();
     });
   }
 
@@ -41,7 +45,7 @@ class _SearchScreenState extends State<SearchScreen> {
         title: const Text('Search Books'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.menu_book),
+            icon: const Icon(Icons.menu_book), color: Colors.green,
             onPressed: () {
               Navigator.push(
                 context,
@@ -65,6 +69,7 @@ class _SearchScreenState extends State<SearchScreen> {
               decoration: const InputDecoration(
                 labelText: 'Search',
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.search),
               ),
             ),
           ),
@@ -76,10 +81,9 @@ class _SearchScreenState extends State<SearchScreen> {
               itemBuilder: (context, index) {
                 final book = searchResults[index].data() as Map<String, dynamic>;
 
-                // Provide default values if fields are null
                 final title = book['title'] ?? 'No title';
                 final writer = book['writer'] ?? 'Unknown author';
-                final imageUrl = book['imageUrl'] ?? ''; // Use an empty string or a placeholder image URL
+                final imageUrl = book['imageUrl'] ?? '';
                 final course = book['course'] ?? '';
                 final summary = book['summary'] ?? 'No summary available';
 
@@ -90,7 +94,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     imageUrl,
                     width: 50,
                     height: 70,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.fitHeight,
                     errorBuilder: (context, error, stackTrace) {
                       return const Icon(Icons.book, size: 50);
                     },

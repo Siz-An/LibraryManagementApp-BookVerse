@@ -56,7 +56,8 @@ class Received extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Received Books'),
+        title: const Text('Books'),
+
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -66,7 +67,7 @@ class Received extends StatelessWidget {
             children: [
               const Text(
                 'ISSUED BOOKS:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               SizedBox(
@@ -92,44 +93,53 @@ class Received extends StatelessWidget {
                         final data = doc.data() as Map<String, dynamic>;
                         final docId = doc.id;
 
-                        return Container(
-                          padding: const EdgeInsets.all(8.0),
+                        return Card(
                           margin: const EdgeInsets.only(bottom: 10),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(8),
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Image.network(
-                                data["imageUrl"] as String,
-                                width: 100,
-                                height: 150,
-                                fit: BoxFit.cover,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      data["title"] as String,
-                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                    ),
-                                    Text('Writer: ${data["writer"] as String}'),
-                                    Text('Issue Date: ${dateFormat.format((data["issueDate"] as Timestamp).toDate())}'),
-                                  ],
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network(
+                                    data["imageUrl"] as String,
+                                    width: 100,
+                                    height: 150,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.reply),
-                                onPressed: () {
-                                  // Call the confirmation dialog for returning the book
-                                  _confirmReturnBook(context, docId, data);
-                                },
-                              ),
-                            ],
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        data["title"] as String,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.teal,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text('Writer: ${data["writer"] as String}', style: const TextStyle(fontSize: 14)),
+                                      Text('Issue Date: ${dateFormat.format((data["issueDate"] as Timestamp).toDate())}', style: const TextStyle(fontSize: 14)),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.reply, color: Colors.teal),
+                                  onPressed: () {
+                                    _confirmReturnBook(context, docId, data);
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       }).toList(),
@@ -140,7 +150,7 @@ class Received extends StatelessWidget {
               const SizedBox(height: 20),
               const Text(
                 'REJECTED BOOKS:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               SizedBox(
@@ -166,45 +176,54 @@ class Received extends StatelessWidget {
                         final data = doc.data() as Map<String, dynamic>;
                         final docId = doc.id;
 
-                        return Container(
-                          padding: const EdgeInsets.all(8.0),
+                        return Card(
                           margin: const EdgeInsets.only(bottom: 10),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(8),
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Image.network(
-                                data["imageUrl"] as String,
-                                width: 100,
-                                height: 150,
-                                fit: BoxFit.cover,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      data["title"] as String,
-                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                    ),
-                                    Text('Writer: ${data["writer"] as String}'),
-                                    Text('Rejection Date: ${dateFormat.format((data["rejectionDate"] as Timestamp).toDate())}'),
-                                    Text('Reason: ${data["rejectionReason"] as String}'),
-                                  ],
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network(
+                                    data["imageUrl"] as String,
+                                    width: 100,
+                                    height: 150,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.check),
-                                onPressed: () {
-                                  // Remove the rejected book from Firestore
-                                  _removeBook(docId);
-                                },
-                              ),
-                            ],
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        data["title"] as String,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text('Writer: ${data["writer"] as String}', style: const TextStyle(fontSize: 14)),
+                                      Text('Rejection Date: ${dateFormat.format((data["rejectionDate"] as Timestamp).toDate())}', style: const TextStyle(fontSize: 14)),
+                                      Text('Reason: ${data["rejectionReason"] as String}', style: const TextStyle(fontSize: 14)),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.check, color: Colors.red),
+                                  onPressed: () {
+                                    _removeBook(docId);
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       }).toList(),

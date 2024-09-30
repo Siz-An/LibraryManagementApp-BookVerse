@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'detailScreen/course_book_detail_screen.dart';
-import '../common/widgets/texts/section_heading.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import '../common/widgets/texts/section_heading.dart';
+import 'detailScreen/course_book_detail_screen.dart';
 
 class TRandomBooks extends StatefulWidget {
   const TRandomBooks({Key? key}) : super(key: key);
@@ -24,7 +24,6 @@ class _RandomBooksState extends State<TRandomBooks> {
 
   Future<void> _fetchRandomBooks() async {
     try {
-      // Get all books from the Firestore
       final querySnapshot = await _firestore.collection('books').get();
       final allBooks = querySnapshot.docs.map((doc) => doc.data()).toList();
 
@@ -93,64 +92,66 @@ class _RandomBooksState extends State<TRandomBooks> {
                 onTap: () => _navigateToDetailPage(book),
                 child: Container(
                   margin: EdgeInsets.symmetric(horizontal: 5),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(20), // Increased border radius for more curvature
-                        child: Container(
-                          decoration: BoxDecoration(
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black26,
-                                blurRadius: 8,
-                                spreadRadius: 1,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Image.network(
-                            imageUrl,
-                            width: 150,
-                            height: 220,
-                            fit: BoxFit.cover, // Changed to cover to maintain aspect ratio
-                            errorBuilder: (context, error, stackTrace) {
-                              return Center(
-                                child: Text(
-                                  'Image not available',
-                                  style: TextStyle(color: Colors.red),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 8,
+                                  spreadRadius: 1,
+                                  offset: Offset(0, 2),
                                 ),
-                              );
-                            },
+                              ],
+                            ),
+                            child: Image.network(
+                              imageUrl,
+                              width: 150,
+                              height: 220,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Center(
+                                  child: Text(
+                                    'Image not available',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                        SizedBox(height: 10),
+                        Text(
+                          title,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        writer,
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
+                        SizedBox(height: 5),
+                        Text(
+                          writer,
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
             },
             options: CarouselOptions(
               height: 300,
-              viewportFraction: 0.5, // Show two items side by side
+              viewportFraction: 0.5,
               enlargeCenterPage: false,
               aspectRatio: 2.0,
               autoPlay: false,

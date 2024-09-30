@@ -13,7 +13,6 @@ import '../../../utils/constants/sizes.dart';
 import '../../home/screens/user/bookreturnsss.dart';
 import '../../home/screens/user/mark/markApp.dart';
 import '../../home/screens/user/notification.dart';
-import '../../home/screens/user/received/rejected.dart';
 import '../../home/screens/user/search/search.dart';
 
 class SettingScreen extends StatelessWidget {

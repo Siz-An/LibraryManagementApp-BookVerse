@@ -34,10 +34,9 @@ class THomeAppBar extends StatelessWidget {
         ],
       ),
       actions:  [
-        TCartCounterIcons(onPressed: () => Get.to(()=> SearchScreen()),iconColor: TColors.white, icon: Iconsax.search_normal,),
         TCartCounterIcons(onPressed: () => Get.to(()=> AdminNotificationScreen()),iconColor: TColors.white, icon: Iconsax.notification,),
-
       ],
+      showSearchBox: true,
     );
   }
 }
