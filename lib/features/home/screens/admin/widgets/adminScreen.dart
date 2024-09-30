@@ -39,7 +39,7 @@ class adminScreen extends StatelessWidget {
                           ? const TShimmerEffect(width: 80, height: 80, radius: 80,)
                           : TCircularImage(image: image, width: 80, height: 80, isNetworkImage: networkImage.isNotEmpty,);
                     } ),
-
+                    TextButton(onPressed: () => controller.uploadAdminProfilePicture(), child: const Text('Change Profile Screen')),
                   ],
                 ),
               ),
@@ -56,13 +56,10 @@ class adminScreen extends StatelessWidget {
               const SizedBox(height: TSizes.spaceBtwItems / 2,),
               const Divider(),
               const SizedBox(height: TSizes.spaceBtwItems ,),
-
               ///-----> Personal Info
-              TProfileMenu(onPressed: () {  }, title: 'UserId ', value:controller.admin.value.id, icon: Iconsax.copy,),
+              TProfileMenu(onPressed: () {  }, title: 'Admin Id ', value:controller.admin.value.id, icon: Iconsax.copy,),
               TProfileMenu(onPressed: () {  }, title: 'Email Id', value: controller.admin.value.email),
               TProfileMenu(onPressed: () {  }, title: 'Phone number', value: controller.admin.value.phoneNumber),
-
-
               ///----> Delete Account Section
               const SizedBox(height: TSizes.spaceBtwItems * 2),
               Center(

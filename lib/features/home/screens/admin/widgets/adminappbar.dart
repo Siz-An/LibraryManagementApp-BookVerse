@@ -7,7 +7,7 @@ import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/shimmer.dart';
 import '../../../../../../utils/constants/text_strings.dart';
 import '../../../../personalization/controller/admin_Controller.dart';
-import '../../user/notification.dart';
+import 'adminScreen.dart';
 
 class TAdminAppBar extends StatelessWidget {
   const TAdminAppBar({
@@ -32,7 +32,7 @@ class TAdminAppBar extends StatelessWidget {
         ],
       ),
       actions:  [
-        TCartCounterIcons(onPressed: () => Get.to(()=> AdminNotificationScreen()),iconColor: TColors.white, icon: Iconsax.user,),
+        TCartCounterIcons(onPressed: () => Get.to(()=> adminScreen()),iconColor: TColors.white, icon: Iconsax.user,),
       ],
     );
   }

@@ -1,6 +1,7 @@
 import 'package:book_Verse/data/authentication/repository/authentication/admin_auth_repo.dart';
 import 'package:book_Verse/features/home/screens/admin/requests.dart';
 import 'package:book_Verse/features/home/screens/admin/returnedbooks/bookreturnUserScreen.dart';
+import 'package:book_Verse/features/home/screens/admin/widgets/adminScreen.dart';
 import 'package:book_Verse/features/home/screens/admin/widgets/adminprofile.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -38,7 +39,7 @@ class AdminSettingsScreen extends StatelessWidget {
                   ),
 
                   ///----> UserProfile
-                  TAdminProfileTitle(onPressed: () => Get.to(() => const userScreen())),
+                  TAdminProfileTitle(onPressed: () => Get.to(() => const adminScreen())),
 
                   const SizedBox(height: TSizes.spaceBtwSections),
                 ],
@@ -60,6 +61,7 @@ class AdminSettingsScreen extends StatelessWidget {
                         subTitle: 'Send Notification to Users',
                         onTap: () => Get.to(() => const NotificationScreen()),
                       ),
+                      Divider(),
                       _buildSettingItem(
                         context,
                         icon: Iconsax.archive_tick,
@@ -67,6 +69,7 @@ class AdminSettingsScreen extends StatelessWidget {
                         subTitle: 'List books that the Librarian has Issued',
                         onTap: () => Get.to(() => const UsersListScreen()),
                       ),
+                      Divider(),
                       _buildSettingItem(
                         context,
                         icon: Iconsax.receipt,
@@ -74,6 +77,7 @@ class AdminSettingsScreen extends StatelessWidget {
                         subTitle: 'Books that the user has returned',
                         onTap: () => Get.to(() =>  AdminUserRequestsScreen()),
                       ),
+                      Divider(),
                       _buildSettingItem(
                         context,
                         icon: Iconsax.alarm,
@@ -81,6 +85,7 @@ class AdminSettingsScreen extends StatelessWidget {
                         subTitle: 'List books that the user has to return',
                         onTap: () => Get.to(() => const AcceptReturnUsersScreen()),
                       ),
+                      Divider(),
                       _buildSettingItem(
                         context,
                         icon: Iconsax.export,
@@ -88,6 +93,7 @@ class AdminSettingsScreen extends StatelessWidget {
                         subTitle: 'DATA available here',
                         onTap: () => Get.to(() => const UserListPage()),
                       ),
+                      Divider(),
                       _buildSettingItem(
                         context,
                         icon: Iconsax.search_normal,
@@ -95,6 +101,7 @@ class AdminSettingsScreen extends StatelessWidget {
                         subTitle: 'Chat with Students',
                         onTap: () => Get.to(() =>  SearchBookScreen()),
                       ),
+                      Divider(),
                       SizedBox(height: TSizes.spaceBtwSections),
                       ElevatedButton(
                         onPressed: () {
