@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'allbooks.dart';
-import 'booksEditing/editBooks.dart';
+import '../allbooks.dart';
+import '../booksEditing/editBooks.dart';
 
 class SearchBookScreen extends StatefulWidget {
   @override

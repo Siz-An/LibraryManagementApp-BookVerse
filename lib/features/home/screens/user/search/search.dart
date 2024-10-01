@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../../books/detailScreen/course_book_detail_screen.dart';
-import '../../../../../common/widgets/appbar/appbar.dart';
 import 'BooksAll.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -41,11 +40,13 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: TAppBar(
+      appBar: AppBar(
         title: const Text('Search Books'),
+
         actions: [
           IconButton(
-            icon: const Icon(Icons.menu_book), color: Colors.green,
+            icon: const Icon(Icons.menu_book),
+            color: Colors.green,
             onPressed: () {
               Navigator.push(
                 context,

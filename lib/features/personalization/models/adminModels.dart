@@ -6,7 +6,7 @@ class AdminModel {
   String firstName;
   String lastName;
   final String userName;
-  final String email;
+  late final String email;
   String phoneNumber;
   String profilePicture;
   String role;

@@ -1,12 +1,10 @@
 import 'package:book_Verse/common/network_check/network_manager.dart';
-import 'package:book_Verse/data/authentication/repository/authentication/authentication_repo.dart';
 import 'package:book_Verse/features/authentication/screens/login/login.dart';
 import 'package:book_Verse/features/personalization/profile/widgets/re_authenticate_user_login_form.dart';
 import 'package:book_Verse/utils/constants/sizes.dart';
 import 'package:book_Verse/utils/popups/fullscreen_loader.dart';
 import 'package:book_Verse/utils/popups/loaders.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -38,8 +36,8 @@ class AdminController extends GetxController {
   Future<void> fetchAdminRecord() async {
     try {
       profileLoading.value = true;
-      final admin = await adminRepository.fetchAdminDetails();
-      this.admin(admin);
+      final fetchedAdmin = await adminRepository.fetchAdminDetails();
+      admin(fetchedAdmin);
     } catch (e) {
       admin(AdminModel.empty());
     } finally {
@@ -50,66 +48,97 @@ class AdminController extends GetxController {
   /// Save Admin Record from any Registration Provider
   Future<void> saveAdminRecord(UserCredential? userCredentials) async {
     try {
-      // First Update Rx Admin and then check if the admin data is already stored. If not store new data
       await fetchAdminRecord();
-      // If no record is already stored.
-      if(admin.value.id.isEmpty) {
-        if (userCredentials != null) {
-          //convert Name to first and last name
-          final nameParts = AdminModel.nameParts(userCredentials.user!.displayName ?? '');
-          final userName = AdminModel.generateUsername(userCredentials.user!.displayName ?? '');
+      if (admin.value.id.isEmpty && userCredentials != null) {
+        final nameParts = AdminModel.nameParts(userCredentials.user!.displayName ?? '');
+        final userName = AdminModel.generateUsername(userCredentials.user!.displayName ?? '');
 
-          // Map Data
-          final admin = AdminModel(
-              id: userCredentials.user!.uid,
-              firstName: nameParts[0],
-              lastName: nameParts.length > 1 ? nameParts.sublist(1).join(' ') : ' ',
-              userName: userName,
-              email: userCredentials.user!.email ?? ' ',
-              phoneNumber: userCredentials.user!.phoneNumber ?? ' ',
-              profilePicture: userCredentials.user!.photoURL ?? ' ',
-              role: 'Admin', // You can set the role as needed
-              permissions: ['view', 'edit', 'delete']); // Example permissions
+        final newAdmin = AdminModel(
+          id: userCredentials.user!.uid,
+          firstName: nameParts[0],
+          lastName: nameParts.length > 1 ? nameParts.sublist(1).join(' ') : ' ',
+          userName: userName,
+          email: userCredentials.user!.email ?? ' ',
+          phoneNumber: userCredentials.user!.phoneNumber ?? ' ',
+          profilePicture: userCredentials.user!.photoURL ?? ' ',
+          role: 'Admin',
+          permissions: ['view', 'edit', 'delete'],
+        );
 
-          // save admin data
-          await adminRepository.saveAdminRecord(admin);
-        }
+        await adminRepository.saveAdminRecord(newAdmin);
       }
     } catch (e) {
-      TLoaders.warningSnackBar(title: 'Error Saving data',
-          message: 'Something went Wrong while saving your credentials'
+      TLoaders.warningSnackBar(
+        title: 'Error Saving data',
+        message: 'Something went wrong while saving your credentials',
       );
     }
   }
 
+  /// Update Admin Email
+  Future<void> updateAdminEmail(String newEmail) async {
+    try {
+      if (newEmail.isNotEmpty) {
+        await adminRepository.updateAdminDetails;
+        admin.update((val) {
+          val?.email = newEmail;
+        });
+        Get.snackbar('Success', 'Email updated successfully');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to update email: $e');
+    }
+  }
+
+  /// Update Admin Phone Number
+  Future<void> updateAdminPhoneNumber(String newPhoneNumber) async {
+    try {
+      if (newPhoneNumber.isNotEmpty) {
+        await adminRepository.updateAdminDetails;
+        admin.update((val) {
+          val?.phoneNumber = newPhoneNumber;
+        });
+        Get.snackbar('Success', 'Phone number updated successfully');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to update phone number: $e');
+    }
+  }
 
   /// Delete Account Warning
-  void deleteAccountWarningPopup(){
+  void deleteAccountWarningPopup() {
     Get.defaultDialog(
-        contentPadding: const EdgeInsets.all(TSizes.md),
-        title: 'Delete Account',
-        middleText:
-        'Are you Sure. After deleting Your Account you will not be able to retrieve your data!!!!!!',
-        confirm: ElevatedButton(onPressed: () async => deleteAdminAccount(),
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.red, side: const BorderSide(color: Colors.red) ),
-          child: const Padding(padding: EdgeInsets.symmetric(horizontal: TSizes.lg), child: Text('Delete')),
+      contentPadding: const EdgeInsets.all(TSizes.md),
+      title: 'Delete Account',
+      middleText:
+      'Are you sure? After deleting your account, you will not be able to retrieve your data!',
+      confirm: ElevatedButton(
+        onPressed: () async => deleteAdminAccount(),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red,
+          side: const BorderSide(color: Colors.red),
         ),
-        cancel: OutlinedButton(onPressed: () => Navigator.of(Get.overlayContext!).pop(),
-            child: const Text('Cancel')
-        )
+        child: const Padding(
+          padding: EdgeInsets.symmetric(horizontal: TSizes.lg),
+          child: Text('Delete'),
+        ),
+      ),
+      cancel: OutlinedButton(
+        onPressed: () => Navigator.of(Get.overlayContext!).pop(),
+        child: const Text('Cancel'),
+      ),
     );
   }
 
-  ///----> Delete Admin Account
-  void deleteAdminAccount() async {
+  /// Delete Admin Account
+  Future<void> deleteAdminAccount() async {
     try {
       TFullScreenLoader.openLoadingDialogue('Processing', TImages.checkRegistration);
 
-      /// First Re-Auth Admin
       final auth = AdminAuthenticationRepository.instance;
       final provider = auth.authAdmin!.providerData.map((e) => e.providerId).first;
+
       if (provider.isNotEmpty) {
-        //Re verify Email
         if (provider == 'google.com') {
           await auth.signInWithGoogle();
           await auth.deleteAccount();
@@ -126,12 +155,11 @@ class AdminController extends GetxController {
     }
   }
 
-  ///----> Re-auth before deleting Account
+  /// Re-authenticate Email and Password before Deleting Admin Account
   Future<void> reAuthenticateEmailAndPasswordAdmin() async {
     try {
       TFullScreenLoader.openLoadingDialogue('Processing', TImages.checkRegistration);
 
-      // Check Internet Connection
       final isConnected = await NetworkManager.instance.isConnected();
       if (!isConnected) {
         TFullScreenLoader.stopLoading();
@@ -142,41 +170,43 @@ class AdminController extends GetxController {
         TFullScreenLoader.stopLoading();
         return;
       }
-      await AdminAuthenticationRepository.instance.reAuthenticateWithEmailAndPassword(verifyEmail.text.trim(), verifyPassword.text.trim());
+
+      await AdminAuthenticationRepository.instance.reAuthenticateWithEmailAndPassword(
+          verifyEmail.text.trim(), verifyPassword.text.trim());
       await AdminAuthenticationRepository.instance.deleteAccount();
       TFullScreenLoader.stopLoading();
       Get.offAll(() => const LoginScreen());
     } catch (e) {
       TFullScreenLoader.stopLoading();
-      TLoaders.warningSnackBar(title: 'oh Snap', message: e.toString());
+      TLoaders.warningSnackBar(title: 'Oh Snap!', message: e.toString());
     }
   }
 
-  ///----> Upload Profile Image
-  uploadAdminProfilePicture() async {
+  /// Upload Profile Image
+  Future<void> uploadAdminProfilePicture() async {
     try {
-      final image = await ImagePicker().pickImage(source: ImageSource.gallery,
-          imageQuality: 70,
-          maxHeight: 512,
-          maxWidth: 512);
+      final image = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70,
+        maxHeight: 512,
+        maxWidth: 512,
+      );
+
       if (image != null) {
         imageUploading.value = true;
-        final imageUrl = await adminRepository.uploadImage(
-            'admin/Images/Profile/', image);
+        final imageUrl = await adminRepository.uploadImage('admin/Images/Profile/', image);
 
-        //update Admin Image Record
-        Map<String, dynamic> json = {'ProfilePicture': imageUrl};
-        await adminRepository.updateSingleField(json);
-
-        admin.value.profilePicture = imageUrl;
-        admin.refresh();
-
-        TLoaders.successSnackBar(title: 'Congrats', message: 'Your profile Picture has been Uploaded');
+        await adminRepository.updateSingleField({'profilePicture': imageUrl});
+        admin.update((val) {
+          val?.profilePicture = imageUrl;
+        });
+        TLoaders.successSnackBar(title: 'Congrats', message: 'Profile picture uploaded successfully');
       }
     } catch (e) {
-      TLoaders.errorSnackBar(title: 'Oh Snap', message: 'You messed up something: $e');
+      TLoaders.errorSnackBar(title: 'Oh Snap!', message: 'Error uploading profile picture: $e');
     } finally {
       imageUploading.value = false;
     }
   }
+
 }

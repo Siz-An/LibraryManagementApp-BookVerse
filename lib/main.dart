@@ -23,7 +23,6 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Initialize UserAuthenticationRepository and AdminAuthenticationRepository
-
   Get.put(AuthenticationRepository());
   Get.put(AdminAuthenticationRepository());
 

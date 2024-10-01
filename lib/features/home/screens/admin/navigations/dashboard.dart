@@ -1,10 +1,12 @@
 import 'package:book_Verse/features/home/screens/admin/widgets/adminappbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../../../../common/widgets/custom_shapes/primary_header_container.dart';
-import '../../../../utils/constants/sizes.dart';
-import 'USersScreen/allUser.dart';
-import 'allbooks.dart'; // Import the new users screen
+import '../../../../../common/widgets/custom_shapes/primary_header_container.dart';
+import '../../../../../utils/constants/sizes.dart';
+import '../BookIssue/Issuing.dart';
+import '../USersScreen/allUser.dart';
+import '../allbooks.dart';
+import '../returnedbooks/bookreturn.dart'; // Import the new users screen
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -27,7 +29,7 @@ class _DashboardState extends State<Dashboard> {
       FirebaseFirestore.instance.collection('books').get(),
       FirebaseFirestore.instance.collection('Users').get(),
       FirebaseFirestore.instance.collection('issuedBooks').get(),
-      FirebaseFirestore.instance.collection('ReturnedBooks').get(),
+      FirebaseFirestore.instance.collection('toBeReturnedBooks').get(),
     ]);
   }
 
@@ -72,7 +74,7 @@ class _DashboardState extends State<Dashboard> {
                 final totalBooks = booksSnapshot.size;
                 final totalUsers = usersSnapshot.size;
                 final issuedBooks = issuedBooksSnapshot.docs;
-                final returnedBooks = returnedBooksSnapshot.docs;
+                final toBeReturnedBooks = returnedBooksSnapshot.docs;
 
                 return Column(
                   children: [
@@ -83,8 +85,8 @@ class _DashboardState extends State<Dashboard> {
                           _buildStatCard('Total Number of Books', totalBooks.toString(), context, AllBooksScreenadmin()),
                           _buildStatCard('Total Number of Users', totalUsers.toString(), context, AllUsersScreen()),
                           _buildNotificationsCard(),
-                          _buildIssuedBooksCard(issuedBooks),
-                          _buildReturnedBooksCard(returnedBooks),
+                          _buildIssuedBooksCard(issuedBooks, context),
+                          _buildReturnedBooksCard(toBeReturnedBooks, context),
                         ],
                       ),
                     ),
@@ -202,43 +204,138 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
-  Widget _buildIssuedBooksCard(List<QueryDocumentSnapshot> issuedBooks) {
+  Widget _buildIssuedBooksCard(List<QueryDocumentSnapshot> issuedBooks, BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       elevation: 4,
       child: ExpansionTile(
         title: Text('Books Issued'),
-        children: issuedBooks.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          final bookTitle = data['bookTitle'] ?? 'No title';
-          final user = data['user'] ?? 'Unknown user';
-          final issueDate = (data['issueDate'] as Timestamp).toDate();
-          return ListTile(
-            title: Text(bookTitle),
-            subtitle: Text('Issued to $user on ${issueDate.toLocal()}'),
-          );
-        }).toList(),
+        children: _buildUniqueUsersList(issuedBooks, context),
       ),
     );
   }
 
-  Widget _buildReturnedBooksCard(List<QueryDocumentSnapshot> returnedBooks) {
+  List<Widget> _buildUniqueUsersList(List<QueryDocumentSnapshot> issuedBooks, BuildContext context) {
+    final Set<String> displayedUsers = {}; // To keep track of displayed user IDs
+    final List<Widget> userTiles = [];
+
+    for (var doc in issuedBooks) {
+      final data = doc.data() as Map<String, dynamic>;
+      final userId = data['userId'] ?? 'Unknown user';
+
+      // Skip if this userId has already been processed
+      if (displayedUsers.contains(userId)) {
+        continue;
+      }
+
+      displayedUsers.add(userId); // Add userId to the set
+
+      userTiles.add(
+        FutureBuilder<DocumentSnapshot>(
+          future: FirebaseFirestore.instance.collection('Users').doc(userId).get(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return ListTile(
+                title: Text('Loading user details...'),
+              );
+            } else if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
+              return ListTile(
+                title: Text('User not found'),
+              );
+            }
+
+            final userData = snapshot.data!.data() as Map<String, dynamic>;
+            final username = userData['UserName'] ?? 'Unknown';
+            final email = userData['Email'] ?? 'No email';
+
+            return ListTile(
+              title: Text(username),
+              subtitle: Text(email),
+              trailing: Icon(Icons.arrow_forward),
+              onTap: () {
+                // Navigate to the next screen, passing the userId or user details if needed
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => IssuedBooksScreen(userId: userId),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      );
+    }
+
+    return userTiles;
+  }
+
+
+  Widget _buildReturnedBooksCard(List<QueryDocumentSnapshot> returnedBooks, BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       elevation: 4,
       child: ExpansionTile(
         title: Text('Books Returned'),
-        children: returnedBooks.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          final bookTitle = data['bookTitle'] ?? 'No title';
-          final user = data['user'] ?? 'Unknown user';
-          final returnDate = (data['returnDate'] as Timestamp).toDate();
-          return ListTile(
-            title: Text(bookTitle),
-            subtitle: Text('Returned by $user on ${returnDate.toLocal()}'),
-          );
-        }).toList(),
+        children: _buildUniqueReturnedUsersList(returnedBooks, context),
       ),
     );
   }
+
+  List<Widget> _buildUniqueReturnedUsersList(List<QueryDocumentSnapshot> returnedBooks, BuildContext context) {
+    final Set<String> displayedUsers = {}; // To keep track of displayed user IDs
+    final List<Widget> userTiles = [];
+
+    for (var doc in returnedBooks) {
+      final data = doc.data() as Map<String, dynamic>;
+      final userId = data['userId'] ?? 'Unknown user'; // Assuming userId is the field name
+
+      // Skip if this userId has already been processed
+      if (displayedUsers.contains(userId)) {
+        continue;
+      }
+
+      displayedUsers.add(userId); // Add userId to the set
+
+      userTiles.add(
+        FutureBuilder<DocumentSnapshot>(
+          future: FirebaseFirestore.instance.collection('Users').doc(userId).get(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return ListTile(
+                title: Text('Loading user details...'),
+              );
+            } else if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
+              return ListTile(
+                title: Text('User not found'),
+              );
+            }
+
+            final userData = snapshot.data!.data() as Map<String, dynamic>;
+            final username = userData['UserName'] ?? 'Unknown';
+            final email = userData['Email'] ?? 'No email';
+
+            return ListTile(
+              title: Text(username),
+              subtitle: Text(email),
+              trailing: Icon(Icons.arrow_forward),
+              onTap: () {
+                // Navigate to the next screen, passing the userId or user details if needed
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AcceptReturnedBooksScreen(userId: userId), // Navigate to IssuedBooksScreen
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      );
+    }
+
+    return userTiles;
+  }
+
+
 }

@@ -10,8 +10,10 @@ import '../../../common/widgets/proFile/user_profile_tile.dart';
 import '../../../data/authentication/repository/authentication/authentication_repo.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/constants/sizes.dart';
+import '../../home/screens/dataforuser/returnhistory.dart';
 import '../../home/screens/user/bookreturnsss.dart';
 import '../../home/screens/user/mark/markApp.dart';
+import '../../home/screens/user/mark/requestssss.dart';
 import '../../home/screens/user/notification.dart';
 import '../../home/screens/user/search/search.dart';
 
@@ -61,53 +63,38 @@ class SettingScreen extends StatelessWidget {
                     subTitle: 'Please check Notification Daily',
                     onTap: () => Get.to(() => AdminNotificationScreen()),
                   ),
+                  Divider(),
                   TSettingMenu(
                     icon: Iconsax.bookmark,
                     title: 'BookMark',
                     subTitle: 'List books that the user has BookMarked',
                     onTap: () => Get.to(() => MarkApp()),
                   ),
+                  Divider(),
                   TSettingMenu(
                     icon: Iconsax.archive_tick,
-                    title: 'Issue',
-                    subTitle: 'List books that the Librarian has Issued',
-                    onTap: () => Get.to(() => MarkApp()),
+                    title: 'Request',
+                    subTitle: 'List books that the User Requested',
+                    onTap: () => Get.to(() => RequestedListScreen()),
                   ),
+                  Divider(),
                   TSettingMenu(
                     icon: Iconsax.receipt,
                     title: 'Return History',
                     subTitle: 'Books that the user has returned',
-                    onTap: () {},
+                    onTap: () => Get.to(() => ReturnHistory()),
                   ),
+                  Divider(),
                   TSettingMenu(
                     icon: Iconsax.alarm,
                     title: 'Book Return Notice',
                     subTitle: 'List books that the user have to return',
                     onTap: () => Get.to(() => ToBeReturnedBooksScreen(userId: userId)),
                   ),
-                  TSettingMenu(
-                    icon: Iconsax.search_normal,
-                    title: 'Search Screen',
-                    subTitle: 'Search Books in the Google API',
-                    onTap: () => Get.to(() => SearchScreen()),
-                  ),
 
-                  ///---> App Settings
-                  const SizedBox(height: TSizes.spaceBtwSections,),
-                  const TSectionHeading(title: 'App Settings', showActionButton: false,),
+                  Divider(),
                   const SizedBox(height: TSizes.spaceBtwItems,),
 
-                  const TSettingMenu(
-                    icon: Iconsax.document_upload,
-                    title: 'Load Data',
-                    subTitle: 'Upload data to your cloud fireBase',
-                  ),
-                  TSettingMenu(
-                    icon: Iconsax.security_user,
-                    title: 'Safe Mode',
-                    subTitle: 'Search Result is for all ages',
-                    trailing: Switch(value: false, onChanged: (value) {}),
-                  ),
                   // Logout button
                   SizedBox(
                     width: double.infinity,
@@ -118,7 +105,7 @@ class SettingScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: Colors.green, // Text color of the button
-                        padding: EdgeInsets.symmetric(vertical: 16.0), // Add some padding
+                        padding: EdgeInsets.symmetric(vertical: 12.0), // Add some padding
                       ),
                       child: const Text('Logout'),
                     ),

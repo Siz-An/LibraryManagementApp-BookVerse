@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class EditUserScreen extends StatefulWidget {
@@ -59,6 +60,61 @@ class _EditUserScreenState extends State<EditUserScreen> {
         }
       }
     }
+  }
+
+  Future<void> _deleteUser() async {
+    // Show confirmation dialog before deletion
+    final shouldDelete = await _showDeleteConfirmationDialog(context);
+    if (shouldDelete == true) {
+      try {
+        // Retrieve the user document
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('Users').doc(widget.userId).get();
+
+        // Check if the user exists
+        if (userDoc.exists) {
+          // Delete user from Firestore
+          await FirebaseFirestore.instance.collection('Users').doc(widget.userId).delete();
+
+          // Delete user from Firebase Authentication
+          User? userToDelete = await FirebaseAuth.instance.userChanges().firstWhere((user) => user?.uid == widget.userId).catchError((_) => null);
+
+          if (userToDelete != null) {
+            // If we find the user to delete, we delete the account
+            await userToDelete.delete();
+          }
+
+          // Optionally, navigate back or show success message
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User account deleted successfully')));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User does not exist')));
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error deleting user data')));
+      }
+    }
+  }
+
+  Future<bool?> _showDeleteConfirmationDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete this user account? This action cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false), // Cancel
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true), // Confirm
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<bool?> _showConfirmationDialog(BuildContext context) {
@@ -126,7 +182,17 @@ class _EditUserScreenState extends State<EditUserScreen> {
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                   textStyle: TextStyle(fontSize: 16),
-                  backgroundColor: Colors.green
+                  backgroundColor: Colors.green,
+                ),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _deleteUser,
+                child: Text('Delete Account'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  textStyle: TextStyle(fontSize: 16),
+                  backgroundColor: Colors.red, // Different color for delete
                 ),
               ),
             ],

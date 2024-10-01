@@ -118,4 +118,6 @@ class AdminRepository extends GetxController {
       throw 'Something went wrong. Please try again.';
     }
   }
+
+  updateAdminField(String s, String newPhoneNumber) {}
 }

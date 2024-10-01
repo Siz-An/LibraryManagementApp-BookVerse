@@ -1,12 +1,11 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import '../features/home/screens/admin/addBooks.dart';
-import '../features/home/screens/admin/dashboard.dart';
-import '../features/home/screens/admin/editScreen.dart';
-import '../features/home/screens/admin/requests.dart';
-import '../features/home/screens/admin/settingScreen.dart';
+import '../features/home/screens/admin/navigations/addBooks.dart';
+import '../features/home/screens/admin/navigations/dashboard.dart';
+import '../features/home/screens/admin/navigations/editScreen.dart';
+import '../features/home/screens/admin/navigations/requests.dart';
+import '../features/home/screens/admin/navigations/settingScreen.dart';
 import '../utils/constants/colors.dart';
 import '../utils/helpers/helper_function.dart';
 

@@ -61,18 +61,16 @@ class userScreen extends StatelessWidget {
               TProfileMenu(onPressed: () {  }, title: 'UserId ', value:controller.user.value.id, icon: Iconsax.copy,),
               TProfileMenu(onPressed: () {  }, title: 'Email Id', value: controller.user.value.email),
               TProfileMenu(onPressed: () {  }, title: 'Phone number', value: controller.user.value.phoneNumber),
-              TProfileMenu(onPressed: () {  }, title: 'Gender', value: 'Male'),
-              TProfileMenu(onPressed: () {  }, title: 'Birth Date', value: '9 Dec, 2002'),
 
 
               ///----> Delete Account Section
               const SizedBox(height: TSizes.spaceBtwItems * 2),
-              Center(
-                child: TextButton(
-                  onPressed: () => controller.deleteAccountWarningPopup(),
-                  child: const Text('Delete Account', style: TextStyle(color: Colors.redAccent),),
-                ),
-              )
+              // Center(
+              //   child: TextButton(
+              //     onPressed: () => controller.deleteAccountWarningPopup(),
+              //     child: const Text('Delete Account', style: TextStyle(color: Colors.redAccent),),
+              //   ),
+              // )
 
             ],
           ),

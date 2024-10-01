@@ -32,7 +32,7 @@ class TAdminAppBar extends StatelessWidget {
         ],
       ),
       actions:  [
-        TCartCounterIcons(onPressed: () => Get.to(()=> adminScreen()),iconColor: TColors.white, icon: Iconsax.user,),
+        TCartCounterIcons(onPressed: () => Get.to(()=> AdminScreen()),iconColor: TColors.white, icon: Iconsax.user,),
       ],
     );
   }
