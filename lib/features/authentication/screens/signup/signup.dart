@@ -11,7 +11,6 @@ class SignUpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Create a unique GlobalKey for the signup form
-    final GlobalKey<FormState> signupFormKey = GlobalKey<FormState>();
 
     return Scaffold(
       appBar: AppBar(
@@ -28,7 +27,7 @@ class SignUpScreen extends StatelessWidget {
               const SizedBox(height: TSizes.spaceBtwSections),
 
               /// Form with the unique GlobalKey
-              TSignupform(formKey: signupFormKey),
+              TSignupform(),
 
               /// -- Divider
               const SizedBox(height: TSizes.spaceBtwSections),

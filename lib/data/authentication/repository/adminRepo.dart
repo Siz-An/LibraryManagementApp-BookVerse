@@ -119,5 +119,18 @@ class AdminRepository extends GetxController {
     }
   }
 
+  /// Function to get the count of Admins in the Firestore collection
+  Future<int> getAdminCount() async {
+    try {
+      // Fetch the number of admin documents in the 'Admins' collection
+      final querySnapshot = await _db.collection("Admins").get();
+      return querySnapshot.docs.length;
+    } on FirebaseException catch (e) {
+      throw TFirebaseException(e.code).message; // Handle Firebase-specific errors
+    } catch (e) {
+      throw 'Error fetching admin count: $e'; // General error
+    }
+  }
+
   updateAdminField(String s, String newPhoneNumber) {}
 }
