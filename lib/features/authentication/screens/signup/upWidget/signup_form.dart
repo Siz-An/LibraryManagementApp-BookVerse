@@ -9,7 +9,7 @@ import '../../../../../utils/constants/sizes.dart';
 import '../../../../../utils/constants/text_strings.dart';
 
 class TSignupform extends StatefulWidget {
-  const TSignupform({super.key,});
+  const TSignupform({super.key, required GlobalKey<FormState> formKey});
 
   @override
   _TSignupformState createState() => _TSignupformState();

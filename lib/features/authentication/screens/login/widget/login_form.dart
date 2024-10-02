@@ -10,16 +10,13 @@ import '../../../../../utils/constants/text_strings.dart';
 import '../../signup/signup.dart';
 
 class TLoginForm extends StatefulWidget {
-  const TLoginForm({super.key,});
+  const TLoginForm({super.key, required GlobalKey<FormState> formKey});
 
   @override
   _TLoginFormState createState() => _TLoginFormState();
 }
 
 class _TLoginFormState extends State<TLoginForm> {
-  final GlobalKey<FormState> _userFormKey = GlobalKey<FormState>();  // Unique GlobalKey for user
-  final GlobalKey<FormState> _adminFormKey = GlobalKey<FormState>();  // Unique GlobalKey for admin
-
   String _selectedRole = 'User'; // Default role
 
   @override
@@ -27,15 +24,14 @@ class _TLoginFormState extends State<TLoginForm> {
     final userController = Get.put(LoginController());
     final adminController = Get.put(AdminLoginController());
 
-    // Use the appropriate form key based on the selected role
-    final formKey = (_selectedRole == 'User') ? _userFormKey : _adminFormKey;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Form(
-      key: formKey,
+      key: (_selectedRole == 'User') ? userController.userloginFormKey : adminController.adminloginFormKey,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: TSizes.spaceBtwSections,
-          horizontal: 16.0,
+        padding: EdgeInsets.symmetric(
+          vertical: screenWidth < 600 ? TSizes.spaceBtwSections : TSizes.spaceBtwSections * 1.5,
+          horizontal: screenWidth < 600 ? 16.0 : 32.0,
         ),
         child: Column(
           children: [
@@ -59,7 +55,7 @@ class _TLoginFormState extends State<TLoginForm> {
                 ),
               ],
             ),
-            const SizedBox(height: TSizes.spaceBtwInputFields),
+            SizedBox(height: screenWidth < 600 ? TSizes.spaceBtwInputFields : TSizes.spaceBtwInputFields * 1.5),
 
             /// Email
             TextFormField(
@@ -70,7 +66,7 @@ class _TLoginFormState extends State<TLoginForm> {
                 labelText: TTexts.email,
               ),
             ),
-            const SizedBox(height: TSizes.spaceBtwInputFields),
+            SizedBox(height: screenWidth < 600 ? TSizes.spaceBtwInputFields : TSizes.spaceBtwInputFields * 1.5),
 
             /// Password
             Obx(
@@ -96,13 +92,13 @@ class _TLoginFormState extends State<TLoginForm> {
                 ),
               ),
             ),
-            const SizedBox(height: TSizes.spaceBtwInputFields / 2),
+            SizedBox(height: screenWidth < 600 ? TSizes.spaceBtwInputFields / 2 : TSizes.spaceBtwInputFields / 2 * 1.5),
 
             /// Remember Me & Forget Password
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                /// -- Remember Me
+                /// -- Remember ME
                 Row(
                   children: [
                     Obx(
@@ -127,7 +123,7 @@ class _TLoginFormState extends State<TLoginForm> {
                 ),
               ],
             ),
-            const SizedBox(height: TSizes.spaceBtwSections),
+            SizedBox(height: screenWidth < 600 ? TSizes.spaceBtwSections : TSizes.spaceBtwSections * 1.5),
 
             /// Sign In Button
             SizedBox(
@@ -143,16 +139,16 @@ class _TLoginFormState extends State<TLoginForm> {
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.green, // Text color of the button
-                  padding: const EdgeInsets.symmetric(vertical: 12.0), // Add some padding
+                  padding: EdgeInsets.symmetric(vertical: screenWidth < 600 ? 12.0 : 17.0), // Add some padding
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0), // Border radius
-                    side: const BorderSide(color: Colors.green, width: 2.0), // Outline color and width
+                    side: BorderSide(color: Colors.green, width: 2.0), // Outline color and width
                   ),
                 ),
                 child: const Text(TTexts.signIn),
               ),
             ),
-            const SizedBox(height: TSizes.spaceBtwItems / 2),
+            SizedBox(height: screenWidth < 600 ? TSizes.spaceBtwItems / 2 : TSizes.spaceBtwItems),
 
             /// Create an Account Button
             SizedBox(
@@ -161,7 +157,7 @@ class _TLoginFormState extends State<TLoginForm> {
                 onPressed: () => Get.to(() => const SignUpScreen()),
                 child: const Text(TTexts.createAccount),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.green),
+                  side: BorderSide(color: Colors.green),
                 ),
               ),
             ),

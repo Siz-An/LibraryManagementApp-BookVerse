@@ -15,6 +15,9 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final dark = THelperFunction.isDarkMode(context);
 
+    // Create a unique GlobalKey for the login form
+    final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -26,15 +29,15 @@ class LoginScreen extends StatelessWidget {
                 /// -- Logo, Title & Sub-Title
                 TLoginHeader(dark: dark),
 
-                /// Form without passing GlobalKeys
-                const TLoginForm(),
+                /// Form with the unique GlobalKey
+                TLoginForm(formKey: loginFormKey),
 
                 /// -- Divider
                 const TFormDivider(dividerText: TTexts.orSignInWith),
                 const SizedBox(height: TSizes.spaceBtwSections),
 
                 /// -- Footer
-                const TSocialButtons(),
+                const TSocialButtons()
               ],
             ),
           ),
