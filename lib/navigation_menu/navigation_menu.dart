@@ -11,13 +11,11 @@ import '../utils/constants/colors.dart';
 import '../utils/helpers/helper_function.dart';
 
 class NavigationMenu extends StatelessWidget {
-  final String userId;
-
-  NavigationMenu({super.key, required this.userId});
+  NavigationMenu({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final NavigationController controller = Get.put(NavigationController(userId));
+    final NavigationController controller = Get.put(NavigationController());
     final darkMode = THelperFunction.isDarkMode(context);
 
     return Scaffold(
@@ -45,9 +43,8 @@ class NavigationMenu extends StatelessWidget {
 
 class NavigationController extends GetxController {
   final Rx<int> selectedIndex = 2.obs;
-  final String userId;
 
-  NavigationController(this.userId) {
+  NavigationController() {
     updateScreens();
   }
 
@@ -60,7 +57,7 @@ class NavigationController extends GetxController {
         const SearchScreen(),
         const MarkApp(),
         const HomeScreen(),
-        Received(userId: userId), // Pass userId to Received screen
+        const Received(), // Remove userId parameter here
         const SettingScreen(),
       ]);
   }

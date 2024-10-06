@@ -1,6 +1,5 @@
 import 'package:book_Verse/common/widgets/products/bookmark/bookmark_icon.dart';
 import 'package:book_Verse/features/personalization/controller/user_Controller.dart';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -8,6 +7,7 @@ import '../../../../../../common/widgets/appbar/appbar.dart';
 import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/shimmer.dart';
 import '../../../../../../utils/constants/text_strings.dart';
+import '../../../../../personalization/profile/widgets/users_Screen.dart';
 import '../../notification.dart';
 
 class THomeAppBar extends StatelessWidget {
@@ -32,8 +32,10 @@ class THomeAppBar extends StatelessWidget {
           })
         ],
       ),
+      showSearchBox: true,
       actions:  [
         TCartCounterIcons(onPressed: () => Get.to(()=> AdminNotificationScreen()),iconColor: TColors.white, icon: Iconsax.notification,),
+        TCartCounterIcons(onPressed: () => Get.to(()=> userScreen()),iconColor: TColors.white, icon: Iconsax.user,),
       ],
     );
   }

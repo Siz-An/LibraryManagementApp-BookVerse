@@ -17,7 +17,7 @@ class THomeCategory extends StatelessWidget {
           itemCount: 5,
           scrollDirection: Axis.horizontal,
           itemBuilder: (_, index){
-            return  TVerticalImageText(image: TImages.genreIcon, title: 'Horror', onTap: (){},);
+            return  TVerticalImageText(image: TImages.user, title: 'Horror', onTap: (){},);
           }),
     );
   }

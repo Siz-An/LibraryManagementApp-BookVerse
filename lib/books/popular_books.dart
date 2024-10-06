@@ -13,21 +13,26 @@ class TPopularBooks extends StatefulWidget {
 
 class _TPopularBooksState extends State<TPopularBooks> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  List<Map<String, dynamic>> _bookmarkedBooks = [];
+  List<Map<String, dynamic>> _popularBooks = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchBookmarkedBooks();
+    _fetchPopularBooks();
   }
 
-  Future<void> _fetchBookmarkedBooks() async {
+  Future<void> _fetchPopularBooks() async {
     try {
-      final querySnapshot = await _firestore.collection('bookmarks').get();
-      final Map<String, Set<String>> userBookmarks = {};
+      // Fetch from both bookmarks and issuedBooks collections
+      final bookmarksSnapshot = await _firestore.collection('bookmarks').get();
+      final issuedBooksSnapshot = await _firestore.collection('issuedBooks').get();
 
-      for (var doc in querySnapshot.docs) {
+      final Map<String, Set<String>> userBookmarks = {};
+      final Map<String, Set<String>> userIssuedBooks = {};
+
+      // Fetch bookmarks data
+      for (var doc in bookmarksSnapshot.docs) {
         final data = doc.data();
         final userId = data['userId'];
         final bookId = data['bookId'];
@@ -35,28 +40,36 @@ class _TPopularBooksState extends State<TPopularBooks> {
         userBookmarks.putIfAbsent(userId, () => {}).add(bookId);
       }
 
-      // Find common bookmarks among users
-      List<String> commonBookmarks;
-      if (userBookmarks.length == 1) {
-        commonBookmarks = userBookmarks.values.first.toList();
-      } else {
-        final commonSet = userBookmarks.values.reduce((a, b) => a.intersection(b));
-        commonBookmarks = commonSet.toList();
+      // Fetch issued books data
+      for (var doc in issuedBooksSnapshot.docs) {
+        final data = doc.data();
+        final userId = data['userId'];
+        final bookId = data['bookId'];
+
+        userIssuedBooks.putIfAbsent(userId, () => {}).add(bookId);
       }
+
+      // Combine bookmarks and issuedBooks
+      Set<String> combinedBookIds = {};
+      userBookmarks.forEach((userId, books) {
+        if (userIssuedBooks.containsKey(userId)) {
+          combinedBookIds.addAll(books.intersection(userIssuedBooks[userId]!));
+        }
+      });
 
       // Fetch book details concurrently
       final List<Map<String, dynamic>> bookDetails = await Future.wait(
-        commonBookmarks.map((bookId) async {
+        combinedBookIds.map((bookId) async {
           final bookDoc = await _firestore.collection('books').doc(bookId).get();
           return bookDoc.data()!;
         }),
       );
 
       setState(() {
-        _bookmarkedBooks = bookDetails;
+        _popularBooks = bookDetails;
       });
     } catch (e) {
-      print('Error fetching bookmarks: $e');
+      print('Error fetching popular books: $e');
     } finally {
       setState(() {
         _isLoading = false;
@@ -99,14 +112,14 @@ class _TPopularBooksState extends State<TPopularBooks> {
         SizedBox(height: 10),
         _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : _bookmarkedBooks.isEmpty
+            : _popularBooks.isEmpty
             ? Center(child: Text('No popular books found.'))
             : SizedBox(
           height: 300, // Set a fixed height for the carousel
           child: CarouselSlider.builder(
-            itemCount: _bookmarkedBooks.length,
+            itemCount: _popularBooks.length,
             itemBuilder: (context, index, realIndex) {
-              final book = _bookmarkedBooks[index];
+              final book = _popularBooks[index];
               final imageUrl = book['imageUrl'] ?? 'https://example.com/placeholder.jpg';
               final title = book['title'] ?? 'Unknown Title';
               final writer = book['writer'] ?? 'Unknown Writer';

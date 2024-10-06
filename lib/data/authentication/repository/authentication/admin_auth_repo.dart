@@ -39,62 +39,52 @@ class AdminAuthenticationRepository extends GetxController {
       if (user.emailVerified) {
         Get.offAll(() => const AdminNavigationMenu());
       } else {
-        Get.offAll(() => VerifyEmailScreen(email: _auth.currentUser?.email));
+        Get.offAll(() => VerifyEmailScreen(email: user.email));
       }
     } else {
+      // Check if first time or not and redirect accordingly
+      final isFirstTime = deviceStorage.read('IsFirstTime') ?? true;
       deviceStorage.writeIfNull('IsFirstTime', true);
-      deviceStorage.read('IsFirstTime') != true
-          ? Get.offAll(() => const OnBoardingScreen())
-          : Get.offAll(() => const LoginScreen());
+      Get.offAll(() => isFirstTime ? const OnBoardingScreen() : const LoginScreen());
     }
   }
 
-  // Methods for authentication operations
+  // Centralize exception handling
+  Object handleException(Object e) {
+    if (e is FirebaseAuthException) {
+      return TFirebaseAuthException(e.code).message;
+    } else if (e is FirebaseException) {
+      return TFirebaseException(e.code).message;
+    } else if (e is FormatException) {
+      return  TFormatException();
+    } else if (e is PlatformException) {
+      return TPlatformException(e.code).message;
+    } else {
+      return 'Something went wrong. Please try again.';
+    }
+  }
+
   Future<UserCredential> loginWithEmailAndPassword(String email, String password) async {
     try {
       return await _auth.signInWithEmailAndPassword(email: email, password: password);
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
     } catch (e) {
-      throw 'Something went wrong. Please try again.';
+      throw handleException(e);
     }
   }
 
   Future<UserCredential> registerWithEmailAndPassword(String email, String password) async {
     try {
       return await _auth.createUserWithEmailAndPassword(email: email, password: password);
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
     } catch (e) {
-      throw 'Something went wrong. Please try again.';
+      throw handleException(e);
     }
   }
 
   Future<void> sendEmailVerification() async {
     try {
       await _auth.currentUser?.sendEmailVerification();
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
     } catch (e) {
-      throw 'Something went wrong. Please try again.';
+      throw handleException(e);
     }
   }
 
@@ -107,16 +97,8 @@ class AdminAuthenticationRepository extends GetxController {
         idToken: googleAuth?.idToken,
       );
       return await _auth.signInWithCredential(credentials);
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
     } catch (e) {
-      if (kDebugMode) print('Something went wrong. Please try again.');
+      if (kDebugMode) print(handleException(e));
       return null;
     }
   }
@@ -124,16 +106,8 @@ class AdminAuthenticationRepository extends GetxController {
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
     } catch (e) {
-      throw 'Something went wrong. Please try again.';
+      throw handleException(e);
     }
   }
 
@@ -142,16 +116,8 @@ class AdminAuthenticationRepository extends GetxController {
       await GoogleSignIn().signOut();
       await _auth.signOut();
       Get.offAll(() => const LoginScreen());
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
     } catch (e) {
-      throw 'Something went wrong. Please try again.';
+      throw handleException(e);
     }
   }
 
@@ -159,16 +125,8 @@ class AdminAuthenticationRepository extends GetxController {
     try {
       AuthCredential credential = EmailAuthProvider.credential(email: email, password: password);
       await _auth.currentUser!.reauthenticateWithCredential(credential);
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
     } catch (e) {
-      throw 'Something went wrong. Please try again.';
+      throw handleException(e);
     }
   }
 
@@ -177,16 +135,8 @@ class AdminAuthenticationRepository extends GetxController {
       await AdminRepository.instance.removeAdminRecord(_auth.currentUser!.uid);
       await _auth.currentUser?.delete();
       Get.offAll(() => const LoginScreen());
-    } on FirebaseAuthException catch (e) {
-      throw TFirebaseAuthException(e.code).message;
-    } on FirebaseException catch (e) {
-      throw TFirebaseException(e.code).message;
-    } on FormatException catch (_) {
-      throw const TFormatException();
-    } on PlatformException catch (e) {
-      throw TPlatformException(e.code).message;
     } catch (e) {
-      throw 'Something went wrong. Please try again.';
+      throw handleException(e);
     }
   }
 }

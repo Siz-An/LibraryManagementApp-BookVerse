@@ -21,21 +21,34 @@ class LoginController extends GetxController {
 
   /// -- Email and Password Sign In
   Future<void> emailAndPasswordSignIn() async {
-    if (!await _checkInternetConnection()) return;
-
-    if (!userloginFormKey.currentState!.validate()) return;
-
-    if (rememberMe.value) {
-      _saveCredentials();
-    }
-
     try {
       TFullScreenLoader.openLoadingDialogue('Logging you in...', TImages.checkRegistration);
-      await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
+
+      // Checking Internet connection
+      final isConnected = await NetworkManager.instance.isConnected();
+      if (!isConnected) {
+        TFullScreenLoader.stopLoading();
+        TLoaders.errorSnackBar(title: 'No Internet', message: 'Please check your internet connection.');
+        return;
+      }
+
+      if (!userloginFormKey.currentState!.validate()) {
+        TFullScreenLoader.stopLoading();
+        return;
+      }
+
+      if (rememberMe.value) {
+        localStorage.write('Remember_Me_Email', email.text.trim());
+        localStorage.write('Remember_Me_Password', password.text.trim());
+      }
+
+      final userCredentials = await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
+
       TFullScreenLoader.stopLoading();
       AuthenticationRepository.instance.screenRedirect();
     } catch (e) {
-      _handleError(e);
+      TFullScreenLoader.stopLoading();
+      TLoaders.errorSnackBar(title: 'Oh Snap', message: e.toString());
     }
   }
 

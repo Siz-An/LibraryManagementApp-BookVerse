@@ -1,11 +1,193 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
 class Received extends StatelessWidget {
-  final String userId;
+  const Received({super.key});
 
-  const Received({Key? key, required this.userId}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    // Get the current user's ID
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+
+    if (userId == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Books'),
+        ),
+        body: Center(
+          child: const Text('No user is logged in.'),
+        ),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Books'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Issued Books Section
+            Expanded(
+              child: Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      'Issued Books',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('issuedBooks')
+                          .where('userId', isEqualTo: userId) // Filter by userId
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                        if (snapshot.hasError) {
+                          return Center(child: Text('Error: ${snapshot.error}'));
+                        }
+
+                        final issuedBooks = snapshot.data?.docs ?? [];
+
+                        return ListView.builder(
+                          itemCount: issuedBooks.length,
+                          itemBuilder: (context, index) {
+                            final book = issuedBooks[index].data() as Map<String, dynamic>;
+                            final docId = issuedBooks[index].id; // Get the document ID
+
+                            // Safely get issued date
+                            DateTime? issuedDate = (book['issueDate'] as Timestamp?)?.toDate();
+                            String formattedIssuedDate = issuedDate != null
+                                ? DateFormat('yyyy-MM-dd – kk:mm').format(issuedDate)
+                                : 'N/A';
+
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 8.0),
+                              elevation: 4,
+                              child: ListTile(
+                                leading: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: Image.network(
+                                    book['imageUrl'] ?? 'https://via.placeholder.com/150', // Fallback image
+                                    width: 50,
+                                    height: 75,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                title: Text(book['title'] ?? 'No Title', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Author: ${book['writer'] ?? 'Unknown'}'),
+                                    Text('Issued Date: $formattedIssuedDate'), // Display formatted date
+                                  ],
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.reset_tv_sharp, color: Colors.red),
+                                  onPressed: () {
+                                    _confirmReturnBook(context, docId, book);
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Rejected Books Section
+            Expanded(
+              child: Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      'Rejected Books',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('rejectedBooks')
+                          .where('userId', isEqualTo: userId) // Filter by userId
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                        if (snapshot.hasError) {
+                          return Center(child: Text('Error: ${snapshot.error}'));
+                        }
+
+                        final rejectedBooks = snapshot.data?.docs ?? [];
+
+                        return ListView.builder(
+                          itemCount: rejectedBooks.length,
+                          itemBuilder: (context, index) {
+                            final book = rejectedBooks[index].data() as Map<String, dynamic>;
+                            final docId = rejectedBooks[index].id; // Get the document ID
+
+                            // Safely get rejection date
+                            DateTime? rejectionDate = (book['rejectionDate'] as Timestamp?)?.toDate();
+                            String formattedRejectionDate = rejectionDate != null
+                                ? DateFormat('yyyy-MM-dd – kk:mm').format(rejectionDate)
+                                : 'N/A';
+
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 8.0),
+                              elevation: 4,
+                              child: ListTile(
+                                leading: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: Image.network(
+                                    book['imageUrl'] ?? 'https://via.placeholder.com/150', // Fallback image
+                                    width: 50,
+                                    height: 75,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                title: Text(book['title'] ?? 'No Title', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Author: ${book['writer'] ?? 'Unknown'}'),
+                                    Text('Rejection Date: $formattedRejectionDate'), // Display formatted date
+                                    Text('Reason: ${book['rejectionReason'] ?? 'N/A'}'),
+                                  ],
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.check, color: Colors.green), // OK icon
+                                  onPressed: () {
+                                    _removeBook(docId); // Remove the book from rejectedBooks
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Future<void> _confirmReturnBook(BuildContext context, String docId, Map<String, dynamic> data) async {
     final bool? isConfirmed = await showDialog(
@@ -48,193 +230,5 @@ class Received extends StatelessWidget {
 
     // Remove the rejected book document from Firestore
     await rejectedBooksCollection.doc(docId).delete();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final DateFormat dateFormat = DateFormat('dd MMMM yyyy');
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Books'),
-
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'ISSUED BOOKS:',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.4,
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('issuedBooks')
-                      .where('userId', isEqualTo: userId)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    }
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(child: Text('No issued books found.'));
-                    }
-
-                    return ListView(
-                      children: snapshot.data!.docs.map((doc) {
-                        final data = doc.data() as Map<String, dynamic>;
-                        final docId = doc.id;
-
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Image.network(
-                                    data["imageUrl"] as String,
-                                    width: 100,
-                                    height: 150,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        data["title"] as String,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.teal,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text('Writer: ${data["writer"] as String}', style: const TextStyle(fontSize: 14)),
-                                      Text('Issue Date: ${dateFormat.format((data["issueDate"] as Timestamp).toDate())}', style: const TextStyle(fontSize: 14)),
-                                    ],
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.reply, color: Colors.teal),
-                                  onPressed: () {
-                                    _confirmReturnBook(context, docId, data);
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'REJECTED BOOKS:',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.4,
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('rejectedBooks')
-                      .where('userId', isEqualTo: userId)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    }
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(child: Text('No rejected books found.'));
-                    }
-
-                    return ListView(
-                      children: snapshot.data!.docs.map((doc) {
-                        final data = doc.data() as Map<String, dynamic>;
-                        final docId = doc.id;
-
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Image.network(
-                                    data["imageUrl"] as String,
-                                    width: 100,
-                                    height: 150,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        data["title"] as String,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text('Writer: ${data["writer"] as String}', style: const TextStyle(fontSize: 14)),
-                                      Text('Rejection Date: ${dateFormat.format((data["rejectionDate"] as Timestamp).toDate())}', style: const TextStyle(fontSize: 14)),
-                                      Text('Reason: ${data["rejectionReason"] as String}', style: const TextStyle(fontSize: 14)),
-                                    ],
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.check, color: Colors.red),
-                                  onPressed: () {
-                                    _removeBook(docId);
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
