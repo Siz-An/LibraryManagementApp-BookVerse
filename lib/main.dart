@@ -9,24 +9,27 @@ import 'data/authentication/repository/authentication/admin_auth_repo.dart';
 import 'data/authentication/repository/authentication/authentication_repo.dart';
 import 'features/home/screens/user/mark/provider.dart';
 import 'firebase_options.dart';
+
 Future<void> main() async {
   // Widgets Binding
   final WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize GetStorage
   await GetStorage.init();
+  print("GetStorage initialized");
 
-  // Await Splash Screen until Other items Load
+  // Await Splash Screen until other items load
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  print("Firebase initialized");
 
   // Initialize UserAuthenticationRepository and AdminAuthenticationRepository
-  Get.put(AuthenticationRepository());
+
+
   Get.put(AdminAuthenticationRepository());
-
-
+  Get.put(AuthenticationRepository());
 
 
   // Setup MultiProvider for SearchHistory and Bookmarks

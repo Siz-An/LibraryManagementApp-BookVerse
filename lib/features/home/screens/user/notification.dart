@@ -27,7 +27,7 @@ class AdminNotificationScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final notification = notifications[index].data() as Map<String, dynamic>;
               final message = notification['message'] ?? 'No message';
-              final sender = notification.containsKey('sender') ? notification['sender'] : 'Unknown sender';
+              final sender = notification.containsKey('sender') ? notification['sender'] : 'Admin';
 
               return ListTile(
                 title: Text(message),
