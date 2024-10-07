@@ -1,15 +1,5 @@
-// lib/data/authentication/repository/authentication/admin_auth_repo.dart
-
 import 'package:book_Verse/data/authentication/repository/adminRepo.dart';
 import 'package:book_Verse/features/authentication/screens/login/login.dart';
-import 'package:book_Verse/features/authentication/screens/signup/verify_email.dart';
-import 'package:book_Verse/features/authentication/screens/onboarding.dart';
-import 'package:book_Verse/navigation_menu/admin_nav.dart';
-import 'package:book_Verse/utils/exceptions/firebase_auth_exception.dart';
-import 'package:book_Verse/utils/exceptions/firebase_exception.dart';
-import 'package:book_Verse/utils/exceptions/format_exception.dart';
-import 'package:book_Verse/utils/exceptions/platform_exception.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Added for Firestore
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -17,15 +7,19 @@ import 'package:get/get.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-
-import '../../../../utils/popups/loaders.dart';
+import '../../../../features/authentication/screens/onboarding.dart';
+import '../../../../features/authentication/screens/signup/verify_email.dart';
+import '../../../../navigation_menu/admin_nav.dart';
+import '../../../../utils/exceptions/firebase_auth_exception.dart';
+import '../../../../utils/exceptions/firebase_exception.dart';
+import '../../../../utils/exceptions/format_exception.dart';
+import '../../../../utils/exceptions/platform_exception.dart';
 
 class AdminAuthenticationRepository extends GetxController {
   static AdminAuthenticationRepository get instance => Get.find();
 
   final deviceStorage = GetStorage();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Firestore instance
 
   User? get authAdmin => _auth.currentUser;
 
@@ -43,16 +37,7 @@ class AdminAuthenticationRepository extends GetxController {
 
     if (user != null) {
       if (user.emailVerified) {
-        // Verify if the user has 'Admin' role
-        final isAdmin = await _checkIfAdmin(user.uid);
-        if (isAdmin) {
-          Get.offAll(() => const AdminNavigationMenu());
-        } else {
-          // User is not an admin, show error and logout
-          Get.offAll(() => const LoginScreen());
-          TLoaders.errorSnackBar(title: 'Access Denied', message: 'You do not have admin privileges.');
-          await logout();
-        }
+        Get.offAll(() => const AdminNavigationMenu());
       } else {
         Get.offAll(() => VerifyEmailScreen(email: user.email));
       }
@@ -64,20 +49,6 @@ class AdminAuthenticationRepository extends GetxController {
     }
   }
 
-  // Method to check if the user is an admin
-  Future<bool> _checkIfAdmin(String uid) async {
-    try {
-      DocumentSnapshot adminDoc = await _firestore.collection('Admins').doc(uid).get();
-      if (adminDoc.exists) {
-        final role = adminDoc.get('Role') as String?;
-        return role == 'Admin';
-      }
-      return false;
-    } catch (e) {
-      throw handleException(e);
-    }
-  }
-
   // Centralize exception handling
   Object handleException(Object e) {
     if (e is FirebaseAuthException) {
@@ -85,7 +56,7 @@ class AdminAuthenticationRepository extends GetxController {
     } else if (e is FirebaseException) {
       return TFirebaseException(e.code).message;
     } else if (e is FormatException) {
-      return TFormatException();
+      return  TFormatException();
     } else if (e is PlatformException) {
       return TPlatformException(e.code).message;
     } else {
@@ -120,11 +91,7 @@ class AdminAuthenticationRepository extends GetxController {
   Future<UserCredential?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? userAccount = await GoogleSignIn().signIn();
-      if (userAccount == null) {
-        // User canceled the sign-in
-        return null;
-      }
-      final GoogleSignInAuthentication? googleAuth = await userAccount.authentication;
+      final GoogleSignInAuthentication? googleAuth = await userAccount?.authentication;
       final credentials = GoogleAuthProvider.credential(
         accessToken: googleAuth?.accessToken,
         idToken: googleAuth?.idToken,
@@ -132,7 +99,7 @@ class AdminAuthenticationRepository extends GetxController {
       return await _auth.signInWithCredential(credentials);
     } catch (e) {
       if (kDebugMode) print(handleException(e));
-      throw handleException(e);
+      return null;
     }
   }
 

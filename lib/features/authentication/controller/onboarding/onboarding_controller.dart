@@ -33,7 +33,7 @@ class OnboardingController extends GetxController{
       }
       storage.write('isFirstTime', false);
 
-       Get.offAll(() => const LoginScreen());
+       Get.offAll(const LoginScreen());
       if(kDebugMode){
         print('============ Get Storage Next Button ===========');
         print(storage.read('isFirstTime'));
