@@ -23,7 +23,7 @@ dependencies:
   flutter_native_splash: ^2.4.0
   smooth_page_indicator: ^1.1.0
   shared_preferences: ^2.2.3
-  carousel_slider: ^4.2.1
+  carousel_slider: ^5.0.0
   shimmer: ^3.0.0
   image_picker: ^1.1.2
   provider: ^6.1.2
