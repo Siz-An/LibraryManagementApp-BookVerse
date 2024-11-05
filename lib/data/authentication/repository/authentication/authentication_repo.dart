@@ -2,6 +2,7 @@ import 'package:book_Verse/features/authentication/screens/login/login.dart';
 import 'package:book_Verse/features/authentication/screens/signup/verify_email.dart';
 import 'package:book_Verse/features/authentication/screens/onboarding.dart';
 import 'package:book_Verse/navigation_menu/navigation_menu.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -19,6 +20,7 @@ class AuthenticationRepository extends GetxController {
 
   final deviceStorage = GetStorage();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Firestore instance
 
   User? get authUser => _auth.currentUser;
 
@@ -34,7 +36,7 @@ class AuthenticationRepository extends GetxController {
 
     if (user != null) {
       if (user.emailVerified) {
-        Get.offAll(() =>  NavigationMenu());
+        Get.offAll(() => NavigationMenu());
       } else {
         Get.offAll(() => VerifyEmailScreen(email: user.email));
       }
@@ -87,11 +89,33 @@ class AuthenticationRepository extends GetxController {
 
   Future<void> logout() async {
     try {
+      // Delete searchedBooks for the current user
+      await _deleteSearchedBooks();
+
+      // Sign out from Google and Firebase
       await GoogleSignIn().signOut();
       await _auth.signOut();
+
       Get.offAll(() => const LoginScreen());
     } on Exception catch (e) {
       _handleException(e);
+    }
+  }
+
+  Future<void> _deleteSearchedBooks() async {
+    // Reference to the searchedBooks collection
+    CollectionReference searchedBooksRef = _firestore.collection('searchedBooks');
+
+    // Get the current user's ID
+    User? user = _auth.currentUser;
+    if (user != null) {
+      // Get all documents associated with the user's ID
+      QuerySnapshot snapshot = await searchedBooksRef.where('userId', isEqualTo: user.uid).get();
+
+      // Delete each document for this user
+      for (QueryDocumentSnapshot doc in snapshot.docs) {
+        await searchedBooksRef.doc(doc.id).delete();
+      }
     }
   }
 

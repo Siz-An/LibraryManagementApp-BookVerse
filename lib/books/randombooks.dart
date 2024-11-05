@@ -24,10 +24,18 @@ class _RandomBooksState extends State<TRandomBooks> {
 
   Future<void> _fetchRandomBooks() async {
     try {
-      final querySnapshot = await _firestore.collection('books').get();
-      final allBooks = querySnapshot.docs.map((doc) => doc.data()).toList();
+      // Fetch books from 'searchedBooks' collection
+      final searchedBooksSnapshot = await _firestore.collection('searchedBooks').get();
+      final searchedBooks = searchedBooksSnapshot.docs.map((doc) => doc.data()).toList();
 
-      // Shuffle the list of books
+      // Fetch books from 'bookmarks' collection
+      final bookmarksSnapshot = await _firestore.collection('bookmarks').get();
+      final bookmarks = bookmarksSnapshot.docs.map((doc) => doc.data()).toList();
+
+      // Combine both lists
+      final allBooks = [...searchedBooks, ...bookmarks];
+
+      // Shuffle the combined list
       allBooks.shuffle();
 
       // Take the first 5 books from the shuffled list
@@ -68,7 +76,7 @@ class _RandomBooksState extends State<TRandomBooks> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TSectionHeading(
-          title: 'Recently Added Books',
+          title: 'Trendy Books',
           onPressed: () {
             // Handle view all button press
           },
@@ -99,7 +107,7 @@ class _RandomBooksState extends State<TRandomBooks> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: Container(
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black26,
@@ -115,7 +123,7 @@ class _RandomBooksState extends State<TRandomBooks> {
                               height: 220,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
-                                return Center(
+                                return const Center(
                                   child: Text(
                                     'Image not available',
                                     style: TextStyle(color: Colors.red),
@@ -125,19 +133,19 @@ class _RandomBooksState extends State<TRandomBooks> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Text(
                           title,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 5),
+                        const SizedBox(height: 5),
                         Text(
                           writer,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 14,
                           ),

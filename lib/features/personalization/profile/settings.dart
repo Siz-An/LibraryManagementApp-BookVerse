@@ -1,4 +1,3 @@
-import 'package:book_Verse/common/widgets/appbar/appbar.dart';
 import 'package:book_Verse/common/widgets/custom_shapes/primary_header_container.dart';
 import 'package:book_Verse/common/widgets/proFile/settings_menu.dart';
 import 'package:book_Verse/common/widgets/texts/section_heading.dart';

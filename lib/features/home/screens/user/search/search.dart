@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 import '../../../../../books/detailScreen/course_book_detail_screen.dart';
 import 'BooksAll.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  const SearchScreen({Key? key}) : super(key: key);
 
   @override
   _SearchScreenState createState() => _SearchScreenState();
@@ -13,6 +14,14 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   String query = '';
   List<DocumentSnapshot> searchResults = [];
+  String? userId; // Variable to hold the user ID
+
+  @override
+  void initState() {
+    super.initState();
+    // Get the current user's ID
+    userId = FirebaseAuth.instance.currentUser?.uid; // Fetch logged-in user ID
+  }
 
   Future<void> _searchBooks(String query) async {
     if (query.isEmpty) {
@@ -32,9 +41,36 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       searchResults = snapshot.docs.where((doc) {
         final bookTitle = (doc.data() as Map<String, dynamic>)['title'] as String;
-        return bookTitle.contains(uppercaseQuery);
+        return bookTitle.toUpperCase().contains(uppercaseQuery);
       }).toList();
     });
+
+    // Save searched books to Firestore with userId
+    if (userId != null) {
+      await _saveSearchedBooks(uppercaseQuery, userId!);
+    }
+  }
+
+  Future<void> _saveSearchedBooks(String searchQuery, String userId) async {
+    for (var doc in searchResults) {
+      final book = doc.data() as Map<String, dynamic>;
+      final title = book['title'] ?? 'No title';
+      final writer = book['writer'] ?? 'Unknown author';
+      final imageUrl = book['imageUrl'] ?? '';
+      final course = book['course'] ?? '';
+      final summary = book['summary'] ?? 'No summary available';
+
+      // Create a new document in the searchedBooks collection
+      await FirebaseFirestore.instance.collection('searchedBooks').add({
+        'userId': userId, // Add userId to the document
+        'title': title,
+        'writer': writer,
+        'imageUrl': imageUrl,
+        'course': course,
+        'summary': summary,
+        'searchedAt': FieldValue.serverTimestamp(), // Store the timestamp
+      });
+    }
   }
 
   @override
@@ -42,7 +78,6 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Search Books'),
-
         actions: [
           IconButton(
             icon: const Icon(Icons.menu_book),

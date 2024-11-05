@@ -1,5 +1,4 @@
 import 'package:book_Verse/features/home/screens/user/home/widget/home_appbar.dart';
-import 'package:book_Verse/features/home/screens/user/home/widget/promo_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../../books/detailScreen/genre_book_detail_screen.dart';

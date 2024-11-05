@@ -136,7 +136,7 @@ class _TPopularBooksState extends State<TPopularBooks> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(20), // Increased border radius
                           child: Container(
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black26,
@@ -152,7 +152,7 @@ class _TPopularBooksState extends State<TPopularBooks> {
                               height: 220,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
-                                return Center(
+                                return const Center(
                                   child: Text(
                                     'Image not available',
                                     style: TextStyle(color: Colors.red),
@@ -162,10 +162,10 @@ class _TPopularBooksState extends State<TPopularBooks> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Text(
                           title,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
@@ -174,7 +174,7 @@ class _TPopularBooksState extends State<TPopularBooks> {
                         SizedBox(height: 5),
                         Text(
                           writer,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 14,
                           ),
