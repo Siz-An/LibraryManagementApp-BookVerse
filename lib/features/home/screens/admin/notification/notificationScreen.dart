@@ -32,6 +32,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             'sender': user.email,
             'recipientId': recipientUserId,
             'timestamp': FieldValue.serverTimestamp(),
+            'isRead': false, // Add isRead field and set it to false initially
           });
 
           ScaffoldMessenger.of(context).showSnackBar(

@@ -7,9 +7,7 @@ import 'package:book_Verse/utils/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/get_instance.dart';
-
 import '../controller/onboarding/onboarding_controller.dart';
-
 
 class OnBoardingScreen extends StatelessWidget {
   const OnBoardingScreen({super.key});
@@ -33,20 +31,20 @@ class OnBoardingScreen extends StatelessWidget {
 
               OnBoardingPage(
                 image: TImages.onBoardingImage2,
-                title: TTexts.onBoardingTitle1,
-                subTitle: TTexts.onBoardingSubTitle1,),
+                title: TTexts.onBoardingTitle2,
+                subTitle: TTexts.onBoardingSubTitle2,),
 
               OnBoardingPage(
                 image: TImages.onBoardingImage3,
-                title: TTexts.onBoardingTitle1,
-                subTitle: TTexts.onBoardingSubTitle1,),
+                title: TTexts.onBoardingTitle3,
+                subTitle: TTexts.onBoardingSubTitle3,),
             ],
           ),
           /// Skip Button
           const onBoardingSkip(),
 
           /// Dot Navigation SmoothPageIndicator
-          
+
           const OnBoardingDotNavigation(),
 
           /// circular Button

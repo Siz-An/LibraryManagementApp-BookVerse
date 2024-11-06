@@ -59,7 +59,7 @@ class SettingScreen extends StatelessWidget {
                     icon: Iconsax.notification,
                     title: 'Notification',
                     subTitle: 'Please check Notification Daily',
-                    onTap: () => Get.to(() => AdminNotificationScreen()),
+                    onTap: () => Get.to(() => notificationScreen()),
                   ),
                   Divider(),
                   TSettingMenu(

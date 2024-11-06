@@ -7,12 +7,14 @@ class TTexts{
 
   //-- OnBoarding Text
   static const String onBoardingTitle1 = "Get Your Desired Books";
-  static const String onBoardingTitle2 = "Select Your payment method";
-  static const String onBoardingTitle3 = "Deliver at your doorstep";
+  static const String onBoardingTitle2 = "Effortless Book Browsing and Borrowing";
+  static const String onBoardingTitle3 = " Stay Organized and Informed";
 
   static const String onBoardingSubTitle1 = "Enhancing Library Experience with Smart Management Tools";
-  static const String onBoardingSubTitle2 = "Select Your payment method";
-  static const String onBoardingSubTitle3 = "Deliver at your doorstep";
+  static const String onBoardingSubTitle2 = "Find books by category, view detailed information, and borrow with a single tap. "
+      "Say goodbye to long queues and welcome seamless book access!";
+  static const String onBoardingSubTitle3 = "Receive timely reminders for due dates, explore new arrivals, and bookmark favorite books."
+      " Manage your library activities with ease.";
 
   // -- Home
   static const String homeAppBarTitle = "Welcome to BookVerse!";
