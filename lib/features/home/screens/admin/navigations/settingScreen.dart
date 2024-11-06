@@ -97,7 +97,7 @@ class AdminSettingsScreen extends StatelessWidget {
                         context,
                         icon: Iconsax.search_normal,
                         title: 'Search Screen',
-                        subTitle: 'Chat with Students',
+                        subTitle: 'Search Books',
                         onTap: () => Get.to(() =>  SearchBookScreen()),
                       ),
                       Divider(),

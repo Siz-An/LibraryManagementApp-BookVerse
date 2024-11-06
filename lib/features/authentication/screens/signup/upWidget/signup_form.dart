@@ -118,7 +118,7 @@ class _TSignupformState extends State<TSignupform> {
                 if (_selectedRole == 'User') {
                   userController.signup();
                 } else {
-                  adminController.signup();
+                  adminController.signup(); // This will check if an admin already exists
                 }
               },
               style: ElevatedButton.styleFrom(
