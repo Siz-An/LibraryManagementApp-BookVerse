@@ -1,6 +1,7 @@
 import 'package:book_Verse/common/widgets/products/bookmark/bookmark_icon.dart';
 import 'package:book_Verse/features/personalization/controller/user_Controller.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -62,7 +63,28 @@ class THomeAppBar extends StatelessWidget {
             );
           },
         ),
-        // User Icon without Count
+    StreamBuilder<QuerySnapshot>(
+    stream: FirebaseFirestore.instance
+        .collection('issuedBooks')
+        .where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid) // Filter by current user ID
+        .where('issueDate', isLessThan: Timestamp.now())// Filter for books not returned
+        .snapshots(),
+    builder: (context, snapshot) {
+    int reminderCount = 0;
+    if (snapshot.hasData) {
+    reminderCount = snapshot.data!.docs.length; // Count the overdue books
+    }
+    return TCartCounterIcons(
+    icon: Iconsax.receipt_text,
+      iconColor: Colors.yellowAccent,
+    count: reminderCount,
+    onPressed: () => showReminderPopup(context), // Show reminder count as tooltip
+    );
+    },
+    )
+    ,
+
+    // User Icon without Count
         TCartCounterIcons(
           onPressed: () => Get.to(() => userScreen()),
           iconColor: TColors.white,
