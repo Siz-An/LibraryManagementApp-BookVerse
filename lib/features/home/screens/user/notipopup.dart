@@ -57,11 +57,13 @@ void showNotificationPopup(BuildContext context) {
 
                     // Filter new and old notifications
                     final newNotifications = notifications.where((notification) {
-                      return notification['isRead'] == false;
+                      final data = notification.data() as Map<String, dynamic>;
+                      return data.containsKey('isRead') && data['isRead'] == false;
                     }).toList();
 
                     final oldNotifications = notifications.where((notification) {
-                      return notification['isRead'] == true;
+                      final data = notification.data() as Map<String, dynamic>;
+                      return data.containsKey('isRead') && data['isRead'] == true;
                     }).toList();
 
                     return ListView(

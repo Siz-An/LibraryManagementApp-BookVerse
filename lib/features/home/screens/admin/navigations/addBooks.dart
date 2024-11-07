@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -21,6 +22,7 @@ class _AddBooksState extends State<AddBooks> {
   final _gradeController = TextEditingController();
   final _summaryController = TextEditingController();
   final _picker = ImagePicker();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   File? _image;
   bool _isCourseBook = false;
 
@@ -48,18 +50,18 @@ class _AddBooksState extends State<AddBooks> {
         }
 
         List<String>? genres = !_isCourseBook
-            ? _genreController.text.split(',').map((e) => e.trim().toUpperCase()).toList() // Convert genres to uppercase
+            ? _genreController.text.split(',').map((e) => e.trim().toUpperCase()).toList()
             : null;
 
         await FirebaseFirestore.instance.collection('books').add({
-          'title': _titleController.text.toUpperCase(), // Convert title to uppercase
-          'writer': _writerController.text.toUpperCase(), // Convert writer to uppercase
+          'title': _titleController.text.toUpperCase(),
+          'writer': _writerController.text.toUpperCase(),
           'genre': genres,
-          'course': _isCourseBook ? _courseController.text.toUpperCase() : null, // Convert course to uppercase
-          'grade': _isCourseBook && _gradeController.text.isNotEmpty ? _gradeController.text.toUpperCase() : null, // Convert grade to uppercase
+          'course': _isCourseBook ? _courseController.text.toUpperCase() : null,
+          'grade': _isCourseBook && _gradeController.text.isNotEmpty ? _gradeController.text.toUpperCase() : null,
           'imageUrl': _image != null ? imageUrl : null,
           'isCourseBook': _isCourseBook,
-          'summary': _summaryController.text, // Keep summary in original case
+          'summary': _summaryController.text,
           'numberOfCopies': numberOfBooks,
         });
 
@@ -69,11 +71,18 @@ class _AddBooksState extends State<AddBooks> {
 
         bool sendNotification = await _showNotificationDialog();
         if (sendNotification) {
-          await FirebaseFirestore.instance.collection('notifications').add({
-            'title': 'New Book Added',
-            'message': 'A new book titled "${_titleController.text.toUpperCase()}" has been added.',
-            'timestamp': FieldValue.serverTimestamp(),
-          });
+          final user = _auth.currentUser;
+          if (user != null) {
+            final recipientUserId = 'someRecipientUserId'; // Replace with actual recipient ID or retrieve dynamically
+            await FirebaseFirestore.instance.collection('notifications').add({
+              'title': 'New Book Added',
+              'message': 'A new book titled "${_titleController.text.toUpperCase()}" has been added.',
+              'timestamp': FieldValue.serverTimestamp(),
+              'isRead': false,
+              'sender': user.email,
+              'recipientId': recipientUserId,
+            });
+          }
         }
 
         _clearForm();
@@ -95,13 +104,13 @@ class _AddBooksState extends State<AddBooks> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(false); // Don't send notification
+                Navigator.of(context).pop(false);
               },
               child: const Text('No'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(true); // Send notification
+                Navigator.of(context).pop(true);
               },
               child: const Text('Yes'),
             ),
@@ -121,7 +130,7 @@ class _AddBooksState extends State<AddBooks> {
     _summaryController.clear();
     setState(() {
       _image = null;
-      _isCourseBook = false; // Reset the course book switch
+      _isCourseBook = false;
     });
   }
 
