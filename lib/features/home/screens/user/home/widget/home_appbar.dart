@@ -63,25 +63,26 @@ class THomeAppBar extends StatelessWidget {
             );
           },
         ),
-    StreamBuilder<QuerySnapshot>(
-    stream: FirebaseFirestore.instance
-        .collection('issuedBooks')
-        .where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid) // Filter by current user ID
-        .where('issueDate', isLessThan: Timestamp.now())// Filter for books not returned
-        .snapshots(),
-    builder: (context, snapshot) {
-    int reminderCount = 0;
-    if (snapshot.hasData) {
-    reminderCount = snapshot.data!.docs.length; // Count the overdue books
-    }
-    return TCartCounterIcons(
-    icon: Iconsax.receipt_text,
-      iconColor: Colors.yellowAccent,
-    count: reminderCount,
-    onPressed: () => showReminderPopup(context), // Show reminder count as tooltip
-    );
-    },
-    )
+        StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('issuedBooks')
+              .where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid) // Filter by current user ID
+              .where('issueDate', isLessThan: Timestamp.now()) // Filter for books not returned
+              .where('isRead', isEqualTo: false)
+              .snapshots(),
+          builder: (context, snapshot) {
+            int reminderCount = 0;
+            if (snapshot.hasData) {
+              reminderCount = snapshot.data!.docs.length; // Count the overdue books
+            }
+            return TCartCounterIcons(
+              icon: Iconsax.receipt_text,
+              iconColor: Colors.yellowAccent,
+              count: reminderCount,
+              onPressed: () => showReminderPopup(context), // Show reminder count as tooltip
+            );
+          },
+        )
     ,
 
     // User Icon without Count

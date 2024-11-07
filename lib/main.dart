@@ -32,6 +32,8 @@ Future<void> main() async {
 
 
 
+
+
   // Setup MultiProvider for SearchHistory and Bookmarks
   runApp(
     MultiProvider(

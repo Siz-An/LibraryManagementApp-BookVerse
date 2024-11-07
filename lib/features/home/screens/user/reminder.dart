@@ -3,25 +3,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 void showReminderPopup(BuildContext context) {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
   // Flag to track if the reminder was already shown
   bool reminderShown = false;
-
   // Fetch current user ID
   final userId = _auth.currentUser?.uid;
-
   if (userId == null || reminderShown) {
     return; // If no user is logged in or reminder is already shown, don't show the popup
   }
-
   // Query the issuedBooks collection for overdue books
   _firestore.collection('issuedBooks')
-      .where('userId', isEqualTo: userId)
-      .where('issueDate', isLessThan: Timestamp.now()) // Assuming there's an 'isReturned' field to track if the book is returned
+      .where('userId', isEqualTo: userId) // Assuming there's an 'isReturned' field to track if the book is returned
       .snapshots()
       .listen((snapshot) {
     if (snapshot.docs.isNotEmpty) {
@@ -84,10 +78,8 @@ void showReminderPopup(BuildContext context) {
                         final book = snapshot.docs[index];
                         final title = book['title'] ?? 'Unknown title';
                         final issueDate = (book['issueDate'] as Timestamp).toDate();
-
                         // Format the issue date to a more readable format
                         String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(issueDate);
-
                         return ListTile(
                           title: Text(title),
                           subtitle: Text('Issued on: $formattedDate'),
@@ -101,11 +93,7 @@ void showReminderPopup(BuildContext context) {
           );
         },
       );
-
-      // Set a 15-second timer to automatically close the popup
-
     }
   });
 }
-
 

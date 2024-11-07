@@ -1,4 +1,5 @@
 import 'package:book_Verse/common/widgets/products/bookmark/bookmark_icon.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -7,6 +8,7 @@ import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/shimmer.dart';
 import '../../../../../../utils/constants/text_strings.dart';
 import '../../../../personalization/controller/admin_Controller.dart';
+import '../navigations/requests.dart';
 import 'adminScreen.dart';
 
 class TAdminAppBar extends StatelessWidget {
@@ -32,6 +34,23 @@ class TAdminAppBar extends StatelessWidget {
         ],
       ),
       actions:  [
+        StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('requests')
+              .snapshots(),
+          builder: (context, snapshot) {
+            int reminderCount = 0;
+            if (snapshot.hasData) {
+              reminderCount = snapshot.data!.docs.length; // Count the overdue books
+            }
+            return TCartCounterIcons(
+              icon: Iconsax.receipt_text,
+              iconColor: Colors.yellowAccent,
+              count: reminderCount,
+              onPressed: () => Get.to(() => AdminUserRequestsScreen()), // Show reminder count as tooltip
+            );
+          },
+        ),
         TCartCounterIcons(onPressed: () => Get.to(()=> AdminScreen()),iconColor: TColors.white, icon: Iconsax.user,),
       ],
     );
