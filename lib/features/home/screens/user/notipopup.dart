@@ -30,7 +30,7 @@ void showNotificationPopup(BuildContext context) {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+                    color: Colors.green,
                   ),
                 ),
               ),
@@ -73,9 +73,9 @@ void showNotificationPopup(BuildContext context) {
                             child: Text(
                               'New Notifications',
                               style: TextStyle(
-                                fontSize: 20,
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.green,
+                                color: Colors.red,
                               ),
                             ),
                           ),

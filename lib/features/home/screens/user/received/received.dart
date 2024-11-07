@@ -15,6 +15,7 @@ class Received extends StatelessWidget {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Books'),
+          actions: [],
         ),
         body: Center(
           child: const Text('No user is logged in.'),

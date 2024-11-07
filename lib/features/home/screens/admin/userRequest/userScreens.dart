@@ -100,6 +100,7 @@ class UserRequestedBooksScreen extends StatelessWidget {
           'writer': book['writer'],
           'imageUrl': book['imageUrl'],
           'issueDate': Timestamp.now(),
+          'isRead': false, // Default isRead value
         });
 
         // Decrease the number of copies by 1
@@ -200,5 +201,18 @@ class UserRequestedBooksScreen extends StatelessWidget {
         });
       }
     }
+  }
+
+  // Function to mark a book as read
+  void markBookAsRead(BuildContext context, String issuedBookId) async {
+    final issuedBookRef = FirebaseFirestore.instance.collection('issuedBooks').doc(issuedBookId);
+
+    await issuedBookRef.update({
+      'isRead': true,
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Book marked as read!')),
+    );
   }
 }

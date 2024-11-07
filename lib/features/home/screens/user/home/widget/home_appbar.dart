@@ -9,8 +9,8 @@ import '../../../../../../utils/constants/colors.dart';
 import '../../../../../../utils/constants/shimmer.dart';
 import '../../../../../../utils/constants/text_strings.dart';
 import '../../../../../personalization/profile/widgets/users_Screen.dart';
-import '../../notification.dart';
 import '../../notipopup.dart';
+import '../../reminder.dart';
 
 class THomeAppBar extends StatelessWidget {
   const THomeAppBar({
