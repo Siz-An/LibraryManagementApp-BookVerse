@@ -35,10 +35,13 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 children: [
                   const TPopularBooks(),
+                  const Divider(),
                   const TRandomBooks(),
+                  const Divider(),
                   // Course Books Section
                   TSectionHeading(
                     title: '| Course Books',
+                    fontSize: 25,
                     onPressed: () {},
                   ),
 
@@ -75,9 +78,9 @@ class HomeScreen extends StatelessWidget {
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          crossAxisSpacing: TSizes.cardRadiusSm,
-                          mainAxisSpacing: TSizes.cardRadiusSm,
-                          childAspectRatio: 3,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 4 / 3,
                         ),
                         itemCount: grades.length,
                         itemBuilder: (context, index) {
@@ -92,32 +95,65 @@ class HomeScreen extends StatelessWidget {
                               );
                             },
                             child: Container(
-                              padding: const EdgeInsets.all(TSizes.sm),
                               decoration: BoxDecoration(
-                                border: Border.all(color: Colors.black, width: 2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  grade,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
+                                gradient: LinearGradient(
+                                  colors: [Colors.purpleAccent, Colors.deepPurpleAccent],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.4),
+                                    spreadRadius: 2,
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.school,
+                                      size: 40,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    grade,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      letterSpacing: 1.1,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
                               ),
                             ),
                           );
                         },
                       );
                     },
-                  ),
+                  )
+                  ,
+                  const Divider(),
 
                   const SizedBox(height: TSizes.spaceBtwItems),
 
                   // Genre Section
                   TSectionHeading(
                     title: '| Genre',
+                    fontSize: 25,
                     onPressed: () {},
                   ),
 
@@ -158,9 +194,9 @@ class HomeScreen extends StatelessWidget {
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          crossAxisSpacing: TSizes.cardRadiusSm,
-                          mainAxisSpacing: TSizes.cardRadiusSm,
-                          childAspectRatio: 3,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 3 ,
                         ),
                         itemCount: genres.length,
                         itemBuilder: (context, index) {
@@ -175,26 +211,57 @@ class HomeScreen extends StatelessWidget {
                               );
                             },
                             child: Container(
-                              padding: const EdgeInsets.all(TSizes.sm),
                               decoration: BoxDecoration(
-                                border: Border.all(color: Colors.black, width: 2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  genre,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
+                                gradient: LinearGradient(
+                                  colors: [Colors.green, Colors.greenAccent],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.4),
+                                    spreadRadius: 2,
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    // padding: const EdgeInsets.all(8),
+                                    // decoration: BoxDecoration(
+                                    //   color: Colors.white.withOpacity(0.2),
+                                    // ),
+                                    // child: Icon(
+                                    //   Icons.menu_book,
+                                    //   size: 40,
+                                    //   color: Colors.white,
+                                    // ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    genre,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      letterSpacing: 1.1,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
                               ),
                             ),
                           );
                         },
                       );
                     },
-                  ),
+                  )
+
+                  ,
                 ],
               ),
             ),

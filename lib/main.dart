@@ -31,6 +31,10 @@ Future<void> main() async {
   Get.put(AuthenticationRepository());
 
 
+
+
+
+
   // Setup MultiProvider for SearchHistory and Bookmarks
   runApp(
     MultiProvider(

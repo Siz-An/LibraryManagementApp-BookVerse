@@ -21,25 +21,32 @@ class _RandomBooksState extends State<TRandomBooks> {
     super.initState();
     _fetchRandomBooks();
   }
-
   Future<void> _fetchRandomBooks() async {
     try {
-      // Fetch books from 'searchedBooks' collection
+      // Fetch books from 'searchedBooks' and 'bookmarks' collections
       final searchedBooksSnapshot = await _firestore.collection('searchedBooks').get();
-      final searchedBooks = searchedBooksSnapshot.docs.map((doc) => doc.data()).toList();
-
-      // Fetch books from 'bookmarks' collection
       final bookmarksSnapshot = await _firestore.collection('bookmarks').get();
+
+      // Map documents to lists
+      final searchedBooks = searchedBooksSnapshot.docs.map((doc) => doc.data()).toList();
       final bookmarks = bookmarksSnapshot.docs.map((doc) => doc.data()).toList();
 
-      // Combine both lists
-      final allBooks = [...searchedBooks, ...bookmarks];
+      // Hybrid weighted selection: prioritize `searchedBooks`
+      List<Map<String, dynamic>> selectedBooks = [];
+      int numSearched = 3; // e.g., favor 3 from searchedBooks
+      int numBookmarks = 2; // and 2 from bookmarks
 
-      // Shuffle the combined list
-      allBooks.shuffle();
+      // Randomly select books from `searchedBooks`
+      searchedBooks.shuffle();
+      selectedBooks.addAll(searchedBooks.take(numSearched));
 
-      // Take the first 5 books from the shuffled list
-      _randomBooks = allBooks.take(5).cast<Map<String, dynamic>>().toList();
+      // Randomly select books from `bookmarks`
+      bookmarks.shuffle();
+      selectedBooks.addAll(bookmarks.take(numBookmarks));
+
+      // Shuffle final selection for random order display
+      selectedBooks.shuffle();
+      _randomBooks = selectedBooks;
     } catch (e) {
       print('Error fetching books: $e');
     } finally {
@@ -48,6 +55,7 @@ class _RandomBooksState extends State<TRandomBooks> {
       });
     }
   }
+
 
   void _navigateToDetailPage(Map<String, dynamic> book) {
     final title = book['title'] ?? 'Unknown Title';
@@ -76,7 +84,8 @@ class _RandomBooksState extends State<TRandomBooks> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TSectionHeading(
-          title: 'Trendy Books',
+          title: '| Trendy Books',
+          fontSize: 25,
           onPressed: () {
             // Handle view all button press
           },
