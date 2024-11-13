@@ -1,5 +1,3 @@
-
-import 'package:book_Verse/data/user/user_repo.dart';
 import 'package:book_Verse/features/authentication/screens/signup/verify_email.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
