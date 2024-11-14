@@ -21,10 +21,10 @@ class _EditBookScreenState extends State<EditBookScreen> {
   final _courseController = TextEditingController();
   final _gradeController = TextEditingController();
   final _summaryController = TextEditingController();
-  final _copiesController = TextEditingController(); // Controller for number of copies
+  final _copiesController = TextEditingController();
   final _picker = ImagePicker();
   File? _image;
-  String? _imageUrl; // To store the image URL from Firestore
+  String? _imageUrl;
   bool _isCourseBook = false;
 
   @override
@@ -43,17 +43,14 @@ class _EditBookScreenState extends State<EditBookScreen> {
         _courseController.text = data['course'] ?? '';
         _gradeController.text = data['grade'] ?? '';
         _summaryController.text = data['summary'] ?? '';
-        _copiesController.text = data['numberOfCopies']?.toString() ?? ''; // Load number of copies
-
+        _copiesController.text = data['numberOfCopies']?.toString() ?? '';
         _isCourseBook = data['isCourseBook'] ?? false;
 
         if (!_isCourseBook && data['genre'] != null) {
           _genreController.text = (data['genre'] as List).join(', ');
         }
 
-        // Load the image URL from Firestore
         _imageUrl = data['imageUrl'];
-
         setState(() {});
       }
     } catch (e) {
@@ -84,7 +81,6 @@ class _EditBookScreenState extends State<EditBookScreen> {
           imageUrl = await snapshot.ref.getDownloadURL();
         }
 
-        // Split the genre text by commas and trim whitespace
         List<String>? genres = !_isCourseBook
             ? _genreController.text.split(',').map((e) => e.trim()).toList()
             : null;
@@ -92,20 +88,20 @@ class _EditBookScreenState extends State<EditBookScreen> {
         await FirebaseFirestore.instance.collection('books').doc(widget.bookId).update({
           'title': _titleController.text,
           'writer': _writerController.text,
-          'genre': genres, // Store the list of genres
+          'genre': genres,
           'course': _isCourseBook ? _courseController.text : null,
           'grade': _isCourseBook && _gradeController.text.isNotEmpty ? _gradeController.text : null,
           'imageUrl': imageUrl,
           'isCourseBook': _isCourseBook,
           'summary': _summaryController.text,
-          'numberOfCopies': int.tryParse(_copiesController.text) ?? 0, // Save number of copies
+          'numberOfCopies': int.tryParse(_copiesController.text) ?? 0,
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Book updated successfully')),
         );
 
-        Navigator.pop(context); // Go back after updating
+        Navigator.pop(context);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to update book: $e')),
@@ -120,6 +116,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
       appBar: AppBar(
         title: const Text('Edit Book'),
         centerTitle: true,
+        backgroundColor: Colors.green,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -130,6 +127,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
               SwitchListTile(
                 title: const Text('Is this a course book?'),
                 value: _isCourseBook,
+                activeColor: Colors.deepOrangeAccent,
                 onChanged: (value) {
                   setState(() {
                     _isCourseBook = value;
@@ -137,111 +135,34 @@ class _EditBookScreenState extends State<EditBookScreen> {
                 },
               ),
               const SizedBox(height: 20),
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Book Title',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter the book title';
-                  }
-                  return null;
-                },
-              ),
+              _buildTextField(_titleController, 'Book Title', Icons.book, 'Please enter the book title'),
               const SizedBox(height: 10),
-              TextFormField(
-                controller: _writerController,
-                decoration: const InputDecoration(
-                  labelText: 'Writer',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter the writer\'s name';
-                  }
-                  return null;
-                },
-              ),
+              _buildTextField(_writerController, 'Writer', Icons.person, 'Please enter the writer\'s name'),
               const SizedBox(height: 10),
               if (!_isCourseBook)
                 Column(
                   children: [
-                    TextFormField(
-                      controller: _genreController,
-                      decoration: const InputDecoration(
-                        labelText: 'Genre (comma-separated)',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter the genre';
-                        }
-                        return null;
-                      },
-                    ),
+                    _buildTextField(_genreController, 'Genre (comma-separated)', Icons.category, 'Please enter the genre'),
                     const SizedBox(height: 10),
                   ],
                 ),
               if (_isCourseBook)
                 Column(
                   children: [
-                    TextFormField(
-                      controller: _courseController,
-                      decoration: const InputDecoration(
-                        labelText: 'Year / Semester (optional)',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
+                    _buildTextField(_courseController, 'Year / Semester (optional)', Icons.calendar_today),
                     const SizedBox(height: 10),
-                    TextFormField(
-                      controller: _gradeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Grade',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter the grade';
-                        }
-                        return null;
-                      },
-                    ),
+                    _buildTextField(_gradeController, 'Grade', Icons.grade, 'Please enter the grade'),
                     const SizedBox(height: 10),
                   ],
                 ),
-              TextFormField(
-                controller: _summaryController,
-                decoration: const InputDecoration(
-                  labelText: 'Summary',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter a summary';
-                  }
-                  return null;
-                },
-              ),
+              _buildTextField(_summaryController, 'Summary', Icons.description, 'Please enter a summary',),
               const SizedBox(height: 10),
-              TextFormField(
-                controller: _copiesController,
-                decoration: const InputDecoration(
-                  labelText: 'Number of Copies',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter the number of copies';
-                  }
-                  if (int.tryParse(value) == null) {
-                    return 'Please enter a valid number';
-                  }
-                  return null;
-                },
+              _buildTextField(
+                _copiesController,
+                'Number of Copies',
+                Icons.numbers,
+                'Please enter the number of copies',
+
               ),
               const SizedBox(height: 20),
               if (_image != null || (_imageUrl != null && _imageUrl!.isNotEmpty))
@@ -257,8 +178,8 @@ class _EditBookScreenState extends State<EditBookScreen> {
                       children: [
                         const Text('Image', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         SizedBox(
-                          height: 120, // Reduced size
-                          width: 120, // Reduced size
+                          height: 120,
+                          width: 120,
                           child: _image != null
                               ? Image.file(_image!, fit: BoxFit.cover)
                               : Image.network(_imageUrl!, fit: BoxFit.cover),
@@ -273,8 +194,9 @@ class _EditBookScreenState extends State<EditBookScreen> {
                 icon: const Icon(Icons.image),
                 label: const Text('Pick Image'),
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, backgroundColor: Colors.blue, // Text color
-                  minimumSize: const Size(120, 40), // Adjust button size
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.blue,
+                  minimumSize: const Size(120, 40),
                 ),
               ),
               const SizedBox(height: 20),
@@ -286,8 +208,9 @@ class _EditBookScreenState extends State<EditBookScreen> {
                     icon: const Icon(Icons.save),
                     label: const Text('Save Changes'),
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, backgroundColor: Colors.green, // Text color
-                      minimumSize: const Size(150, 40), // Adjust button size
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                      minimumSize: const Size(150, 40),
                     ),
                   ),
                   ElevatedButton.icon(
@@ -297,8 +220,9 @@ class _EditBookScreenState extends State<EditBookScreen> {
                     icon: const Icon(Icons.cancel),
                     label: const Text('Cancel'),
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, backgroundColor: Colors.red, // Text color
-                      minimumSize: const Size(150, 40), // Adjust button size
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                      minimumSize: const Size(150, 40),
                     ),
                   ),
                 ],
@@ -307,6 +231,32 @@ class _EditBookScreenState extends State<EditBookScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(
+      TextEditingController controller,
+      String label,
+      IconData icon, [
+        String? validatorMessage,
+        TextInputType inputType = TextInputType.text,
+        int maxLines = 1,
+        String? Function(String?)? validator,
+      ]) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(),
+      ),
+      keyboardType: inputType,
+      maxLines: maxLines,
+      validator: validator ??
+              (value) {
+            if (validatorMessage != null && value!.isEmpty) return validatorMessage;
+            return null;
+          },
     );
   }
 }

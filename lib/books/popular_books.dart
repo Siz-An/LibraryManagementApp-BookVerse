@@ -105,7 +105,8 @@ class _TPopularBooksState extends State<TPopularBooks> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TSectionHeading(
-          title: 'Popular Books',
+          title: '| Popular Books',
+          fontSize: 25,
           onPressed: () {
             // Handle view all button press
           },

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../../../books/detailScreen/course_book_detail_screen.dart'; // Import the detail screen
+import '../../../../../books/detailScreen/course_book_detail_screen.dart';
 
 class AllBooksScreen extends StatelessWidget {
   const AllBooksScreen({super.key});
@@ -10,11 +10,11 @@ class AllBooksScreen extends StatelessWidget {
 
     final List<Map<String, dynamic>> books = snapshot.docs.map((doc) {
       return {
-        'title': doc['title'] as String? ?? 'Unknown Title', // Provide a default value
-        'writer': doc['writer'] as String? ?? 'Unknown Writer', // Provide a default value
-        'imageUrl': doc['imageUrl'] as String? ?? '', // Provide a default empty string
-        'course': doc['course'] as String? ?? 'Unknown Course', // Provide a default value
-        'summary': doc['summary'] as String? ?? 'No Summary Available', // Provide a default value
+        'title': doc['title'] as String? ?? 'Unknown Title',
+        'writer': doc['writer'] as String? ?? 'Unknown Writer',
+        'imageUrl': doc['imageUrl'] as String? ?? '',
+        'course': doc['course'] as String? ?? 'Unknown Course',
+        'summary': doc['summary'] as String? ?? 'No Summary Available',
       };
     }).toList();
 
@@ -50,9 +50,7 @@ class AllBooksScreen extends StatelessWidget {
           }
 
           final groupedBooks = snapshot.data!;
-
           final List<String> alphabet = List.generate(26, (i) => String.fromCharCode('A'.codeUnitAt(0) + i));
-
           final filteredAlphabet = alphabet.where((letter) => groupedBooks.containsKey(letter)).toList();
 
           return ListView(
@@ -61,41 +59,61 @@ class AllBooksScreen extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
+                  // Alphabet Header
+                  Container(
+                    color: Colors.blueGrey.shade50,
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: Text(
                       letter,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green),
                     ),
                   ),
-                  const Divider(),
+                  const Divider(thickness: 1),
+
+                  // Book Tiles
                   ...books.map((book) {
-                    return ListTile(
-                      leading: Image.network(
-                        book['imageUrl'],
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.broken_image);
-                        },
-                      ),
-                      title: Text(book['title']),
-                      subtitle: Text(book['writer']),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CourseBookDetailScreen(
-                              title: book['title'],
-                              writer: book['writer'],
-                              imageUrl: book['imageUrl'],
-                              course: book['course'],
-                              summary: book['summary'],
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        elevation: 2,
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(8.0),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Image.network(
+                              book['imageUrl'],
+                              width: 50,
+                              height: 70,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(Icons.broken_image, size: 50);
+                              },
                             ),
                           ),
-                        );
-                      },
+                          title: Text(
+                            book['title'],
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(book['writer']),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CourseBookDetailScreen(
+                                  title: book['title'],
+                                  writer: book['writer'],
+                                  imageUrl: book['imageUrl'],
+                                  course: book['course'],
+                                  summary: book['summary'],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                     );
                   }).toList(),
                 ],

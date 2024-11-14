@@ -6,7 +6,7 @@ import '../../../../../utils/constants/sizes.dart';
 import '../BookIssue/Issuing.dart';
 import '../USersScreen/allUser.dart';
 import '../allbooks.dart';
-import '../returnedbooks/bookreturn.dart'; // Import the new users screen
+import '../returnedbooks/bookreturn.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -36,6 +36,7 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[200],
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -55,15 +56,15 @@ class _DashboardState extends State<Dashboard> {
               future: _futureData,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
 
                 if (snapshot.hasError) {
-                  return Center(child: Text('Something went wrong'));
+                  return const Center(child: Text('Something went wrong'));
                 }
 
                 if (!snapshot.hasData) {
-                  return Center(child: Text('No data found'));
+                  return const Center(child: Text('No data found'));
                 }
 
                 final booksSnapshot = snapshot.data![0];
@@ -76,21 +77,17 @@ class _DashboardState extends State<Dashboard> {
                 final issuedBooks = issuedBooksSnapshot.docs;
                 final toBeReturnedBooks = returnedBooksSnapshot.docs;
 
-                return Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          _buildStatCard('Total Number of Books', totalBooks.toString(), context, AllBooksScreenadmin()),
-                          _buildStatCard('Total Number of Users', totalUsers.toString(), context, AllUsersScreen()),
-                          _buildNotificationsCard(),
-                          _buildIssuedBooksCard(issuedBooks, context),
-                          _buildReturnedBooksCard(toBeReturnedBooks, context),
-                        ],
-                      ),
-                    ),
-                  ],
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      _buildStatCard('Total Books', Icons.book, totalBooks.toString(), context, AllBooksScreenadmin()),
+                      _buildStatCard('Total Users', Icons.people, totalUsers.toString(), context, AllUsersScreen()),
+                      _buildNotificationsCard(),
+                      _buildIssuedBooksCard(issuedBooks, context),
+                      _buildReturnedBooksCard(toBeReturnedBooks, context),
+                    ],
+                  ),
                 );
               },
             ),
@@ -100,7 +97,7 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, BuildContext context, [Widget? navigateTo]) {
+  Widget _buildStatCard(String title, IconData icon, String value, BuildContext context, [Widget? navigateTo]) {
     return GestureDetector(
       onTap: () {
         if (navigateTo != null) {
@@ -111,12 +108,15 @@ class _DashboardState extends State<Dashboard> {
         }
       },
       child: Card(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.symmetric(vertical: 8),
-        elevation: 4,
+        elevation: 3,
         child: ListTile(
           contentPadding: const EdgeInsets.all(16),
-          title: Text(title),
-          trailing: Text(value, style: TextStyle(fontWeight: FontWeight.bold)),
+          leading: Icon(icon, color: Colors.blueAccent),
+          title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+          trailing: Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         ),
       ),
     );
@@ -124,20 +124,22 @@ class _DashboardState extends State<Dashboard> {
 
   Widget _buildNotificationsCard() {
     return Card(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 4,
+      elevation: 3,
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('notifications').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return ListTile(
+            return const ListTile(
               title: Text('Notifications Sent'),
               subtitle: Center(child: CircularProgressIndicator()),
             );
           }
 
           if (snapshot.hasError) {
-            return ListTile(
+            return const ListTile(
               title: Text('Notifications Sent'),
               subtitle: Center(child: Text('Something went wrong')),
             );
@@ -147,7 +149,7 @@ class _DashboardState extends State<Dashboard> {
           final uniqueNotifications = _getUniqueNotifications(notifications);
 
           return ExpansionTile(
-            title: Text('Notifications Sent (${uniqueNotifications.length})'),
+            title: Text('Notifications (${uniqueNotifications.length})'),
             children: uniqueNotifications.map((doc) {
               final data = doc.data() as Map<String, dynamic>;
               final message = data['message'] ?? 'No message';
@@ -157,24 +159,44 @@ class _DashboardState extends State<Dashboard> {
                 title: Text(message),
                 subtitle: Text('Sent on ${timestamp.toLocal()}'),
                 trailing: IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red),
+                  icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () async {
                     bool success = await _deleteNotification(doc.id);
-                    if (success) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Notification deleted successfully')),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to delete notification')),
-                      );
-                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(success ? 'Deleted successfully' : 'Failed to delete')),
+                    );
                   },
                 ),
               );
             }).toList(),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildIssuedBooksCard(List<QueryDocumentSnapshot> issuedBooks, BuildContext context) {
+    return Card(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      elevation: 3,
+      child: ExpansionTile(
+        title: const Text('Books Issued'),
+        children: _buildUniqueUsersList(issuedBooks, context),
+      ),
+    );
+  }
+
+  Widget _buildReturnedBooksCard(List<QueryDocumentSnapshot> returnedBooks, BuildContext context) {
+    return Card(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      elevation: 3,
+      child: ExpansionTile(
+        title: const Text('Books Returned'),
+        children: _buildUniqueReturnedUsersList(returnedBooks, context),
       ),
     );
   }
@@ -193,10 +215,7 @@ class _DashboardState extends State<Dashboard> {
 
   Future<bool> _deleteNotification(String notificationId) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('notifications')
-          .doc(notificationId)
-          .delete();
+      await FirebaseFirestore.instance.collection('notifications').doc(notificationId).delete();
       return true;
     } catch (e) {
       print('Error deleting notification: $e');
@@ -204,46 +223,27 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
-  Widget _buildIssuedBooksCard(List<QueryDocumentSnapshot> issuedBooks, BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 4,
-      child: ExpansionTile(
-        title: Text('Books Issued'),
-        children: _buildUniqueUsersList(issuedBooks, context),
-      ),
-    );
-  }
-
   List<Widget> _buildUniqueUsersList(List<QueryDocumentSnapshot> issuedBooks, BuildContext context) {
-    final Set<String> displayedUsers = {}; // To keep track of displayed user IDs
+    final Set<String> displayedUsers = {};
     final List<Widget> userTiles = [];
 
     for (var doc in issuedBooks) {
       final data = doc.data() as Map<String, dynamic>;
       final userId = data['userId'] ?? 'Unknown user';
 
-      // Skip if this userId has already been processed
-      if (displayedUsers.contains(userId)) {
-        continue;
-      }
+      if (displayedUsers.contains(userId)) continue;
 
-      displayedUsers.add(userId); // Add userId to the set
-
+      displayedUsers.add(userId);
       userTiles.add(
         FutureBuilder<DocumentSnapshot>(
           future: FirebaseFirestore.instance.collection('Users').doc(userId).get(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return ListTile(
-                title: Text('Loading user details...'),
-              );
-            } else if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
-              return ListTile(
-                title: Text('User not found'),
-              );
+              return const ListTile(title: Text('Loading user details...'));
             }
-
+            if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
+              return const ListTile(title: Text('User not found'));
+            }
             final userData = snapshot.data!.data() as Map<String, dynamic>;
             final username = userData['UserName'] ?? 'Unknown';
             final email = userData['Email'] ?? 'No email';
@@ -251,16 +251,11 @@ class _DashboardState extends State<Dashboard> {
             return ListTile(
               title: Text(username),
               subtitle: Text(email),
-              trailing: Icon(Icons.arrow_forward),
-              onTap: () {
-                // Navigate to the next screen, passing the userId or user details if needed
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => IssuedBooksScreen(userId: userId),
-                  ),
-                );
-              },
+              trailing: const Icon(Icons.arrow_forward),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => IssuedBooksScreen(userId: userId)),
+              ),
             );
           },
         ),
@@ -270,47 +265,27 @@ class _DashboardState extends State<Dashboard> {
     return userTiles;
   }
 
-
-  Widget _buildReturnedBooksCard(List<QueryDocumentSnapshot> returnedBooks, BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 4,
-      child: ExpansionTile(
-        title: Text('Books Returned'),
-        children: _buildUniqueReturnedUsersList(returnedBooks, context),
-      ),
-    );
-  }
-
   List<Widget> _buildUniqueReturnedUsersList(List<QueryDocumentSnapshot> returnedBooks, BuildContext context) {
-    final Set<String> displayedUsers = {}; // To keep track of displayed user IDs
+    final Set<String> displayedUsers = {};
     final List<Widget> userTiles = [];
 
     for (var doc in returnedBooks) {
       final data = doc.data() as Map<String, dynamic>;
-      final userId = data['userId'] ?? 'Unknown user'; // Assuming userId is the field name
+      final userId = data['userId'] ?? 'Unknown user';
 
-      // Skip if this userId has already been processed
-      if (displayedUsers.contains(userId)) {
-        continue;
-      }
+      if (displayedUsers.contains(userId)) continue;
 
-      displayedUsers.add(userId); // Add userId to the set
-
+      displayedUsers.add(userId);
       userTiles.add(
         FutureBuilder<DocumentSnapshot>(
           future: FirebaseFirestore.instance.collection('Users').doc(userId).get(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return ListTile(
-                title: Text('Loading user details...'),
-              );
-            } else if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
-              return ListTile(
-                title: Text('User not found'),
-              );
+              return const ListTile(title: Text('Loading user details...'));
             }
-
+            if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
+              return const ListTile(title: Text('User not found'));
+            }
             final userData = snapshot.data!.data() as Map<String, dynamic>;
             final username = userData['UserName'] ?? 'Unknown';
             final email = userData['Email'] ?? 'No email';
@@ -318,16 +293,11 @@ class _DashboardState extends State<Dashboard> {
             return ListTile(
               title: Text(username),
               subtitle: Text(email),
-              trailing: Icon(Icons.arrow_forward),
-              onTap: () {
-                // Navigate to the next screen, passing the userId or user details if needed
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AcceptReturnedBooksScreen(userId: userId), // Navigate to IssuedBooksScreen
-                  ),
-                );
-              },
+              trailing: const Icon(Icons.arrow_forward),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AcceptReturnedBooksScreen(userId: userId)),
+              ),
             );
           },
         ),
@@ -336,6 +306,4 @@ class _DashboardState extends State<Dashboard> {
 
     return userTiles;
   }
-
-
 }

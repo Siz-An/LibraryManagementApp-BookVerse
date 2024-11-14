@@ -141,16 +141,18 @@ class _AddBooksState extends State<AddBooks> {
         title: const Text('Add Books'),
         centerTitle: true,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: ListView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextFormField(
                 controller: _numberOfBooksController,
                 decoration: const InputDecoration(
                   labelText: 'Number of Copies',
+                  prefixIcon: Icon(Icons.numbers),
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
@@ -161,7 +163,7 @@ class _AddBooksState extends State<AddBooks> {
                   return null;
                 },
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
               SwitchListTile(
                 title: const Text('Is this a course book?'),
                 value: _isCourseBook,
@@ -171,11 +173,12 @@ class _AddBooksState extends State<AddBooks> {
                   });
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(
                   labelText: 'Book Title',
+                  prefixIcon: Icon(Icons.book),
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
@@ -185,11 +188,12 @@ class _AddBooksState extends State<AddBooks> {
                   return null;
                 },
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _writerController,
                 decoration: const InputDecoration(
                   labelText: 'Writer',
+                  prefixIcon: Icon(Icons.person),
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
@@ -199,25 +203,21 @@ class _AddBooksState extends State<AddBooks> {
                   return null;
                 },
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
               if (!_isCourseBook)
-                Column(
-                  children: [
-                    TextFormField(
-                      controller: _genreController,
-                      decoration: const InputDecoration(
-                        labelText: 'Genre (comma-separated)',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter the genre';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                  ],
+                TextFormField(
+                  controller: _genreController,
+                  decoration: const InputDecoration(
+                    labelText: 'Genre (comma-separated)',
+                    prefixIcon: Icon(Icons.category),
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter the genre';
+                    }
+                    return null;
+                  },
                 ),
               if (_isCourseBook)
                 Column(
@@ -226,14 +226,16 @@ class _AddBooksState extends State<AddBooks> {
                       controller: _courseController,
                       decoration: const InputDecoration(
                         labelText: 'Year / Semester (optional)',
+                        prefixIcon: Icon(Icons.calendar_today),
                         border: OutlineInputBorder(),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 16),
                     TextFormField(
                       controller: _gradeController,
                       decoration: const InputDecoration(
                         labelText: 'Grade',
+                        prefixIcon: Icon(Icons.grade),
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
@@ -243,13 +245,14 @@ class _AddBooksState extends State<AddBooks> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 10),
                   ],
                 ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _summaryController,
                 decoration: const InputDecoration(
                   labelText: 'Summary',
+                  prefixIcon: Icon(Icons.description),
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 3,
@@ -263,27 +266,21 @@ class _AddBooksState extends State<AddBooks> {
               const SizedBox(height: 20),
               if (_image != null)
                 Container(
+                  margin: const EdgeInsets.symmetric(vertical: 10.0),
                   padding: const EdgeInsets.all(8.0),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
-                  child: Column(
-                    children: [
-                      const Text('Image'),
-                      const SizedBox(height: 10),
-                      Image.file(
-                        _image!,
-                        height: 150,
-                        width: 150,
-                        fit: BoxFit.cover,
-                      ),
-                    ],
+                  child: Image.file(
+                    _image!,
+                    height: 150,
+                    width: 150,
+                    fit: BoxFit.cover,
                   ),
                 ),
               const SizedBox(height: 20),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
@@ -291,18 +288,18 @@ class _AddBooksState extends State<AddBooks> {
                       icon: const Icon(Icons.image),
                       label: const Text('Pick Image'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green, // Background color
+                        backgroundColor: Colors.teal,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: _addBooks,
                       icon: const Icon(Icons.add),
                       label: const Text('Add Books'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green, // Background color
+                        backgroundColor: Colors.green,
                       ),
                     ),
                   ),

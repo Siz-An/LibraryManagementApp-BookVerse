@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../../books/detailScreen/course_book_detail_screen.dart';
 import 'BooksAll.dart';
 
@@ -14,13 +14,13 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   String query = '';
   List<DocumentSnapshot> searchResults = [];
-  String? userId; // Variable to hold the user ID
+  bool isLoading = false; // Track loading state
+  String? userId;
 
   @override
   void initState() {
     super.initState();
-    // Get the current user's ID
-    userId = FirebaseAuth.instance.currentUser?.uid; // Fetch logged-in user ID
+    userId = FirebaseAuth.instance.currentUser?.uid;
   }
 
   Future<void> _searchBooks(String query) async {
@@ -31,21 +31,21 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
 
-    // Convert the search query to uppercase
-    final uppercaseQuery = query.toUpperCase();
+    setState(() {
+      isLoading = true;
+    });
 
-    // Fetch all books first
+    final uppercaseQuery = query.toUpperCase();
     final snapshot = await FirebaseFirestore.instance.collection('books').get();
 
-    // Filter the results to make the title comparison case-insensitive
     setState(() {
       searchResults = snapshot.docs.where((doc) {
         final bookTitle = (doc.data() as Map<String, dynamic>)['title'] as String;
         return bookTitle.toUpperCase().contains(uppercaseQuery);
       }).toList();
+      isLoading = false;
     });
 
-    // Save searched books to Firestore with userId
     if (userId != null) {
       await _saveSearchedBooks(uppercaseQuery, userId!);
     }
@@ -60,15 +60,14 @@ class _SearchScreenState extends State<SearchScreen> {
       final course = book['course'] ?? '';
       final summary = book['summary'] ?? 'No summary available';
 
-      // Create a new document in the searchedBooks collection
       await FirebaseFirestore.instance.collection('searchedBooks').add({
-        'userId': userId, // Add userId to the document
+        'userId': userId,
         'title': title,
         'writer': writer,
         'imageUrl': imageUrl,
         'course': course,
         'summary': summary,
-        'searchedAt': FieldValue.serverTimestamp(), // Store the timestamp
+        'searchedAt': FieldValue.serverTimestamp(),
       });
     }
   }
@@ -102,16 +101,25 @@ class _SearchScreenState extends State<SearchScreen> {
                 });
                 _searchBooks(value);
               },
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Search',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+                prefixIcon: const Icon(Icons.search),
               ),
             ),
           ),
-          Expanded(
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Expanded(
             child: searchResults.isEmpty
-                ? const Center(child: Text('No results found'))
+                ? const Center(
+              child: Text(
+                'No results found',
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            )
                 : ListView.builder(
               itemCount: searchResults.length,
               itemBuilder: (context, index) {
@@ -123,34 +131,47 @@ class _SearchScreenState extends State<SearchScreen> {
                 final course = book['course'] ?? '';
                 final summary = book['summary'] ?? 'No summary available';
 
-                return ListTile(
-                  leading: imageUrl.isEmpty
-                      ? const Icon(Icons.book, size: 50)
-                      : Image.network(
-                    imageUrl,
-                    width: 50,
-                    height: 70,
-                    fit: BoxFit.fitHeight,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(Icons.book, size: 50);
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 3,
+                  child: ListTile(
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: imageUrl.isEmpty
+                          ? const Icon(Icons.book, size: 50)
+                          : Image.network(
+                        imageUrl,
+                        width: 50,
+                        height: 70,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.book, size: 50);
+                        },
+                      ),
+                    ),
+                    title: Text(
+                      title,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(writer),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CourseBookDetailScreen(
+                            title: title,
+                            writer: writer,
+                            imageUrl: imageUrl,
+                            course: course,
+                            summary: summary,
+                          ),
+                        ),
+                      );
                     },
                   ),
-                  title: Text(title),
-                  subtitle: Text(writer),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CourseBookDetailScreen(
-                          title: title,
-                          writer: writer,
-                          imageUrl: imageUrl,
-                          course: course,
-                          summary: summary,
-                        ),
-                      ),
-                    );
-                  },
                 );
               },
             ),

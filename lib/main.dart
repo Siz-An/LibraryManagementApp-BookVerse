@@ -27,9 +27,8 @@ Future<void> main() async {
 
   // Initialize UserAuthenticationRepository and AdminAuthenticationRepository
 
-  Get.put(AdminAuthenticationRepository());
   Get.put(AuthenticationRepository());
-
+  Get.put(AdminAuthenticationRepository());
 
 
 

@@ -227,22 +227,26 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    // padding: const EdgeInsets.all(8),
-                                    // decoration: BoxDecoration(
-                                    //   color: Colors.white.withOpacity(0.2),
-                                    // ),
-                                    // child: Icon(
-                                    //   Icons.menu_book,
-                                    //   size: 40,
-                                    //   color: Colors.white,
-                                    // ),
+                              child: Container(
+                                height: 60, // Adjust this height if needed
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Colors.green, Colors.greenAccent],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   ),
-                                  const SizedBox(height: 12),
-                                  Text(
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.4),
+                                      spreadRadius: 2,
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Center( // Center the content
+                                  child: Text(
                                     genre,
                                     style: const TextStyle(
                                       fontSize: 18,
@@ -252,9 +256,11 @@ class HomeScreen extends StatelessWidget {
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
-                                ],
+                                ),
                               ),
+
                             ),
+
                           );
                         },
                       );

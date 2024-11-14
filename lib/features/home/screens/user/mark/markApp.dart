@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:book_Verse/features/home/screens/user/mark/provider.dart';
-import 'package:book_Verse/features/home/screens/user/mark/requestssss.dart'; // Update this import
-import '../../../../../books/detailScreen/course_book_detail_screen.dart'; // Import the CourseBookDetailScreen
+import 'package:book_Verse/features/home/screens/user/mark/requestssss.dart';
+import '../../../../../books/detailScreen/course_book_detail_screen.dart';
 
 class MarkApp extends StatelessWidget {
   const MarkApp({super.key});
@@ -23,13 +23,11 @@ class BookmarkScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final bookmarks = Provider.of<BookmarkProvider>(context).bookmarks;
 
-    // Filter out bookmarks with null or empty titles
     final filteredBookmarks = bookmarks.where((book) {
       final title = book['title'];
       return title != null && title.isNotEmpty;
     }).toList();
 
-    // Group bookmarks by title and count the number of copies
     final bookCounts = <String, int>{};
     for (var book in filteredBookmarks) {
       final title = book['title']!;
@@ -47,7 +45,7 @@ class BookmarkScreen extends StatelessWidget {
           children: [
             Text(
               'Your Bookmarks',
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: Theme.of(context).textTheme.headlineLarge,
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -58,42 +56,45 @@ class BookmarkScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final title = bookCounts.keys.elementAt(index);
                   final count = bookCounts[title]!;
-
-                  // Find the book details for this title
                   final book = filteredBookmarks.firstWhere(
                         (b) => b['title'] == title,
                     orElse: () => {
-                      'title': '', // This should never be used
+                      'title': '',
                       'writer': '',
                       'imageUrl': '',
                       'course': '',
                       'summary': '',
-                      'bookId': '', // Ensure this is included
+                      'bookId': '',
                     },
                   );
 
-                  return ListTile(
-                    title: Text('$title (Copies: $count)'),
-                    subtitle: Text(book['writer'] ?? ''),
-                    leading: (book['imageUrl'] ?? '').isNotEmpty
-                        ? Image.network(
-                      book['imageUrl']!,
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.book);
-                      },
-                    )
-                        : const Icon(Icons.book),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {
-                        _removeBookmark(context, book);
-                      },
-                    ),
-                    onTap: () {
-                      if (title.isNotEmpty) {
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(8.0),
+                      title: Text('$title (Copies: $count)'),
+                      subtitle: Text(book['writer'] ?? ''),
+                      leading: (book['imageUrl'] ?? '').isNotEmpty
+                          ? ClipRRect(
+                        borderRadius: BorderRadius.circular(4.0),
+                        child: Image.network(
+                          book['imageUrl']!,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(Icons.book);
+                          },
+                        ),
+                      )
+                          : const Icon(Icons.book),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          _removeBookmark(context, book);
+                        },
+                      ),
+                      onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -106,8 +107,8 @@ class BookmarkScreen extends StatelessWidget {
                             ),
                           ),
                         );
-                      }
-                    },
+                      },
+                    ),
                   );
                 },
               ),
@@ -129,7 +130,7 @@ class BookmarkScreen extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
-                minimumSize: Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 50),
               ),
               child: const Text('View Requested Books'),
             ),
@@ -150,15 +151,10 @@ class BookmarkScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not logged in')));
       return;
     }
-    final userId = user.uid;
     final docId = book['id'];
-
     try {
-      // Remove from Firestore
       await FirebaseFirestore.instance.collection('bookmarks').doc(docId).delete();
-      // Update BookmarkProvider
       Provider.of<BookmarkProvider>(context, listen: false).removeBookmark(book);
-
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${book['title']} removed from bookmarks')));
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to remove bookmark: $error')));
@@ -171,10 +167,7 @@ class BookmarkScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not logged in')));
       return;
     }
-    final userId = user.uid;
     final bookmarks = Provider.of<BookmarkProvider>(context, listen: false).bookmarks;
-
-    // Get the list of book titles from the bookmarks
     final uniqueBookmarks = <Map<String, dynamic>>[];
     final seenTitles = <String>{};
 
@@ -186,32 +179,22 @@ class BookmarkScreen extends StatelessWidget {
       }
     }
 
-    // Check if any of the requested books are already issued
     final issuedBooksSnapshot = await FirebaseFirestore.instance
         .collection('issuedBooks')
-        .where('userId', isEqualTo: userId)
+        .where('userId', isEqualTo: user.uid)
         .get();
-
     final issuedBooksTitles = issuedBooksSnapshot.docs
         .map((doc) => doc.data()['title'] as String)
         .toSet();
 
-    // Filter out books that are already issued
     final nonIssuedBooks = uniqueBookmarks
         .where((book) => !issuedBooksTitles.contains(book['title'] ?? ''))
         .toList();
 
-    final alreadyIssuedBooks = uniqueBookmarks
-        .where((book) => issuedBooksTitles.contains(book['title'] ?? ''))
-        .map((book) => book['title'] ?? '')
-        .toSet();
-
-    // Check if any of the non-issued books are already in the requests collection
     final existingRequestsSnapshot = await FirebaseFirestore.instance
         .collection('requests')
-        .where('userId', isEqualTo: userId)
+        .where('userId', isEqualTo: user.uid)
         .get();
-
     final existingRequests = existingRequestsSnapshot.docs
         .expand((doc) => (doc.data()['books'] as List)
         .map((book) => book['title'] ?? ''))
@@ -226,9 +209,8 @@ class BookmarkScreen extends StatelessWidget {
         .where((book) => !existingRequests.contains(book['title'] ?? ''))
         .toList();
 
-    // Prepare the messages
-    final issuedMessage = alreadyIssuedBooks.isNotEmpty
-        ? 'The following books are already issued:\n${alreadyIssuedBooks.join(', ')}\n'
+    final issuedMessage = issuedBooksTitles.isNotEmpty
+        ? 'The following books are already issued:\n${issuedBooksTitles.join(', ')}\n'
         : '';
     final requestsMessage = alreadyRequestedBooks.isNotEmpty
         ? 'The following books are already in your requests:\n${alreadyRequestedBooks.join(', ')}\n'
@@ -237,26 +219,30 @@ class BookmarkScreen extends StatelessWidget {
         ? 'The following books have been added to your requests:\n${newlyAddedBooks.map((book) => book['title']).join(', ')}\n'
         : 'No new books were added to your requests.';
 
-    // Show a dialog with the messages
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Books Status'),
-        content: Text('$issuedMessage$requestsMessage$addedMessage'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              if (issuedMessage.isNotEmpty) Text(issuedMessage),
+              if (requestsMessage.isNotEmpty) Text(requestsMessage),
+              if (addedMessage.isNotEmpty) Text(addedMessage),
+            ],
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () async {
               Navigator.of(context).pop();
-
-              // Save newly added books to requests
               if (newlyAddedBooks.isNotEmpty) {
                 try {
                   await FirebaseFirestore.instance.collection('requests').add({
-                    'userId': userId,
+                    'userId': user.uid,
                     'books': newlyAddedBooks,
                     'requestedAt': FieldValue.serverTimestamp(),
                   });
-
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Selected books added to your requests')),
                   );
