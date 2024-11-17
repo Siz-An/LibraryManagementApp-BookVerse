@@ -52,25 +52,52 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _saveSearchedBooks(String searchQuery, String userId) async {
-    for (var doc in searchResults) {
-      final book = doc.data() as Map<String, dynamic>;
-      final title = book['title'] ?? 'No title';
-      final writer = book['writer'] ?? 'Unknown author';
-      final imageUrl = book['imageUrl'] ?? '';
-      final course = book['course'] ?? '';
-      final summary = book['summary'] ?? 'No summary available';
+    try {
+      for (var doc in searchResults) {
+        final bookId = doc.id; // Get the document ID
+        final book = doc.data() as Map<String, dynamic>;
+        final title = book['title']?.toString() ?? 'No title';
+        final writer = book['writer']?.toString() ?? 'Unknown author';
+        final imageUrl = book['imageUrl']?.toString() ?? '';
+        final course = book['course']?.toString() ?? '';
+        final summary = book['summary']?.toString() ?? 'No summary available';
 
-      await FirebaseFirestore.instance.collection('searchedBooks').add({
-        'userId': userId,
-        'title': title,
-        'writer': writer,
-        'imageUrl': imageUrl,
-        'course': course,
-        'summary': summary,
-        'searchedAt': FieldValue.serverTimestamp(),
-      });
+        // Debug: Print title and search query for verification
+        print('Checking book: $title against search query: $searchQuery');
+
+        // Match title exactly (case-insensitive)
+        if (title.trim().toLowerCase() == searchQuery.trim().toLowerCase()) {
+          // Query to check if a document with the same bookId and userId already exists
+          final existingBook = await FirebaseFirestore.instance
+              .collection('searchedBooks')
+              .where('userId', isEqualTo: userId)
+              .where('bookId', isEqualTo: bookId)
+              .get();
+
+          // Add the book only if it doesn't exist
+          if (existingBook.docs.isEmpty) {
+            await FirebaseFirestore.instance.collection('searchedBooks').add({
+              'userId': userId,
+              'bookId': bookId, // Save the bookId
+              'title': title,
+              'writer': writer,
+              'imageUrl': imageUrl,
+              'course': course,
+              'summary': summary,
+              'searchedAt': FieldValue.serverTimestamp(),
+            });
+            print('Book saved: $title');
+          } else {
+            print('Book with bookId: $bookId already exists for userId: $userId');
+          }
+        }
+      }
+    } catch (e) {
+      print('Failed to save searched books: $e');
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {

@@ -20,63 +20,120 @@ class _TPopularBooksState extends State<TPopularBooks> {
   @override
   void initState() {
     super.initState();
-    _fetchPopularBooks();
+    _fetchRecommendedBooks();
   }
 
-  Future<void> _fetchPopularBooks() async {
+
+  Future<void> _fetchRecommendedBooks() async {
     try {
-      // Fetch from both bookmarks and issuedBooks collections
-      final bookmarksSnapshot = await _firestore.collection('bookmarks').get();
-      final issuedBooksSnapshot = await _firestore.collection('issuedBooks').get();
-
-      final Map<String, Set<String>> userBookmarks = {};
-      final Map<String, Set<String>> userIssuedBooks = {};
-
-      // Fetch bookmarks data
-      for (var doc in bookmarksSnapshot.docs) {
-        final data = doc.data();
-        final userId = data['userId'];
-        final bookId = data['bookId'];
-
-        userBookmarks.putIfAbsent(userId, () => {}).add(bookId);
-      }
-
-      // Fetch issued books data
-      for (var doc in issuedBooksSnapshot.docs) {
-        final data = doc.data();
-        final userId = data['userId'];
-        final bookId = data['bookId'];
-
-        userIssuedBooks.putIfAbsent(userId, () => {}).add(bookId);
-      }
-
-      // Combine bookmarks and issuedBooks
-      Set<String> combinedBookIds = {};
-      userBookmarks.forEach((userId, books) {
-        if (userIssuedBooks.containsKey(userId)) {
-          combinedBookIds.addAll(books.intersection(userIssuedBooks[userId]!));
-        }
+      setState(() {
+        _isLoading = true;
       });
 
-      // Fetch book details concurrently
-      final List<Map<String, dynamic>> bookDetails = await Future.wait(
-        combinedBookIds.map((bookId) async {
+      // Step 1: Fetch the most recent searched book
+      final searchedBooksSnapshot = await _firestore
+          .collection('searchedBooks')
+          .orderBy('searchedAt', descending: true)
+          .limit(2)
+          .get();
+
+      if (searchedBooksSnapshot.docs.isEmpty) {
+        print('No searched books found.');
+        setState(() {
+          _isLoading = false;
+          _popularBooks = [];
+        });
+        return;
+      }
+
+      // Extract the searched author
+      final searchedBook = searchedBooksSnapshot.docs.first.data();
+      final searchedAuthor = searchedBook['writer']?.trim();
+
+      if (searchedAuthor == null || searchedAuthor.isEmpty) {
+        print('No author found for the searched book.');
+        setState(() {
+          _isLoading = false;
+          _popularBooks = [];
+        });
+        return;
+      }
+
+      print('Searched Author: $searchedAuthor');
+
+      // Step 2: Fetch all bookmarks for the searched author
+      final bookmarksByAuthorSnapshot = await _firestore
+          .collection('bookmarks')
+          .where('writer', isEqualTo: searchedAuthor)
+          .get();
+
+      print('Bookmarks Snapshot Docs Count: ${bookmarksByAuthorSnapshot.docs.length}');
+      if (bookmarksByAuthorSnapshot.docs.isEmpty) {
+        print('No bookmarks found for this author.');
+        setState(() {
+          _isLoading = false;
+          _popularBooks = [];
+        });
+        return;
+      }
+
+      // Extract unique book IDs from bookmarks
+      final bookmarkedBookIds = bookmarksByAuthorSnapshot.docs
+          .map((doc) {
+        final data = doc.data();
+        print('Bookmark Doc: ${doc.id}, Data: $data');
+        return data['bookId'] as String?;
+      })
+          .where((bookId) => bookId != null)
+          .toSet();
+
+      print('Bookmarked Book IDs: $bookmarkedBookIds');
+
+      if (bookmarkedBookIds.isEmpty) {
+        print('No book IDs found in bookmarks.');
+        setState(() {
+          _isLoading = false;
+          _popularBooks = [];
+        });
+        return;
+      }
+
+      // Step 3: Fetch details for all books corresponding to the bookmarked IDs
+      final recommendedBooks = await Future.wait(
+        bookmarkedBookIds.map((bookId) async {
           final bookDoc = await _firestore.collection('books').doc(bookId).get();
-          return bookDoc.data()!;
+          if (bookDoc.exists) {
+            final bookData = bookDoc.data();
+            print('Book Data for ID $bookId: $bookData');
+            return bookData as Map<String, dynamic>;
+          } else {
+            print('No book found for ID $bookId');
+            return null;
+          }
         }),
       );
 
+      // Filter out null entries
+      final filteredBooks = recommendedBooks.whereType<Map<String, dynamic>>().toList();
+
+      print('Filtered Books: $filteredBooks');
+
+      // Update UI with the fetched recommendations
       setState(() {
-        _popularBooks = bookDetails;
+        _popularBooks = filteredBooks;
       });
     } catch (e) {
-      print('Error fetching popular books: $e');
+      print('Error fetching recommended books: $e');
+      setState(() {
+        _popularBooks = [];
+      });
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
   }
+
 
   void _navigateToDetailPage(Map<String, dynamic> book) {
     final title = book['title'] ?? 'Unknown Title';
