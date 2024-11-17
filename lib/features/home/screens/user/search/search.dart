@@ -14,13 +14,32 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   String query = '';
   List<DocumentSnapshot> searchResults = [];
-  bool isLoading = false; // Track loading state
+  bool isLoading = false;
   String? userId;
 
   @override
   void initState() {
     super.initState();
     userId = FirebaseAuth.instance.currentUser?.uid;
+  }
+
+  Future<void> _deleteSearchedBooks() async {
+    if (userId == null) return;
+
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('searchedBooks')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      for (var doc in querySnapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      print('All previous searched books deleted successfully.');
+    } catch (e) {
+      print('Failed to delete searched books: $e');
+    }
   }
 
   Future<void> _searchBooks(String query) async {
@@ -34,6 +53,8 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       isLoading = true;
     });
+
+    await _deleteSearchedBooks(); // Delete previous searches before fetching new ones
 
     final uppercaseQuery = query.toUpperCase();
     final snapshot = await FirebaseFirestore.instance.collection('books').get();
@@ -54,7 +75,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _saveSearchedBooks(String searchQuery, String userId) async {
     try {
       for (var doc in searchResults) {
-        final bookId = doc.id; // Get the document ID
+        final bookId = doc.id;
         final book = doc.data() as Map<String, dynamic>;
         final title = book['title']?.toString() ?? 'No title';
         final writer = book['writer']?.toString() ?? 'Unknown author';
@@ -62,23 +83,19 @@ class _SearchScreenState extends State<SearchScreen> {
         final course = book['course']?.toString() ?? '';
         final summary = book['summary']?.toString() ?? 'No summary available';
 
-        // Debug: Print title and search query for verification
         print('Checking book: $title against search query: $searchQuery');
 
-        // Match title exactly (case-insensitive)
         if (title.trim().toLowerCase() == searchQuery.trim().toLowerCase()) {
-          // Query to check if a document with the same bookId and userId already exists
           final existingBook = await FirebaseFirestore.instance
               .collection('searchedBooks')
               .where('userId', isEqualTo: userId)
               .where('bookId', isEqualTo: bookId)
               .get();
 
-          // Add the book only if it doesn't exist
           if (existingBook.docs.isEmpty) {
             await FirebaseFirestore.instance.collection('searchedBooks').add({
               'userId': userId,
-              'bookId': bookId, // Save the bookId
+              'bookId': bookId,
               'title': title,
               'writer': writer,
               'imageUrl': imageUrl,
@@ -96,8 +113,6 @@ class _SearchScreenState extends State<SearchScreen> {
       print('Failed to save searched books: $e');
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {

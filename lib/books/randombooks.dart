@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -19,42 +22,126 @@ class _RandomBooksState extends State<TRandomBooks> {
   @override
   void initState() {
     super.initState();
-    _fetchRandomBooks();
+    _initializeData();
   }
-  Future<void> _fetchRandomBooks() async {
+
+  Future<void> _initializeData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Obtain the current user's ID (replace with actual logic)
+    final currentUser = await FirebaseAuth.instance.currentUser;
+    final currentUserId = currentUser?.uid;
+
+    if (currentUserId != null) {
+      await _fetchRandomBooksWithCollaborativeFiltering(currentUserId);
+    } else {
+      print('Error: User not logged in.');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+
+
+  Future<void> _fetchRandomBooksWithCollaborativeFiltering(String currentUserId) async {
     try {
       // Fetch books from 'searchedBooks' and 'bookmarks' collections
       final searchedBooksSnapshot = await _firestore.collection('searchedBooks').get();
       final bookmarksSnapshot = await _firestore.collection('bookmarks').get();
 
-      // Map documents to lists
+      // Fetch user-specific data
+      final currentUserSearchedBooksSnapshot = await _firestore
+          .collection('searchedBooks')
+          .where('userId', isEqualTo: currentUserId)
+          .get();
+      final currentUserBookmarksSnapshot = await _firestore
+          .collection('bookmarks')
+          .where('userId', isEqualTo: currentUserId)
+          .get();
+
+      // Convert snapshots to lists
       final searchedBooks = searchedBooksSnapshot.docs.map((doc) => doc.data()).toList();
       final bookmarks = bookmarksSnapshot.docs.map((doc) => doc.data()).toList();
+      final currentUserSearchedBooks = currentUserSearchedBooksSnapshot.docs.map((doc) => doc.data()).toList();
+      final currentUserBookmarks = currentUserBookmarksSnapshot.docs.map((doc) => doc.data()).toList();
 
-      // Hybrid weighted selection: prioritize `searchedBooks`
+      // Step 1: Compute user similarity
+      Map<String, int> userSimilarityScores = {};
+      for (var book in currentUserSearchedBooks) {
+        for (var searchedBook in searchedBooks) {
+          if (searchedBook['bookId'] == book['bookId'] && searchedBook['userId'] != currentUserId) {
+            userSimilarityScores[searchedBook['userId']] =
+                (userSimilarityScores[searchedBook['userId']] ?? 0) + 1;
+          }
+        }
+      }
+      for (var book in currentUserBookmarks) {
+        for (var bookmark in bookmarks) {
+          if (bookmark['bookId'] == book['bookId'] && bookmark['userId'] != currentUserId) {
+            userSimilarityScores[bookmark['userId']] =
+                (userSimilarityScores[bookmark['userId']] ?? 0) + 1;
+          }
+        }
+      }
+
+      // Step 2: Find top similar users
+      final similarUsers = userSimilarityScores.keys.toList()
+        ..sort((a, b) => userSimilarityScores[b]!.compareTo(userSimilarityScores[a]!));
+
+      // Step 3: Collect books from similar users
+      List<Map<String, dynamic>> recommendedBooks = [];
+      for (var userId in similarUsers.take(5)) {
+        final userBookmarksSnapshot = await _firestore
+            .collection('bookmarks')
+            .where('userId', isEqualTo: userId)
+            .get();
+        final userSearchedBooksSnapshot = await _firestore
+            .collection('searchedBooks')
+            .where('userId', isEqualTo: userId)
+            .get();
+
+        recommendedBooks.addAll(userBookmarksSnapshot.docs.map((doc) => doc.data()).toList());
+        recommendedBooks.addAll(userSearchedBooksSnapshot.docs.map((doc) => doc.data()).toList());
+      }
+
+      // Remove duplicates and already interacted books
+      recommendedBooks = recommendedBooks.toSet().toList();
+      recommendedBooks.removeWhere((book) => currentUserSearchedBooks.any((b) => b['bookId'] == book['bookId']));
+      recommendedBooks.removeWhere((book) => currentUserBookmarks.any((b) => b['bookId'] == book['bookId']));
+
+      // Step 4: Final selection with weighted hybrid
       List<Map<String, dynamic>> selectedBooks = [];
-      int numSearched = 3; // e.g., favor 3 from searchedBooks
-      int numBookmarks = 2; // and 2 from bookmarks
+      int numRecommended = 3; // e.g., favor 3 recommended books
+      int numRandom = 3;      // and 3 random books from global pool
 
-      // Randomly select books from `searchedBooks`
+      // Randomly select from recommended books
+      recommendedBooks.shuffle();
+      selectedBooks.addAll(recommendedBooks.take(numRecommended));
+
+      // Randomly select from global pool
       searchedBooks.shuffle();
-      selectedBooks.addAll(searchedBooks.take(numSearched));
-
-      // Randomly select books from `bookmarks`
       bookmarks.shuffle();
-      selectedBooks.addAll(bookmarks.take(numBookmarks));
+      selectedBooks.addAll(searchedBooks.take(numRandom ~/ 2));
+      selectedBooks.addAll(bookmarks.take(numRandom ~/ 2));
 
       // Shuffle final selection for random order display
       selectedBooks.shuffle();
       _randomBooks = selectedBooks;
     } catch (e) {
-      print('Error fetching books: $e');
+      print('Error fetching books with collaborative filtering: $e');
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
   }
+
+
+
+
 
 
   void _navigateToDetailPage(Map<String, dynamic> book) {
