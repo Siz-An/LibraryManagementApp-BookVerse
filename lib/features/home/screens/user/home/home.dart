@@ -1,8 +1,8 @@
 import 'package:book_Verse/features/home/screens/user/home/widget/home_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../../../books/detailScreen/genre_book_detail_screen.dart';
-import '../../../../../books/popular_books.dart';  // Import the new file
+import '../../../../../books/contentbasedrecommendation.dart';
+import '../../../../../books/detailScreen/genre_book_detail_screen.dart'; // Import the new file
 import '../../../../../books/CourseSection/courseSelection.dart';
 import '../../../../../books/randombooks.dart';
 import '../../../../../common/widgets/custom_shapes/primary_header_container.dart';
@@ -34,7 +34,7 @@ class HomeScreen extends StatelessWidget {
               padding: const EdgeInsets.all(TSizes.cardRadiusSm),
               child: Column(
                 children: [
-                  const TPopularBooks(),
+                  const ContentBasedAlgorithm(),
                   const Divider(),
                   const TRandomBooks(),
                   const Divider(),

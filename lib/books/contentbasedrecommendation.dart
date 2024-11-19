@@ -1,18 +1,20 @@
+
+
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import '../common/widgets/texts/section_heading.dart';
 import 'detailScreen/course_book_detail_screen.dart';
 
-class TPopularBooks extends StatefulWidget {
-  const TPopularBooks({super.key});
-
+class ContentBasedAlgorithm extends StatefulWidget {
+  const ContentBasedAlgorithm({super.key});
 
   @override
-  _TPopularBooksState createState() => _TPopularBooksState();
+  _ContentBasedAlgorithm createState() => _ContentBasedAlgorithm();
 }
 
-class _TPopularBooksState extends State<TPopularBooks> {
+class _ContentBasedAlgorithm extends State<ContentBasedAlgorithm> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<Map<String, dynamic>> _popularBooks = [];
   bool _isLoading = true;
@@ -22,7 +24,6 @@ class _TPopularBooksState extends State<TPopularBooks> {
     super.initState();
     _fetchRecommendedBooks();
   }
-
 
   Future<void> _fetchRecommendedBooks() async {
     try {
