@@ -24,7 +24,7 @@ class LoginController extends GetxController {
     try {
       TFullScreenLoader.openLoadingDialogue('Logging you in...', TImages.checkRegistration);
 
-      // Checking Internet connection
+      // Check internet connection
       final isConnected = await NetworkManager.instance.isConnected();
       if (!isConnected) {
         TFullScreenLoader.stopLoading();
@@ -32,25 +32,39 @@ class LoginController extends GetxController {
         return;
       }
 
+      // Validate form
       if (!userloginFormKey.currentState!.validate()) {
         TFullScreenLoader.stopLoading();
         return;
       }
 
+      // Save credentials if Remember Me is selected
       if (rememberMe.value) {
-        localStorage.write('Remember_Me_Email', email.text.trim());
-        localStorage.write('Remember_Me_Password', password.text.trim());
+        localStorage.write('User_Remember_Me_Email', email.text.trim());
+        localStorage.write('User_Remember_Me_Password', password.text.trim());
       }
 
-      final userCredentials = await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
+      // Perform login
+      final userCredentials = await AuthenticationRepository.instance.loginWithEmailAndPassword(
+        email.text.trim(),
+        password.text.trim(),
+      );
+
+      // Fetch role from Firestore
+      final Role = await AuthenticationRepository.instance.getUserRole(userCredentials.user!.uid);
+      if (Role != 'User') {
+        throw Exception('You are not authorized to log in as a User.');
+      }
 
       TFullScreenLoader.stopLoading();
       AuthenticationRepository.instance.screenRedirect();
     } catch (e) {
       TFullScreenLoader.stopLoading();
-      TLoaders.errorSnackBar(title: 'Oh Snap', message: e.toString());
+      TLoaders.errorSnackBar(title: 'Login Failed', message: e.toString());
     }
   }
+
+
 
   /// -- Google Sign In Authentication
   Future<void> googleSignIn() async {

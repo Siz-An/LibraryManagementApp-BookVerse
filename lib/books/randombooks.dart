@@ -35,7 +35,7 @@ class _RandomBooksState extends State<TRandomBooks> {
     final currentUserId = currentUser?.uid;
 
     if (currentUserId != null) {
-      await _fetchRandomBooksWithCollaborativeFiltering(currentUserId);
+      await _fetchCollaborativeFiltering(currentUserId);
     } else {
       print('Error: User not logged in.');
       setState(() {
@@ -46,7 +46,7 @@ class _RandomBooksState extends State<TRandomBooks> {
 
 
 
-  Future<void> _fetchRandomBooksWithCollaborativeFiltering(String currentUserId) async {
+  Future<void> _fetchCollaborativeFiltering(String currentUserId) async {
     try {
       // Fetch books from 'searchedBooks' and 'bookmarks' collections
       final searchedBooksSnapshot = await _firestore.collection('searchedBooks').get();

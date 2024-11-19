@@ -1,5 +1,4 @@
 import 'package:book_Verse/features/authentication/screens/login/login.dart';
-import 'package:book_Verse/features/authentication/screens/signup/verify_email.dart';
 import 'package:book_Verse/features/authentication/screens/onboarding.dart';
 import 'package:book_Verse/navigation_menu/navigation_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -35,25 +34,46 @@ class AuthenticationRepository extends GetxController {
     final user = _auth.currentUser;
 
     if (user != null) {
-      if (user.emailVerified) {
+      final Role = await getUserRole(user.uid);
+      if (Role == 'User') {
         Get.offAll(() => NavigationMenu());
       } else {
-        Get.offAll(() => VerifyEmailScreen(email: user.email));
+        Get.offAll(() => LoginScreen());
       }
     } else {
-      // Check if first time or not and redirect accordingly
       final isFirstTime = deviceStorage.read('IsFirstTime') ?? true;
       deviceStorage.writeIfNull('IsFirstTime', true);
       Get.offAll(() => isFirstTime ? const OnBoardingScreen() : const LoginScreen());
     }
   }
 
-  Future<UserCredential> loginWithEmailAndPassword(String email, String password) async {
-    return _handleFirebaseAuthOperation(() async {
-      return await _auth.signInWithEmailAndPassword(email: email, password: password);
-    });
+  Future<String?> getUserRole(String userId) async {
+    try {
+      final snapshot = await _firestore.collection('Users').doc(userId).get();
+      if (snapshot.exists) {
+        return snapshot.data()?['Role']; // Ensure the field matches your Firestore schema
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching user role: $e');
+      return null;
+    }
   }
 
+
+  Future<UserCredential> loginWithEmailAndPassword(String email, String password) async {
+    try {
+      final credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      final Role = await getUserRole(credential.user!.uid);
+
+      if (Role != 'User') {
+        throw Exception('You are not authorized to log in as a User.');
+      }
+      return credential;
+    } catch (e) {
+      rethrow;
+    }
+  }
   Future<UserCredential> registerWithEmailAndPassword(String email, String password) async {
     return _handleFirebaseAuthOperation(() async {
       return await _auth.createUserWithEmailAndPassword(email: email, password: password);

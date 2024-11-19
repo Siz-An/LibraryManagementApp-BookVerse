@@ -1,5 +1,6 @@
 import 'package:book_Verse/data/authentication/repository/adminRepo.dart';
 import 'package:book_Verse/features/authentication/screens/login/login.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +9,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../features/authentication/screens/onboarding.dart';
-import '../../../../features/authentication/screens/signup/verify_email.dart';
+import '../../../../features/personalization/models/adminModels.dart';
 import '../../../../navigation_menu/admin_nav.dart';
 import '../../../../utils/exceptions/firebase_auth_exception.dart';
 import '../../../../utils/exceptions/firebase_exception.dart';
@@ -20,7 +21,7 @@ class AdminAuthenticationRepository extends GetxController {
 
   final deviceStorage = GetStorage();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Firestore instance
   User? get authAdmin => _auth.currentUser;
 
   @override
@@ -36,16 +37,31 @@ class AdminAuthenticationRepository extends GetxController {
     final user = _auth.currentUser;
 
     if (user != null) {
-      if (user.emailVerified) {
+      final Role = await getAdminRole(user.uid);
+      if (Role == 'Admin') {
         Get.offAll(() => const AdminNavigationMenu());
       } else {
-        Get.offAll(() => VerifyEmailScreen(email: user.email));
+        Get.offAll(() => const LoginScreen());
       }
     } else {
       // Check if first time or not and redirect accordingly
       final isFirstTime = deviceStorage.read('IsFirstTime') ?? true;
-      deviceStorage.writeIfNull('IsFirstTime', true);
+      deviceStorage.writeIfNull('IsFirstTime', false); // Set it to false after the first time
       Get.offAll(() => isFirstTime ? const OnBoardingScreen() : const LoginScreen());
+    }
+  }
+
+
+  Future<String?> getAdminRole(String adminId) async {
+    try {
+      final snapshot = await _firestore.collection('Admins').doc(adminId).get();
+      if (snapshot.exists) {
+        return snapshot.data()?['Role']; // Ensure the field matches your Firestore schema
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching admin role: $e');
+      return null;
     }
   }
 
@@ -66,12 +82,17 @@ class AdminAuthenticationRepository extends GetxController {
 
   Future<UserCredential> loginWithEmailAndPassword(String email, String password) async {
     try {
-      return await _auth.signInWithEmailAndPassword(email: email, password: password);
+      final credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      final Role = await getAdminRole(credential.user!.uid);
+
+      if (Role != 'Admin') {
+        throw Exception('You are not authorized to log in as an Admin.');
+      }
+      return credential;
     } catch (e) {
-      throw handleException(e);
+      rethrow;
     }
   }
-
   Future<UserCredential> registerWithEmailAndPassword(String email, String password) async {
     try {
       return await _auth.createUserWithEmailAndPassword(email: email, password: password);
@@ -79,7 +100,6 @@ class AdminAuthenticationRepository extends GetxController {
       throw handleException(e);
     }
   }
-
   Future<void> sendEmailVerification() async {
     try {
       await _auth.currentUser?.sendEmailVerification();
