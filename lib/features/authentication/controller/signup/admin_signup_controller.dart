@@ -1,4 +1,4 @@
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import '../../../../common/network_check/network_manager.dart';
@@ -25,6 +25,18 @@ class AdminSignupController extends GetxController {
   final userName = TextEditingController();
   GlobalKey<FormState> adminsignupFormKey = GlobalKey<FormState>();
 
+  Future<int> getAdminCount() async {
+    try {
+      // Fetch the number of admin documents in the 'Admins' collection
+      final querySnapshot = await AdminRepository.instance.db.collection("Admins").get();
+      return querySnapshot.docs.length;
+    } on FirebaseException catch (e) {
+      throw 'Firebase error: ${e.code}'; // Handle Firebase-specific errors
+    } catch (e) {
+      throw 'Error fetching admin count: $e'; // General error
+    }
+  }
+
   void signup() async {
     // Start loading
     TFullScreenLoader.openLoadingDialogue(
@@ -47,10 +59,18 @@ class AdminSignupController extends GetxController {
       return;
     }
 
-    // Privacy policy check
-
     try {
-      // Register admin in the Firebase authentication
+      // Check if an admin already exists
+      final adminCount = await getAdminCount();
+      if (adminCount > 0) {
+        TFullScreenLoader.stopLoading();
+        TLoaders.errorSnackBar(
+            title: 'Admin Already Exists',
+            message: 'Only one admin account is allowed.');
+        return;
+      }
+
+      // Register admin in Firebase authentication
       final userCredential = await AdminAuthenticationRepository.instance.registerWithEmailAndPassword(
         email.text.trim(),
         password.text.trim(),
@@ -65,7 +85,8 @@ class AdminSignupController extends GetxController {
         email: email.text.trim(),
         phoneNumber: phoneNumber.text.trim(),
         profilePicture: '',
-        role: 'Admin', permissions: [],
+        role: 'Admin',
+        permissions: [],
       );
 
       final adminRepo = Get.put(AdminRepository());

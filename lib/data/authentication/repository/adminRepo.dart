@@ -16,6 +16,7 @@ class AdminRepository extends GetxController {
   static AdminRepository get instance => Get.find();
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  FirebaseFirestore get db => _db;
 
   /// Function to save admin data in Firestore
   Future<void> saveAdminRecord(AdminModel admin) async {
