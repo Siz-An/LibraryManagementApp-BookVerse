@@ -9,6 +9,7 @@ import '../../../../../../utils/constants/shimmer.dart';
 import '../../../../../../utils/constants/text_strings.dart';
 import '../../../../personalization/controller/admin_Controller.dart';
 import '../navigations/requests.dart';
+import '../returnedbooks/bookreturnUserScreen.dart';
 import 'adminScreen.dart';
 
 class TAdminAppBar extends StatelessWidget {
@@ -34,24 +35,50 @@ class TAdminAppBar extends StatelessWidget {
         ],
       ),
       actions:  [
+    StreamBuilder<QuerySnapshot>(
+    stream: FirebaseFirestore.instance
+        .collection('requests')
+        .snapshots(),
+    builder: (context, snapshot) {
+    int userCount = 0;
+    if (snapshot.hasData) {
+    // Extract userIds and find unique ones
+    final uniqueUserIds = snapshot.data!.docs
+        .map((doc) => doc['userId'])
+        .toSet(); // Convert to a Set for uniqueness
+    userCount = uniqueUserIds.length;
+    }
+    return TCartCounterIcons(
+    icon: Iconsax.tick_circle,
+    iconColor: Colors.white,
+    count: userCount,
+    onPressed: () => Get.to(() => AdminUserRequestsScreen()), // Navigate to AdminUserRequestsScreen
+    );
+    },
+    ),
         StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
-              .collection('requests')
+              .collection('toBeReturnedBooks')
               .snapshots(),
           builder: (context, snapshot) {
-            int reminderCount = 0;
+            int userCount = 0;
             if (snapshot.hasData) {
-              reminderCount = snapshot.data!.docs.length; // Count the overdue books
+              // Extract userIds and find unique ones
+              final uniqueUserIds = snapshot.data!.docs
+                  .map((doc) => doc['userId'])
+                  .toSet(); // Convert to a Set for uniqueness
+              userCount = uniqueUserIds.length;
             }
             return TCartCounterIcons(
-              icon: Iconsax.receipt_text,
-              iconColor: Colors.yellowAccent,
-              count: reminderCount,
-              onPressed: () => Get.to(() => AdminUserRequestsScreen()), // Show reminder count as tooltip
+              icon: Iconsax.arrow_circle_left,
+              iconColor: Colors.white,
+              count: userCount,
+              onPressed: () => Get.to(() => AcceptReturnUsersScreen()), // Navigate to AdminUserRequestsScreen
             );
           },
         ),
-        TCartCounterIcons(onPressed: () => Get.to(()=> AdminScreen()),iconColor: TColors.white, icon: Iconsax.user,),
+
+    TCartCounterIcons(onPressed: () => Get.to(()=> AdminScreen()),iconColor: TColors.white, icon: Iconsax.user,),
       ],
     );
   }

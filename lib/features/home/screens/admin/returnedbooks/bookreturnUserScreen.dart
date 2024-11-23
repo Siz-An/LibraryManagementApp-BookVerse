@@ -75,8 +75,9 @@ class AcceptReturnUsersScreen extends StatelessWidget {
                   final userId = user['userId'] as String;
 
                   return ListTile(
-                    title: Text('User: ${userDetails['UserName']}'),
+                    title: Text('UserName: ${userDetails['UserName']}'),
                     subtitle: Text('Email: ${userDetails['Email']}\nPhone: ${userDetails['PhoneNumber']}'),
+                    trailing: const Icon(Icons.arrow_forward),
                     onTap: () {
                       // Navigate to the book return page with the selected user's userId
                       Navigator.of(context).push(
