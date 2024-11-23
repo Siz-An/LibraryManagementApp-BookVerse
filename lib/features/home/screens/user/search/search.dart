@@ -61,8 +61,11 @@ class _SearchScreenState extends State<SearchScreen> {
 
     setState(() {
       searchResults = snapshot.docs.where((doc) {
-        final bookTitle = (doc.data() as Map<String, dynamic>)['title'] as String;
-        return bookTitle.toUpperCase().contains(uppercaseQuery);
+        final data = doc.data() as Map<String, dynamic>;
+        final bookTitle = (data['title'] as String?)?.toUpperCase() ?? '';
+        final bookWriter = (data['writer'] as String?)?.toUpperCase() ?? '';
+
+        return bookTitle.contains(uppercaseQuery) || bookWriter.contains(uppercaseQuery);
       }).toList();
       isLoading = false;
     });
@@ -82,8 +85,6 @@ class _SearchScreenState extends State<SearchScreen> {
         final imageUrl = book['imageUrl']?.toString() ?? '';
         final course = book['course']?.toString() ?? '';
         final summary = book['summary']?.toString() ?? 'No summary available';
-
-        print('Checking book: $title against search query: $searchQuery');
 
         if (title.trim().toLowerCase() == searchQuery.trim().toLowerCase()) {
           final existingBook = await FirebaseFirestore.instance
