@@ -58,10 +58,12 @@ class _AddBooksState extends State<AddBooks> {
           'writer': _writerController.text.toUpperCase(),
           'genre': genres,
           'course': _isCourseBook ? _courseController.text.toUpperCase() : null,
-          'grade': _isCourseBook && _gradeController.text.isNotEmpty ? _gradeController.text.toUpperCase() : null,
+          'grade': _isCourseBook && _gradeController.text.isNotEmpty
+              ? _gradeController.text.toUpperCase()
+              : null,
           'imageUrl': _image != null ? imageUrl : null,
           'isCourseBook': _isCourseBook,
-          'summary': _summaryController.text,
+          'summary': _summaryController.text.toUpperCase(),
           'numberOfCopies': numberOfBooks,
         });
 
@@ -93,6 +95,7 @@ class _AddBooksState extends State<AddBooks> {
       }
     }
   }
+
 
   Future<bool> _showNotificationDialog() async {
     return await showDialog<bool>(

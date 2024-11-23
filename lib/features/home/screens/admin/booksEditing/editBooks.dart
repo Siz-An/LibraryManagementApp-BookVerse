@@ -86,14 +86,14 @@ class _EditBookScreenState extends State<EditBookScreen> {
             : null;
 
         await FirebaseFirestore.instance.collection('books').doc(widget.bookId).update({
-          'title': _titleController.text,
-          'writer': _writerController.text,
+          'title': _titleController.text.toUpperCase(),
+          'writer': _writerController.text.toUpperCase(),
           'genre': genres,
-          'course': _isCourseBook ? _courseController.text : null,
-          'grade': _isCourseBook && _gradeController.text.isNotEmpty ? _gradeController.text : null,
+          'course': _isCourseBook ? _courseController.text.toUpperCase() : null,
+          'grade': _isCourseBook && _gradeController.text.toUpperCase().isNotEmpty ? _gradeController.text : null,
           'imageUrl': imageUrl,
           'isCourseBook': _isCourseBook,
-          'summary': _summaryController.text,
+          'summary': _summaryController.text.toUpperCase(),
           'numberOfCopies': int.tryParse(_copiesController.text) ?? 0,
         });
 
