@@ -72,6 +72,46 @@ class _EditBookScreenState extends State<EditBookScreen> {
     }
   }
 
+  Future<void> _deleteBook() async {
+    try {
+      await FirebaseFirestore.instance.collection('books').doc(widget.bookId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Book deleted successfully')),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete book: $e')),
+      );
+    }
+  }
+
+  Future<void> _confirmDelete() async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Book'),
+          content: const Text('Are you sure you want to delete this book? This action cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      await _deleteBook();
+    }
+  }
+
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     setState(() {
@@ -165,11 +205,6 @@ class _EditBookScreenState extends State<EditBookScreen> {
           const SnackBar(content: Text('Book updated successfully')),
         );
 
-        bool sendNotification = await _showNotificationDialog();
-        if (sendNotification) {
-          await _sendNotification();
-        }
-
         Navigator.pop(context);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -177,38 +212,6 @@ class _EditBookScreenState extends State<EditBookScreen> {
         );
       }
     }
-  }
-
-
-  Future<bool> _showNotificationDialog() async {
-    return await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Send Notification'),
-          content: const Text('Do you want to notify users about the book update?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('No'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Yes'),
-            ),
-          ],
-        );
-      },
-    ) ??
-        false;
-  }
-
-  Future<void> _sendNotification() async {
-    await FirebaseFirestore.instance.collection('notifications').add({
-      'title': 'Book Updated',
-      'message': 'The book "${_titleController.text}" has been updated.',
-      'timestamp': FieldValue.serverTimestamp(),
-    });
   }
 
   @override
@@ -363,6 +366,17 @@ class _EditBookScreenState extends State<EditBookScreen> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: _confirmDelete,
+                icon: const Icon(Icons.delete),
+                label: const Text('Delete Book'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.redAccent,
+                  minimumSize: const Size(200, 50),
+                ),
               ),
             ],
           ),

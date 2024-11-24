@@ -1,3 +1,4 @@
+import 'package:book_Verse/books/detailScreen/pdflistscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -159,6 +160,45 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
       }
     }
   }
+  Future<void> _viewPDFs() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('books')
+        .where('title', isEqualTo: widget.title)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty || snapshot.docs.first.data()['pdfs'] == null) {
+      _showNoPDFsDialog();
+      return;
+    }
+
+    final pdfs = List<Map<String, dynamic>>.from(snapshot.docs.first.data()['pdfs']);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PDFListScreen2(pdfs: pdfs),
+      ),
+    );
+  }
+
+
+
+  void _showNoPDFsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('No PDFs Found'),
+        content: Text('No PDFs are available for this book.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -169,6 +209,10 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
           IconButton(
             icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border),
             onPressed: _toggleBookmark,
+          ),
+          IconButton(
+            icon: Icon(Icons.picture_as_pdf),
+            onPressed: _viewPDFs,
           ),
         ],
       ),
