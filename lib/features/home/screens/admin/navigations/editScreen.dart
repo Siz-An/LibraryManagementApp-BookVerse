@@ -47,10 +47,10 @@ class _SearchBookScreenState extends State<SearchBookScreen> {
       appBar: AppBar(
         title: const Text('Search Book'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.picture_as_pdf_outlined),
-            onPressed: () => Get.to(() =>  AddPDFScreen()),
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.picture_as_pdf_outlined),
+          //   onPressed: () => Get.to(() =>  AddPDFScreen()),
+          // ),
           IconButton(
             icon: const Icon(Icons.list),
             onPressed: () => Get.to(() =>  AllBooksScreenadmin())

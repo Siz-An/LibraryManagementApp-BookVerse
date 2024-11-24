@@ -96,7 +96,7 @@ class SettingScreen extends StatelessWidget {
                     icon: Iconsax.omega_circle,
                     title: 'PDF FILES ',
                     subTitle: 'List of Pdf Files',
-                    onTap: () => Get.to(() => PDFListScreen()),
+                    onTap: () => Get.to(() => AllPDFsScreen()),
                   ),
                   Divider(),
                   const SizedBox(height: TSizes.spaceBtwItems,),

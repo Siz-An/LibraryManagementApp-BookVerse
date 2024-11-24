@@ -123,11 +123,15 @@ class _AddBooksState extends State<AddBooks> {
           'isCourseBook': _isCourseBook,
           'summary': _summaryController.text.trim(),
           'numberOfCopies': numberOfBooks,
-          'pdfs': pdfData, // Add the uploaded PDFs
+          'pdfs': pdfData,
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Books added successfully!')),
+          SnackBar(
+            content: const Text('Books added successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
 
         bool sendNotification = await _showNotificationDialog();
@@ -138,7 +142,11 @@ class _AddBooksState extends State<AddBooks> {
         _clearForm();
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add books: $e')),
+          SnackBar(
+            content: Text('Failed to add books: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     }
@@ -253,11 +261,38 @@ class _AddBooksState extends State<AddBooks> {
               _buildTextFormField(_summaryController, 'Summary', Icons.description, maxLines: 3),
               const SizedBox(height: 20),
               if (_image != null)
-                Image.file(
-                  _image!,
-                  height: 150,
-                  width: 150,
-                  fit: BoxFit.cover,
+                Stack(
+                  alignment: Alignment.topRight,
+                  children: [
+                    Image.file(
+                      _image!,
+                      height: 150,
+                      width: 150,
+                      fit: BoxFit.cover,
+                    ),
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _image = null; // Clear the selected image
+                          });
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               Row(
                 children: [
@@ -266,6 +301,10 @@ class _AddBooksState extends State<AddBooks> {
                       onPressed: _pickImage,
                       icon: const Icon(Icons.image),
                       label: const Text('Pick Image'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal,
+                        foregroundColor: Colors.white,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -274,6 +313,10 @@ class _AddBooksState extends State<AddBooks> {
                       onPressed: _pickPDFs,
                       icon: const Icon(Icons.picture_as_pdf),
                       label: const Text('Pick PDFs'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -305,10 +348,18 @@ class _AddBooksState extends State<AddBooks> {
                   }).toList(),
                 ),
               const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _addBooks,
-                icon: const Icon(Icons.add),
-                label: const Text('Add Books'),
+              Center(
+                child: ElevatedButton.icon(
+                  onPressed: _addBooks,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add Books'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 25.0),
+                    textStyle: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
             ],
           ),

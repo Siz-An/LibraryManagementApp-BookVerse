@@ -128,7 +128,7 @@ class _SearchScreenState extends State<SearchScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const PDFListScreen()),
+                MaterialPageRoute(builder: (context) => const AllPDFsScreen()),
               );
             },
           ),
