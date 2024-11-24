@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 
 class EditBookScreen extends StatefulWidget {
@@ -27,6 +28,8 @@ class _EditBookScreenState extends State<EditBookScreen> {
   String? _imageUrl;
   bool _isCourseBook = false;
 
+  List<Map<String, dynamic>> _pdfs = [];
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +54,15 @@ class _EditBookScreenState extends State<EditBookScreen> {
         }
 
         _imageUrl = data['imageUrl'];
+        if (data['pdfs'] != null) {
+          _pdfs = (data['pdfs'] as List).map((pdf) {
+            return {
+              'name': pdf['name'],
+              'url': pdf['url'],
+              'description': TextEditingController(text: pdf['description'] ?? ''),
+            };
+          }).toList();
+        }
         setState(() {});
       }
     } catch (e) {
@@ -69,6 +81,51 @@ class _EditBookScreenState extends State<EditBookScreen> {
     });
   }
 
+  Future<void> _pickPDFs() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      allowMultiple: true,
+    );
+
+    if (result != null) {
+      setState(() {
+        _pdfs.addAll(result.files.map((file) {
+          return {
+            'file': File(file.path!),
+            'name': file.name,
+            'description': TextEditingController(),
+          };
+        }));
+      });
+    }
+  }
+
+  Future<List<Map<String, String>>> _uploadPDFs() async {
+    List<Map<String, String>> uploadedPDFs = [];
+    for (var pdf in _pdfs) {
+      if (pdf['file'] != null) {
+        String fileName = pdf['file'].path.split('/').last;
+        TaskSnapshot snapshot = await FirebaseStorage.instance
+            .ref('book_pdfs/$fileName')
+            .putFile(pdf['file']);
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+        uploadedPDFs.add({
+          'name': pdf['name'],
+          'url': downloadUrl,
+          'description': pdf['description'].text,
+        });
+      } else {
+        uploadedPDFs.add({
+          'name': pdf['name'],
+          'url': pdf['url'],
+          'description': pdf['description'].text,
+        });
+      }
+    }
+    return uploadedPDFs;
+  }
+
   Future<void> _updateBook() async {
     if (_formKey.currentState!.validate()) {
       try {
@@ -82,24 +139,36 @@ class _EditBookScreenState extends State<EditBookScreen> {
         }
 
         List<String>? genres = !_isCourseBook
-            ? _genreController.text.split(',').map((e) => e.trim()).toList()
+            ? _genreController.text
+            .split(',')
+            .map((e) => e.trim().toUpperCase())
+            .toList()
             : null;
+
+        // Upload PDFs
+        List<Map<String, String>> pdfData = await _uploadPDFs();
 
         await FirebaseFirestore.instance.collection('books').doc(widget.bookId).update({
           'title': _titleController.text.toUpperCase(),
           'writer': _writerController.text.toUpperCase(),
           'genre': genres,
           'course': _isCourseBook ? _courseController.text.toUpperCase() : null,
-          'grade': _isCourseBook && _gradeController.text.toUpperCase().isNotEmpty ? _gradeController.text : null,
+          'grade': _isCourseBook && _gradeController.text.toUpperCase().isNotEmpty ? _gradeController.text.toUpperCase() : null,
           'imageUrl': imageUrl,
           'isCourseBook': _isCourseBook,
           'summary': _summaryController.text.toUpperCase(),
           'numberOfCopies': int.tryParse(_copiesController.text) ?? 0,
+          'pdfs': pdfData, // Updated PDFs
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Book updated successfully')),
         );
+
+        bool sendNotification = await _showNotificationDialog();
+        if (sendNotification) {
+          await _sendNotification();
+        }
 
         Navigator.pop(context);
       } catch (e) {
@@ -108,6 +177,38 @@ class _EditBookScreenState extends State<EditBookScreen> {
         );
       }
     }
+  }
+
+
+  Future<bool> _showNotificationDialog() async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Send Notification'),
+          content: const Text('Do you want to notify users about the book update?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    ) ??
+        false;
+  }
+
+  Future<void> _sendNotification() async {
+    await FirebaseFirestore.instance.collection('notifications').add({
+      'title': 'Book Updated',
+      'message': 'The book "${_titleController.text}" has been updated.',
+      'timestamp': FieldValue.serverTimestamp(),
+    });
   }
 
   @override
@@ -155,14 +256,13 @@ class _EditBookScreenState extends State<EditBookScreen> {
                     const SizedBox(height: 10),
                   ],
                 ),
-              _buildTextField(_summaryController, 'Summary', Icons.description, 'Please enter a summary',),
+              _buildTextField(_summaryController, 'Summary', Icons.description, 'Please enter a summary'),
               const SizedBox(height: 10),
               _buildTextField(
                 _copiesController,
                 'Number of Copies',
                 Icons.numbers,
                 'Please enter the number of copies',
-
               ),
               const SizedBox(height: 20),
               if (_image != null || (_imageUrl != null && _imageUrl!.isNotEmpty))
@@ -196,6 +296,43 @@ class _EditBookScreenState extends State<EditBookScreen> {
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blue,
+                  minimumSize: const Size(120, 40),
+                ),
+              ),
+              const SizedBox(height: 20),
+              if (_pdfs.isNotEmpty)
+                Column(
+                  children: _pdfs.map((pdf) {
+                    return Card(
+                      child: ListTile(
+                        title: Text(pdf['name']),
+                        subtitle: TextField(
+                          controller: pdf['description'],
+                          decoration: const InputDecoration(
+                            labelText: 'Description (optional)',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.close, color: Colors.red),
+                          onPressed: () {
+                            setState(() {
+                              _pdfs.remove(pdf);
+                            });
+                          },
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              const SizedBox(height: 10),
+              ElevatedButton.icon(
+                onPressed: _pickPDFs,
+                icon: const Icon(Icons.picture_as_pdf),
+                label: const Text('Pick PDFs'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.teal,
                   minimumSize: const Size(120, 40),
                 ),
               ),

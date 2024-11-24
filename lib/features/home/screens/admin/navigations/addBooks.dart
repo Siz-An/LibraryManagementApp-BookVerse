@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 
 class AddBooks extends StatefulWidget {
@@ -14,77 +15,124 @@ class AddBooks extends StatefulWidget {
 
 class _AddBooksState extends State<AddBooks> {
   final _formKey = GlobalKey<FormState>();
-  final _numberOfBooksController = TextEditingController();
-  final _titleController = TextEditingController();
-  final _writerController = TextEditingController();
-  final _genreController = TextEditingController();
-  final _courseController = TextEditingController();
-  final _gradeController = TextEditingController();
-  final _summaryController = TextEditingController();
-  final _picker = ImagePicker();
+
+  // Controllers for form fields
+  final TextEditingController _numberOfBooksController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _writerController = TextEditingController();
+  final TextEditingController _genreController = TextEditingController();
+  final TextEditingController _courseController = TextEditingController();
+  final TextEditingController _gradeController = TextEditingController();
+  final TextEditingController _summaryController = TextEditingController();
+
+  final ImagePicker _picker = ImagePicker();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
   File? _image;
   bool _isCourseBook = false;
 
+  // List to store selected PDFs
+  List<Map<String, dynamic>> _pdfs = [];
+
+  // Pick image from gallery
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    setState(() {
-      if (pickedFile != null) {
+    if (pickedFile != null) {
+      setState(() {
         _image = File(pickedFile.path);
-      }
-    });
+      });
+    }
   }
 
+  // Pick PDFs
+  Future<void> _pickPDFs() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      allowMultiple: true,
+    );
+
+    if (result != null) {
+      setState(() {
+        _pdfs.addAll(result.files.map((file) {
+          return {
+            'file': File(file.path!),
+            'name': file.name,
+            'description': TextEditingController(),
+          };
+        }));
+      });
+    }
+  }
+
+  // Upload image to Firebase Storage
+  Future<String> _uploadImage(File imageFile) async {
+    String fileName = imageFile.path.split('/').last;
+    TaskSnapshot snapshot = await FirebaseStorage.instance
+        .ref('book_images/$fileName')
+        .putFile(imageFile);
+    return await snapshot.ref.getDownloadURL();
+  }
+
+  // Upload PDFs to Firebase Storage
+  Future<List<Map<String, String>>> _uploadPDFs() async {
+    List<Map<String, String>> uploadedPDFs = [];
+    for (var pdf in _pdfs) {
+      String fileName = pdf['file'].path.split('/').last;
+      TaskSnapshot snapshot = await FirebaseStorage.instance
+          .ref('book_pdfs/$fileName')
+          .putFile(pdf['file']);
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+      uploadedPDFs.add({
+        'name': pdf['name'],
+        'url': downloadUrl,
+        'description': pdf['description'].text,
+      });
+    }
+    return uploadedPDFs;
+  }
+
+  // Add book data to Firestore
   Future<void> _addBooks() async {
     if (_formKey.currentState!.validate()) {
       try {
         int numberOfBooks = int.parse(_numberOfBooksController.text);
-        String imageUrl = '';
+        String? imageUrl;
 
         if (_image != null) {
-          String fileName = _image!.path.split('/').last;
-          TaskSnapshot snapshot = await FirebaseStorage.instance
-              .ref('book_images/$fileName')
-              .putFile(_image!);
-          imageUrl = await snapshot.ref.getDownloadURL();
+          imageUrl = await _uploadImage(_image!);
         }
 
+        // Parse genres if it's not a course book
         List<String>? genres = !_isCourseBook
             ? _genreController.text.split(',').map((e) => e.trim().toUpperCase()).toList()
             : null;
 
+        // Upload PDFs
+        List<Map<String, String>> pdfData = await _uploadPDFs();
+
         await FirebaseFirestore.instance.collection('books').add({
-          'title': _titleController.text.toUpperCase(),
-          'writer': _writerController.text.toUpperCase(),
+          'title': _titleController.text.trim().toUpperCase(),
+          'writer': _writerController.text.trim().toUpperCase(),
           'genre': genres,
-          'course': _isCourseBook ? _courseController.text.toUpperCase() : null,
+          'course': _isCourseBook ? _courseController.text.trim().toUpperCase() : null,
           'grade': _isCourseBook && _gradeController.text.isNotEmpty
-              ? _gradeController.text.toUpperCase()
+              ? _gradeController.text.trim().toUpperCase()
               : null,
-          'imageUrl': _image != null ? imageUrl : null,
+          'imageUrl': imageUrl,
           'isCourseBook': _isCourseBook,
-          'summary': _summaryController.text.toUpperCase(),
+          'summary': _summaryController.text.trim(),
           'numberOfCopies': numberOfBooks,
+          'pdfs': pdfData, // Add the uploaded PDFs
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Books added successfully')),
+          const SnackBar(content: Text('Books added successfully!')),
         );
 
         bool sendNotification = await _showNotificationDialog();
         if (sendNotification) {
-          final user = _auth.currentUser;
-          if (user != null) {
-            final recipientUserId = 'someRecipientUserId'; // Replace with actual recipient ID or retrieve dynamically
-            await FirebaseFirestore.instance.collection('notifications').add({
-              'title': 'New Book Added',
-              'message': 'A new book titled "${_titleController.text.toUpperCase()}" has been added.',
-              'timestamp': FieldValue.serverTimestamp(),
-              'isRead': false,
-              'sender': user.email,
-              'recipientId': recipientUserId,
-            });
-          }
+          await _sendNotification();
         }
 
         _clearForm();
@@ -96,33 +144,47 @@ class _AddBooksState extends State<AddBooks> {
     }
   }
 
-
+  // Show notification dialog
   Future<bool> _showNotificationDialog() async {
     return await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Send Notification'),
-          content: const Text('Do you want to send a notification about the new book?'),
+          content: const Text('Do you want to notify users about this book?'),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
+              onPressed: () => Navigator.of(context).pop(false),
               child: const Text('No'),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
+              onPressed: () => Navigator.of(context).pop(true),
               child: const Text('Yes'),
             ),
           ],
         );
       },
-    ) ?? false;
+    ) ??
+        false;
   }
 
+  // Send notification to users
+  Future<void> _sendNotification() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      final recipientUserId = 'recipientUserId'; // Replace with dynamic recipient ID if available
+      await FirebaseFirestore.instance.collection('notifications').add({
+        'title': 'New Book Added',
+        'message': 'A new book titled "${_titleController.text.trim()}" has been added!',
+        'timestamp': FieldValue.serverTimestamp(),
+        'isRead': false,
+        'sender': user.email,
+        'recipientId': recipientUserId,
+      });
+    }
+  }
+
+  // Clear form fields and reset states
   void _clearForm() {
     _numberOfBooksController.clear();
     _titleController.clear();
@@ -134,6 +196,7 @@ class _AddBooksState extends State<AddBooks> {
     setState(() {
       _image = null;
       _isCourseBook = false;
+      _pdfs.clear();
     });
   }
 
@@ -159,12 +222,7 @@ class _AddBooksState extends State<AddBooks> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter the number of copies';
-                  }
-                  return null;
-                },
+                validator: (value) => value!.isEmpty ? 'Enter the number of copies' : null,
               ),
               const SizedBox(height: 16),
               SwitchListTile(
@@ -177,112 +235,30 @@ class _AddBooksState extends State<AddBooks> {
                 },
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Book Title',
-                  prefixIcon: Icon(Icons.book),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter the book title';
-                  }
-                  return null;
-                },
-              ),
+              _buildTextFormField(_titleController, 'Book Title', Icons.book),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _writerController,
-                decoration: const InputDecoration(
-                  labelText: 'Writer',
-                  prefixIcon: Icon(Icons.person),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter the writer\'s name';
-                  }
-                  return null;
-                },
-              ),
+              _buildTextFormField(_writerController, 'Writer', Icons.person),
               const SizedBox(height: 16),
               if (!_isCourseBook)
-                TextFormField(
-                  controller: _genreController,
-                  decoration: const InputDecoration(
-                    labelText: 'Genre (comma-separated)',
-                    prefixIcon: Icon(Icons.category),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Please enter the genre';
-                    }
-                    return null;
-                  },
-                ),
+                _buildTextFormField(_genreController, 'Genre (comma-separated)', Icons.category),
               if (_isCourseBook)
                 Column(
                   children: [
-                    TextFormField(
-                      controller: _courseController,
-                      decoration: const InputDecoration(
-                        labelText: 'Year / Semester (optional)',
-                        prefixIcon: Icon(Icons.calendar_today),
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
+                    _buildTextFormField(_courseController, 'Year / Semester', Icons.calendar_today),
                     const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _gradeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Grade',
-                        prefixIcon: Icon(Icons.grade),
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter the grade';
-                        }
-                        return null;
-                      },
-                    ),
+                    _buildTextFormField(_gradeController, 'Grade', Icons.grade),
                   ],
                 ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _summaryController,
-                decoration: const InputDecoration(
-                  labelText: 'Summary',
-                  prefixIcon: Icon(Icons.description),
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter a summary';
-                  }
-                  return null;
-                },
-              ),
+              _buildTextFormField(_summaryController, 'Summary', Icons.description, maxLines: 3),
               const SizedBox(height: 20),
               if (_image != null)
-                Container(
-                  margin: const EdgeInsets.symmetric(vertical: 10.0),
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: Image.file(
-                    _image!,
-                    height: 150,
-                    width: 150,
-                    fit: BoxFit.cover,
-                  ),
+                Image.file(
+                  _image!,
+                  height: 150,
+                  width: 150,
+                  fit: BoxFit.cover,
                 ),
-              const SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -290,28 +266,69 @@ class _AddBooksState extends State<AddBooks> {
                       onPressed: _pickImage,
                       icon: const Icon(Icons.image),
                       label: const Text('Pick Image'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
-                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: _addBooks,
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add Books'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                      ),
+                      onPressed: _pickPDFs,
+                      icon: const Icon(Icons.picture_as_pdf),
+                      label: const Text('Pick PDFs'),
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 20),
+              if (_pdfs.isNotEmpty)
+                Column(
+                  children: _pdfs.map((pdf) {
+                    return Card(
+                      child: ListTile(
+                        title: Text(pdf['name']),
+                        subtitle: TextField(
+                          controller: pdf['description'],
+                          decoration: const InputDecoration(
+                            labelText: 'Description (optional)',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.close, color: Colors.red),
+                          onPressed: () {
+                            setState(() {
+                              _pdfs.remove(pdf);
+                            });
+                          },
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: _addBooks,
+                icon: const Icon(Icons.add),
+                label: const Text('Add Books'),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  // Helper method to build text form fields
+  Widget _buildTextFormField(TextEditingController controller, String label, IconData icon,
+      {int maxLines = 1}) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: const OutlineInputBorder(),
+      ),
+      maxLines: maxLines,
+      validator: (value) => value!.isEmpty ? 'Please enter $label' : null,
     );
   }
 }
