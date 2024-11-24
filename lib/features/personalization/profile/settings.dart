@@ -14,6 +14,8 @@ import '../../home/screens/user/bookreturnsss.dart';
 import '../../home/screens/user/mark/markApp.dart';
 import '../../home/screens/user/mark/requestssss.dart';
 import '../../home/screens/user/notification.dart';
+import '../../home/screens/user/pdfView/pdflist.dart';
+import '../../home/screens/user/pdfView/pdfviewer.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
@@ -89,7 +91,13 @@ class SettingScreen extends StatelessWidget {
                     subTitle: 'List books that the user have to return',
                     onTap: () => Get.to(() => ToBeReturnedBooksScreen(userId: userId)),
                   ),
-
+                  Divider(),
+                  TSettingMenu(
+                    icon: Iconsax.omega_circle,
+                    title: 'PDF FILES ',
+                    subTitle: 'List of Pdf Files',
+                    onTap: () => Get.to(() => PDFListScreen()),
+                  ),
                   Divider(),
                   const SizedBox(height: TSizes.spaceBtwItems,),
 

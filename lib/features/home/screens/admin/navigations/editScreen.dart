@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import '../addpdf/pdfadd.dart';
 import '../allbooks.dart';
 import '../booksEditing/editBooks.dart';
 
@@ -45,22 +48,12 @@ class _SearchBookScreenState extends State<SearchBookScreen> {
         title: const Text('Search Book'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              setState(() {
-                _searchController.clear();
-                searchResults = [];
-              });
-            },
+            icon: const Icon(Icons.picture_as_pdf_outlined),
+            onPressed: () => Get.to(() =>  AddPDFScreen()),
           ),
           IconButton(
             icon: const Icon(Icons.list),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AllBooksScreenadmin()),
-              );
-            },
+            onPressed: () => Get.to(() =>  AllBooksScreenadmin())
           ),
         ],
       ),

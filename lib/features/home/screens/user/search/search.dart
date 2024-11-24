@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../../books/detailScreen/course_book_detail_screen.dart';
+import '../pdfView/pdflist.dart';
 import 'BooksAll.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -122,6 +123,16 @@ class _SearchScreenState extends State<SearchScreen> {
         title: const Text('Search Books'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.picture_as_pdf),
+            color: Colors.green,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PDFListScreen()),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.menu_book),
             color: Colors.green,
             onPressed: () {
@@ -131,6 +142,8 @@ class _SearchScreenState extends State<SearchScreen> {
               );
             },
           ),
+
+
         ],
       ),
       body: Column(
