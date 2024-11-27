@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../../books/contentbasedrecommendation.dart';
 import '../../../../../books/detailScreen/genre_book_detail_screen.dart'; // Import the new file
 import '../../../../../books/CourseSection/courseSelection.dart';
-import '../../../../../books/randombooks.dart';
 import '../../../../../common/widgets/custom_shapes/primary_header_container.dart';
 import '../../../../../common/widgets/texts/section_heading.dart';
 import '../../../../../utils/constants/sizes.dart';

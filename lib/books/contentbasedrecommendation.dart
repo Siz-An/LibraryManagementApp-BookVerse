@@ -1,6 +1,4 @@
-
-
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -31,11 +29,22 @@ class _ContentBasedAlgorithm extends State<ContentBasedAlgorithm> {
         _isLoading = true;
       });
 
-      // Step 1: Fetch the most recent searched book
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        print('No user logged in.');
+        setState(() {
+          _isLoading = false;
+          _popularBooks = [];
+        });
+        return;
+      }
+
+      // Step 1: Fetch the most recent searched book by the user
       final searchedBooksSnapshot = await _firestore
           .collection('searchedBooks')
+          .where('userId', isEqualTo: userId) // Filter by current user
           .orderBy('searchedAt', descending: true)
-          .limit(2)
+          .limit(7)
           .get();
 
       if (searchedBooksSnapshot.docs.isEmpty) {
@@ -47,7 +56,6 @@ class _ContentBasedAlgorithm extends State<ContentBasedAlgorithm> {
         return;
       }
 
-      // Extract the searched author
       final searchedBook = searchedBooksSnapshot.docs.first.data();
       final searchedAuthor = searchedBook['writer']?.trim();
 
@@ -60,38 +68,19 @@ class _ContentBasedAlgorithm extends State<ContentBasedAlgorithm> {
         return;
       }
 
-      print('Searched Author: $searchedAuthor');
-
-      // Step 2: Fetch all bookmarks for the searched author
+      // Step 2: Fetch all bookmarks by the same author for this user
       final bookmarksByAuthorSnapshot = await _firestore
-          .collection('bookmarks')
+          .collection('bookmarks')// Filter by current user
           .where('writer', isEqualTo: searchedAuthor)
           .get();
 
-      print('Bookmarks Snapshot Docs Count: ${bookmarksByAuthorSnapshot.docs.length}');
-      if (bookmarksByAuthorSnapshot.docs.isEmpty) {
-        print('No bookmarks found for this author.');
-        setState(() {
-          _isLoading = false;
-          _popularBooks = [];
-        });
-        return;
-      }
-
-      // Extract unique book IDs from bookmarks
       final bookmarkedBookIds = bookmarksByAuthorSnapshot.docs
-          .map((doc) {
-        final data = doc.data();
-        print('Bookmark Doc: ${doc.id}, Data: $data');
-        return data['bookId'] as String?;
-      })
+          .map((doc) => doc.data()['bookId'] as String?)
           .where((bookId) => bookId != null)
           .toSet();
 
-      print('Bookmarked Book IDs: $bookmarkedBookIds');
-
       if (bookmarkedBookIds.isEmpty) {
-        print('No book IDs found in bookmarks.');
+        print('No bookmarked book IDs found.');
         setState(() {
           _isLoading = false;
           _popularBooks = [];
@@ -99,29 +88,16 @@ class _ContentBasedAlgorithm extends State<ContentBasedAlgorithm> {
         return;
       }
 
-      // Step 3: Fetch details for all books corresponding to the bookmarked IDs
+      // Step 3: Fetch book details for the bookmarked IDs
       final recommendedBooks = await Future.wait(
         bookmarkedBookIds.map((bookId) async {
           final bookDoc = await _firestore.collection('books').doc(bookId).get();
-          if (bookDoc.exists) {
-            final bookData = bookDoc.data();
-            print('Book Data for ID $bookId: $bookData');
-            return bookData as Map<String, dynamic>;
-          } else {
-            print('No book found for ID $bookId');
-            return null;
-          }
+          return bookDoc.exists ? bookDoc.data() as Map<String, dynamic> : null;
         }),
       );
 
-      // Filter out null entries
-      final filteredBooks = recommendedBooks.whereType<Map<String, dynamic>>().toList();
-
-      print('Filtered Books: $filteredBooks');
-
-      // Update UI with the fetched recommendations
       setState(() {
-        _popularBooks = filteredBooks;
+        _popularBooks = recommendedBooks.whereType<Map<String, dynamic>>().toList();
       });
     } catch (e) {
       print('Error fetching recommended books: $e');
@@ -134,6 +110,7 @@ class _ContentBasedAlgorithm extends State<ContentBasedAlgorithm> {
       });
     }
   }
+
 
 
   void _navigateToDetailPage(Map<String, dynamic> book) {

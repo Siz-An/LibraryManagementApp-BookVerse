@@ -24,24 +24,24 @@ class _SearchScreenState extends State<SearchScreen> {
     userId = FirebaseAuth.instance.currentUser?.uid;
   }
 
-  Future<void> _deleteSearchedBooks() async {
-    if (userId == null) return;
-
+  Future<void> _deleteSearchedBooks(String userId) async {
     try {
       final querySnapshot = await FirebaseFirestore.instance
           .collection('searchedBooks')
           .where('userId', isEqualTo: userId)
           .get();
 
+      // Delete all documents for this user
       for (var doc in querySnapshot.docs) {
         await doc.reference.delete();
       }
 
-      print('All previous searched books deleted successfully.');
+      print('All previous searches for user $userId deleted successfully.');
     } catch (e) {
-      print('Failed to delete searched books: $e');
+      print('Error deleting searched books for user $userId: $e');
     }
   }
+
 
   Future<void> _searchBooks(String query) async {
     if (query.isEmpty) {
@@ -55,30 +55,55 @@ class _SearchScreenState extends State<SearchScreen> {
       isLoading = true;
     });
 
-    await _deleteSearchedBooks(); // Delete previous searches before fetching new ones
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
 
-    final uppercaseQuery = query.toUpperCase();
-    final snapshot = await FirebaseFirestore.instance.collection('books').get();
+      if (userId != null) {
+        // Step 1: Delete previous searches for this user
+        await _deleteSearchedBooks(userId);
 
-    setState(() {
-      searchResults = snapshot.docs.where((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        final bookTitle = (data['title'] as String?)?.toUpperCase() ?? '';
-        final bookWriter = (data['writer'] as String?)?.toUpperCase() ?? '';
+        // Step 2: Fetch books matching the search query
+        final uppercaseQuery = query.toUpperCase();
+        final snapshot = await FirebaseFirestore.instance.collection('books').get();
 
-        return bookTitle.contains(uppercaseQuery) || bookWriter.contains(uppercaseQuery);
-      }).toList();
-      isLoading = false;
-    });
+        // Filter books based on title or writer containing the query
+        final results = snapshot.docs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          final bookTitle = (data['title'] as String?)?.toUpperCase() ?? '';
+          final bookWriter = (data['writer'] as String?)?.toUpperCase() ?? '';
+          return bookTitle.contains(uppercaseQuery) || bookWriter.contains(uppercaseQuery);
+        }).toList();
 
-    if (userId != null) {
-      await _saveSearchedBooks(uppercaseQuery, userId!);
+        // Save results for the user in Firestore
+        if (results.isNotEmpty) {
+          await _saveSearchedBooks(query, userId, results);
+        }
+
+        setState(() {
+          searchResults = results;
+        });
+      } else {
+        setState(() {
+          searchResults = [];
+        });
+      }
+    } catch (e) {
+      print('Error searching books: $e');
+      setState(() {
+        searchResults = [];
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
-  Future<void> _saveSearchedBooks(String searchQuery, String userId) async {
+  Future<void> _saveSearchedBooks(String searchQuery, String userId, List<QueryDocumentSnapshot> results) async {
     try {
-      for (var doc in searchResults) {
+      final batch = FirebaseFirestore.instance.batch();
+
+      for (var doc in results) { // Use the passed `results` list
         final bookId = doc.id;
         final book = doc.data() as Map<String, dynamic>;
         final title = book['title']?.toString() ?? 'No title';
@@ -88,14 +113,15 @@ class _SearchScreenState extends State<SearchScreen> {
         final summary = book['summary']?.toString() ?? 'No summary available';
 
         if (title.trim().toLowerCase() == searchQuery.trim().toLowerCase()) {
-          final existingBook = await FirebaseFirestore.instance
+          final existingBookSnapshot = await FirebaseFirestore.instance
               .collection('searchedBooks')
               .where('userId', isEqualTo: userId)
               .where('bookId', isEqualTo: bookId)
               .get();
 
-          if (existingBook.docs.isEmpty) {
-            await FirebaseFirestore.instance.collection('searchedBooks').add({
+          if (existingBookSnapshot.docs.isEmpty) {
+            final docRef = FirebaseFirestore.instance.collection('searchedBooks').doc();
+            batch.set(docRef, {
               'userId': userId,
               'bookId': bookId,
               'title': title,
@@ -105,16 +131,17 @@ class _SearchScreenState extends State<SearchScreen> {
               'summary': summary,
               'searchedAt': FieldValue.serverTimestamp(),
             });
-            print('Book saved: $title');
-          } else {
-            print('Book with bookId: $bookId already exists for userId: $userId');
           }
         }
       }
+
+      await batch.commit();
+      print('All matching books saved successfully.');
     } catch (e) {
       print('Failed to save searched books: $e');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
