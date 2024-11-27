@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'booksEditing/editBooks.dart';
 
-class AllBooksScreenadmin extends StatelessWidget {
+class AllBooksScreenAdmin extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,7 +51,11 @@ class AllBooksScreenadmin extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                     child: Text(
                       initial,
-                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w600, color: Colors.green),
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.green,
+                      ),
                     ),
                   ),
                   ...bookList.map((book) {
@@ -71,7 +75,7 @@ class AllBooksScreenadmin extends StatelessWidget {
                           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text('Author: ${bookData['writer'] ?? 'N/A'}'),
-                        leading: bookData['imageUrl'] != null
+                        leading: bookData['imageUrl'] != null && bookData['imageUrl'].isNotEmpty
                             ? ClipRRect(
                           borderRadius: BorderRadius.circular(8.0),
                           child: Image.network(
@@ -81,11 +85,14 @@ class AllBooksScreenadmin extends StatelessWidget {
                             fit: BoxFit.cover,
                           ),
                         )
-                            : const Icon(Icons.book, size: 50, color: Colors.deepPurpleAccent),
+                            : const Icon(
+                          Icons.book,
+                          size: 50,
+                          color: Colors.deepPurpleAccent,
+                        ),
                         trailing: IconButton(
                           icon: const Icon(Icons.edit, color: Colors.deepPurpleAccent),
                           onPressed: () {
-                            // Show confirmation dialog before editing
                             showDialog(
                               context: context,
                               builder: (context) => AlertDialog(
@@ -93,15 +100,12 @@ class AllBooksScreenadmin extends StatelessWidget {
                                 content: const Text('Are you sure you want to edit this book?'),
                                 actions: [
                                   TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context); // Close the dialog
-                                    },
+                                    onPressed: () => Navigator.pop(context),
                                     child: const Text('Cancel'),
                                   ),
                                   TextButton(
                                     onPressed: () {
-                                      Navigator.pop(context); // Close the dialog
-                                      // Navigate to the edit screen
+                                      Navigator.pop(context);
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(

@@ -111,6 +111,29 @@ class _AddBooksState extends State<AddBooks> {
         // Upload PDFs
         List<Map<String, String>> pdfData = await _uploadPDFs();
 
+        // Check if a book with the same title already exists
+        final existingBooksQuery = await FirebaseFirestore.instance
+            .collection('books')
+            .where('title', isEqualTo: _titleController.text.trim().toUpperCase())
+            .get();
+
+        if (existingBooksQuery.docs.isNotEmpty) {
+          // Show existing book details if the title matches
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Book with the same title already exists!'),
+              backgroundColor: Colors.orange,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+
+          // Optionally, show existing books with the same title
+          final existingBooks = existingBooksQuery.docs.map((doc) => doc.data()).toList();
+          // You can handle the display of the existing books, for example, by showing them in a dialog or a list.
+          return;
+        }
+
+        // Add the new book to Firestore
         await FirebaseFirestore.instance.collection('books').add({
           'title': _titleController.text.trim().toUpperCase(),
           'writer': _writerController.text.trim().toUpperCase(),
@@ -151,6 +174,7 @@ class _AddBooksState extends State<AddBooks> {
       }
     }
   }
+
 
   // Show notification dialog
   Future<bool> _showNotificationDialog() async {
@@ -208,7 +232,6 @@ class _AddBooksState extends State<AddBooks> {
     });
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -230,7 +253,16 @@ class _AddBooksState extends State<AddBooks> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? 'Enter the number of copies' : null,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Enter the number of copies';
+                  }
+                  final numCopies = int.tryParse(value);
+                  if (numCopies == null || numCopies < 0) {
+                    return 'Number of copies must be 0 or greater';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               SwitchListTile(
@@ -243,22 +275,28 @@ class _AddBooksState extends State<AddBooks> {
                 },
               ),
               const SizedBox(height: 16),
-              _buildTextFormField(_titleController, 'Book Title', Icons.book),
+              _buildTextFormField(
+                  _titleController, 'Book Title', Icons.book),
               const SizedBox(height: 16),
-              _buildTextFormField(_writerController, 'Writer', Icons.person),
+              _buildStringValidatedTextFormField(
+                  _writerController, 'Writer', Icons.person),
               const SizedBox(height: 16),
               if (!_isCourseBook)
-                _buildTextFormField(_genreController, 'Genre (comma-separated)', Icons.category),
+                _buildStringValidatedTextFormField(
+                    _genreController, 'Genre (comma-separated)', Icons.category),
               if (_isCourseBook)
                 Column(
                   children: [
-                    _buildTextFormField(_courseController, 'Year / Semester', Icons.calendar_today),
+                    _buildTextFormField(
+                        _courseController, 'Year / Semester', Icons.calendar_today),
                     const SizedBox(height: 16),
                     _buildTextFormField(_gradeController, 'Grade', Icons.grade),
                   ],
                 ),
               const SizedBox(height: 16),
-              _buildTextFormField(_summaryController, 'Summary', Icons.description, maxLines: 3),
+              _buildTextFormField(
+                  _summaryController, 'Summary', Icons.description,
+                  maxLines: 3),
               const SizedBox(height: 20),
               if (_image != null)
                 Stack(
@@ -367,6 +405,28 @@ class _AddBooksState extends State<AddBooks> {
       ),
     );
   }
+
+  Widget _buildStringValidatedTextFormField(
+      TextEditingController controller, String labelText, IconData icon) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        prefixIcon: Icon(icon),
+        border: const OutlineInputBorder(),
+      ),
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) {
+          return 'Please enter a valid $labelText';
+        }
+        if (RegExp(r'\d').hasMatch(value)) {
+          return '$labelText should not contain numbers';
+        }
+        return null;
+      },
+    );
+  }
+
 
   // Helper method to build text form fields
   Widget _buildTextFormField(TextEditingController controller, String label, IconData icon,

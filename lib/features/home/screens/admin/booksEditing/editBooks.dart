@@ -22,7 +22,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
   final _courseController = TextEditingController();
   final _gradeController = TextEditingController();
   final _summaryController = TextEditingController();
-  final _copiesController = TextEditingController();
+  final TextEditingController _numberOfBooksController = TextEditingController();
   final _picker = ImagePicker();
   File? _image;
   String? _imageUrl;
@@ -46,7 +46,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
         _courseController.text = data['course'] ?? '';
         _gradeController.text = data['grade'] ?? '';
         _summaryController.text = data['summary'] ?? '';
-        _copiesController.text = data['numberOfCopies']?.toString() ?? '';
+        _numberOfBooksController.text = data['numberOfCopies']?.toString() ?? '';
         _isCourseBook = data['isCourseBook'] ?? false;
 
         if (!_isCourseBook && data['genre'] != null) {
@@ -169,6 +169,27 @@ class _EditBookScreenState extends State<EditBookScreen> {
   Future<void> _updateBook() async {
     if (_formKey.currentState!.validate()) {
       try {
+        String title = _titleController.text.toUpperCase();
+
+        // Check if a book with the same title exists (excluding the current book being updated)
+        var querySnapshot = await FirebaseFirestore.instance
+            .collection('books')
+            .where('title', isEqualTo: title)
+            .get();
+
+        if (querySnapshot.docs.isNotEmpty &&
+            querySnapshot.docs.first.id != widget.bookId) {
+          // If a book with the same title exists, show a pop-up
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: const Text('Book with the same title already exists!'),
+              backgroundColor: Colors.orange,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return; // Exit the function if the book exists
+        }
+
         String imageUrl = _imageUrl ?? '';
         if (_image != null) {
           String fileName = _image!.path.split('/').last;
@@ -189,15 +210,17 @@ class _EditBookScreenState extends State<EditBookScreen> {
         List<Map<String, String>> pdfData = await _uploadPDFs();
 
         await FirebaseFirestore.instance.collection('books').doc(widget.bookId).update({
-          'title': _titleController.text.toUpperCase(),
+          'title': title,
           'writer': _writerController.text.toUpperCase(),
           'genre': genres,
           'course': _isCourseBook ? _courseController.text.toUpperCase() : null,
-          'grade': _isCourseBook && _gradeController.text.toUpperCase().isNotEmpty ? _gradeController.text.toUpperCase() : null,
+          'grade': _isCourseBook && _gradeController.text.toUpperCase().isNotEmpty
+              ? _gradeController.text.toUpperCase()
+              : null,
           'imageUrl': imageUrl,
           'isCourseBook': _isCourseBook,
           'summary': _summaryController.text.toUpperCase(),
-          'numberOfCopies': int.tryParse(_copiesController.text) ?? 0,
+          'numberOfCopies': int.tryParse(_numberOfBooksController.text) ?? 0,
           'pdfs': pdfData, // Updated PDFs
         });
 
@@ -213,6 +236,44 @@ class _EditBookScreenState extends State<EditBookScreen> {
       }
     }
   }
+
+
+
+
+
+  Widget _buildTextFields(
+      TextEditingController controller,
+      String labelText,
+      IconData icon,
+      String validationMessage,
+      ) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        prefixIcon: Icon(icon),
+        border: const OutlineInputBorder(),
+      ),
+      keyboardType: TextInputType.number,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return validationMessage;
+        }
+        final numCopies = int.tryParse(value);
+        if (numCopies == null) {
+          return 'Please enter a valid number';
+        }
+        // Allow zero and any positive number
+        if (numCopies < 0) {
+          return 'Number of copies cannot be negative';
+        }
+        return null;
+      },
+    );
+
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -241,12 +302,12 @@ class _EditBookScreenState extends State<EditBookScreen> {
               const SizedBox(height: 20),
               _buildTextField(_titleController, 'Book Title', Icons.book, 'Please enter the book title'),
               const SizedBox(height: 10),
-              _buildTextField(_writerController, 'Writer', Icons.person, 'Please enter the writer\'s name'),
+              _buildStringValidatedTextFormField(_writerController, 'Writer', Icons.person,),
               const SizedBox(height: 10),
               if (!_isCourseBook)
                 Column(
                   children: [
-                    _buildTextField(_genreController, 'Genre (comma-separated)', Icons.category, 'Please enter the genre'),
+                    _buildStringValidatedTextFormField(_genreController, 'Genre (comma-separated)', Icons.category,),
                     const SizedBox(height: 10),
                   ],
                 ),
@@ -261,8 +322,8 @@ class _EditBookScreenState extends State<EditBookScreen> {
                 ),
               _buildTextField(_summaryController, 'Summary', Icons.description, 'Please enter a summary'),
               const SizedBox(height: 10),
-              _buildTextField(
-                _copiesController,
+              _buildTextFields(
+                _numberOfBooksController,
                 'Number of Copies',
                 Icons.numbers,
                 'Please enter the number of copies',
@@ -279,18 +340,47 @@ class _EditBookScreenState extends State<EditBookScreen> {
                     padding: const EdgeInsets.all(8),
                     child: Column(
                       children: [
-                        const Text('Image', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        SizedBox(
-                          height: 120,
-                          width: 120,
-                          child: _image != null
-                              ? Image.file(_image!, fit: BoxFit.cover)
-                              : Image.network(_imageUrl!, fit: BoxFit.cover),
+                        const Text(
+                          'Image',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 10),
+                        Stack(
+                          children: [
+                            SizedBox(
+                              height: 120,
+                              width: 120,
+                              child: _image != null
+                                  ? Image.file(_image!, fit: BoxFit.cover)
+                                  : Image.network(_imageUrl!, fit: BoxFit.cover),
+                            ),
+                            if (_image != null || _imageUrl != null)
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _image = null;
+                                      _imageUrl = null;
+                                    });
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.close, color: Colors.white, size: 20),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ],
                     ),
                   ),
                 ),
+
               const SizedBox(height: 10),
               ElevatedButton.icon(
                 onPressed: _pickImage,
@@ -384,7 +474,28 @@ class _EditBookScreenState extends State<EditBookScreen> {
       ),
     );
   }
-
+  Widget _buildStringValidatedTextFormField(
+      TextEditingController controller, String labelText, IconData icon) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        prefixIcon: Icon(icon),
+        border: const OutlineInputBorder(),
+      ),
+      validator: (value) {
+        if (value == null || value
+            .trim()
+            .isEmpty) {
+          return 'Please enter a valid $labelText';
+        }
+        if (RegExp(r'\d').hasMatch(value)) {
+          return '$labelText should not contain numbers';
+        }
+        return null;
+      },
+    );
+  }
   Widget _buildTextField(
       TextEditingController controller,
       String label,

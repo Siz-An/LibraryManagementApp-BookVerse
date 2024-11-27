@@ -81,7 +81,7 @@ class _DashboardState extends State<Dashboard> {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      _buildStatCard('Total Books', Icons.book, totalBooks.toString(), context, AllBooksScreenadmin()),
+                      _buildStatCard('Total Books', Icons.book, totalBooks.toString(), context, AllBooksScreenAdmin()),
                       _buildStatCard('Total Users', Icons.people, totalUsers.toString(), context, AllUsersScreen()),
                       _buildNotificationsCard(),
                       _buildIssuedBooksCard(issuedBooks, context),
