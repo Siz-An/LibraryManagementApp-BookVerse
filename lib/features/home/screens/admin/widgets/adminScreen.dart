@@ -22,7 +22,7 @@ class AdminScreen extends StatelessWidget {
     return Scaffold(
       appBar: const TAppBar(
         showBackArrow: true,
-        title: Text('User Profile'),
+        title: Text('Admin Profile'),
       ),
       body: SingleChildScrollView(
         child: Padding(

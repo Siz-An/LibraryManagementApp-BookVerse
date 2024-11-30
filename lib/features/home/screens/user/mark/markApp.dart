@@ -167,6 +167,7 @@ class BookmarkScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not logged in')));
       return;
     }
+
     final bookmarks = Provider.of<BookmarkProvider>(context, listen: false).bookmarks;
     final uniqueBookmarks = <Map<String, dynamic>>[];
     final seenTitles = <String>{};
@@ -179,44 +180,51 @@ class BookmarkScreen extends StatelessWidget {
       }
     }
 
+    // Fetch issued books
     final issuedBooksSnapshot = await FirebaseFirestore.instance
         .collection('issuedBooks')
         .where('userId', isEqualTo: user.uid)
         .get();
+
     final issuedBooksTitles = issuedBooksSnapshot.docs
         .map((doc) => doc.data()['title'] as String)
         .toSet();
 
-    final nonIssuedBooks = uniqueBookmarks
-        .where((book) => !issuedBooksTitles.contains(book['title'] ?? ''))
-        .toList();
-
+    // Fetch existing requests
     final existingRequestsSnapshot = await FirebaseFirestore.instance
         .collection('requests')
         .where('userId', isEqualTo: user.uid)
         .get();
+
     final existingRequests = existingRequestsSnapshot.docs
         .expand((doc) => (doc.data()['books'] as List)
-        .map((book) => book['title'] ?? ''))
+        .map((book) => (book as Map<String, dynamic>)['title'] as String))
         .toSet();
 
-    final alreadyRequestedBooks = nonIssuedBooks
-        .where((book) => existingRequests.contains(book['title'] ?? ''))
-        .map((book) => book['title'] ?? '')
-        .toSet();
+    // Combine issued and requested books
+    final totalEngagedBooks = issuedBooksTitles.union(existingRequests);
 
-    final newlyAddedBooks = nonIssuedBooks
-        .where((book) => !existingRequests.contains(book['title'] ?? ''))
+    // Determine non-engaged bookmarks
+    final nonEngagedBooks = uniqueBookmarks
+        .where((book) => !totalEngagedBooks.contains(book['title'] ?? ''))
         .toList();
+
+    // Check if the total books would exceed the limit
+    if (totalEngagedBooks.length + nonEngagedBooks.length > 7) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You can only have up to 7 books issued or requested in total.')),
+      );
+      return;
+    }
 
     final issuedMessage = issuedBooksTitles.isNotEmpty
         ? 'The following books are already issued:\n${issuedBooksTitles.join(', ')}\n'
         : '';
-    final requestsMessage = alreadyRequestedBooks.isNotEmpty
-        ? 'The following books are already in your requests:\n${alreadyRequestedBooks.join(', ')}\n'
+    final requestsMessage = existingRequests.isNotEmpty
+        ? 'The following books are already in your requests:\n${existingRequests.join(', ')}\n'
         : '';
-    final addedMessage = newlyAddedBooks.isNotEmpty
-        ? 'The following books have been added to your requests:\n${newlyAddedBooks.map((book) => book['title']).join(', ')}\n'
+    final addedMessage = nonEngagedBooks.isNotEmpty
+        ? 'The following books have been added to your requests:\n${nonEngagedBooks.map((book) => book['title']).join(', ')}\n'
         : 'No new books were added to your requests.';
 
     showDialog(
@@ -236,11 +244,11 @@ class BookmarkScreen extends StatelessWidget {
           TextButton(
             onPressed: () async {
               Navigator.of(context).pop();
-              if (newlyAddedBooks.isNotEmpty) {
+              if (nonEngagedBooks.isNotEmpty) {
                 try {
                   await FirebaseFirestore.instance.collection('requests').add({
                     'userId': user.uid,
-                    'books': newlyAddedBooks,
+                    'books': nonEngagedBooks,
                     'requestedAt': FieldValue.serverTimestamp(),
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -259,4 +267,6 @@ class BookmarkScreen extends StatelessWidget {
       ),
     );
   }
+
+
 }

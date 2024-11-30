@@ -114,8 +114,8 @@ class _RandomBooksState extends State<TRandomBooks> {
 
       // Step 4: Final selection with weighted hybrid
       List<Map<String, dynamic>> selectedBooks = [];
-      int numRecommended = 3; // e.g., favor 3 recommended books
-      int numRandom = 3;      // and 3 random books from global pool
+      int numRecommended = 5; // e.g., favor 3 recommended books
+      int numRandom = 5;      // and 3 random books from global pool
 
       // Randomly select from recommended books
       recommendedBooks.shuffle();

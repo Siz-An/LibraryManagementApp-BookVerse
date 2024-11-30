@@ -1,6 +1,7 @@
 import 'package:book_Verse/features/home/screens/user/home/widget/home_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../../books/CollaborativeRecommendation.dart';
 import '../../../../../books/contentbasedrecommendation.dart';
 import '../../../../../books/detailScreen/genre_book_detail_screen.dart'; // Import the new file
 import '../../../../../books/CourseSection/courseSelection.dart';
@@ -36,7 +37,7 @@ class HomeScreen extends StatelessWidget {
                   const ContentBasedAlgorithm(),
                   const Divider(),
                  // const TRandomBooks(),
-                //  const Divider(),
+                  //const Divider(),
                   // Course Books Section
                   TSectionHeading(
                     title: '| Course Books',
@@ -264,9 +265,7 @@ class HomeScreen extends StatelessWidget {
                         },
                       );
                     },
-                  )
-
-                  ,
+                  ),
                 ],
               ),
             ),
