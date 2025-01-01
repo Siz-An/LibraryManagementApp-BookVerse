@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "808424067899",
+    "project_id": "bookverse-8ac90",
+    "storage_bucket": "bookverse-8ac90.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:808424067899:android:c5178a71fac76328079d1e",
+        "android_client_info": {
+          "package_name": "com.example.bookVerse"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "808424067899-pi5dicku48lmdbs4r0qt0g3q68q5c6gu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bookVerse",
+            "certificate_hash": "145ef51584b5627a0dd8aec6636f98abaf8dda8a"
+          }
+        },
+        {
+          "client_id": "808424067899-5in0aab6emo12t1hmhhqon7tu348tjg9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCl5GNguOJoEOFAcIzIt6PeccN5nDkLXCM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "808424067899-5in0aab6emo12t1hmhhqon7tu348tjg9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "808424067899-i9h64cektcigatohd02bg5hjg8mrdt82.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flappyBird"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
