@@ -36,8 +36,8 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   const ContentBasedAlgorithm(),
                   const Divider(),
-                 // const TRandomBooks(),
-                  //const Divider(),
+                  const TRandomBooks(),
+                  const Divider(),
                   // Course Books Section
                   TSectionHeading(
                     title: '| Course Books',
