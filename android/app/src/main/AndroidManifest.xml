@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.bookVerse">
+    package="com.example.book_verse">
 
     <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET"/>
