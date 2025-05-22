@@ -30,18 +30,11 @@ class _SearchScreenState extends State<SearchScreen> {
           .collection('searchedBooks')
           .where('userId', isEqualTo: userId)
           .get();
-
-      // Delete all documents for this user
       for (var doc in querySnapshot.docs) {
         await doc.reference.delete();
       }
-
-      print('All previous searches for user $userId deleted successfully.');
-    } catch (e) {
-      print('Error deleting searched books for user $userId: $e');
-    }
+    } catch (_) {}
   }
-
 
   Future<void> _searchBooks(String query) async {
     if (query.isEmpty) {
@@ -50,35 +43,25 @@ class _SearchScreenState extends State<SearchScreen> {
       });
       return;
     }
-
     setState(() {
       isLoading = true;
     });
 
     try {
       final userId = FirebaseAuth.instance.currentUser?.uid;
-
       if (userId != null) {
-        // Step 1: Delete previous searches for this user
         await _deleteSearchedBooks(userId);
-
-        // Step 2: Fetch books matching the search query
         final uppercaseQuery = query.toUpperCase();
         final snapshot = await FirebaseFirestore.instance.collection('books').get();
-
-        // Filter books based on title or writer containing the query
         final results = snapshot.docs.where((doc) {
           final data = doc.data() as Map<String, dynamic>;
           final bookTitle = (data['title'] as String?)?.toUpperCase() ?? '';
           final bookWriter = (data['writer'] as String?)?.toUpperCase() ?? '';
           return bookTitle.contains(uppercaseQuery) || bookWriter.contains(uppercaseQuery);
         }).toList();
-
-        // Save results for the user in Firestore
         if (results.isNotEmpty) {
           await _saveSearchedBooks(query, userId, results);
         }
-
         setState(() {
           searchResults = results;
         });
@@ -87,8 +70,7 @@ class _SearchScreenState extends State<SearchScreen> {
           searchResults = [];
         });
       }
-    } catch (e) {
-      print('Error searching books: $e');
+    } catch (_) {
       setState(() {
         searchResults = [];
       });
@@ -102,8 +84,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _saveSearchedBooks(String searchQuery, String userId, List<QueryDocumentSnapshot> results) async {
     try {
       final batch = FirebaseFirestore.instance.batch();
-
-      for (var doc in results) { // Use the passed `results` list
+      for (var doc in results) {
         final bookId = doc.id;
         final book = doc.data() as Map<String, dynamic>;
         final title = book['title']?.toString() ?? 'No title';
@@ -111,14 +92,12 @@ class _SearchScreenState extends State<SearchScreen> {
         final imageUrl = book['imageUrl']?.toString() ?? '';
         final course = book['course']?.toString() ?? '';
         final summary = book['summary']?.toString() ?? 'No summary available';
-
         if (title.trim().toLowerCase() == searchQuery.trim().toLowerCase()) {
           final existingBookSnapshot = await FirebaseFirestore.instance
               .collection('searchedBooks')
               .where('userId', isEqualTo: userId)
               .where('bookId', isEqualTo: bookId)
               .get();
-
           if (existingBookSnapshot.docs.isEmpty) {
             final docRef = FirebaseFirestore.instance.collection('searchedBooks').doc();
             batch.set(docRef, {
@@ -134,132 +113,279 @@ class _SearchScreenState extends State<SearchScreen> {
           }
         }
       }
-
       await batch.commit();
-      print('All matching books saved successfully.');
-    } catch (e) {
-      print('Failed to save searched books: $e');
-    }
+    } catch (_) {}
   }
-
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Search Books'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.picture_as_pdf),
-            color: Colors.green,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AllPDFsScreen()),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.menu_book),
-            color: Colors.green,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AllBooksScreen()),
-              );
-            },
-          ),
-
-
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              onChanged: (value) {
-                setState(() {
-                  query = value;
-                });
-                _searchBooks(value);
-              },
-              decoration: InputDecoration(
-                labelText: 'Search',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                prefixIcon: const Icon(Icons.search),
-              ),
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(90),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF4A4E69), Color(0xFF9A8C98)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-          ),
-          isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Expanded(
-            child: searchResults.isEmpty
-                ? const Center(
-              child: Text(
-                'No results found',
-                style: TextStyle(fontSize: 18, color: Colors.grey),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(28),
+              bottomRight: Radius.circular(28),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x22000000),
+                blurRadius: 12,
+                offset: Offset(0, 4),
               ),
-            )
-                : ListView.builder(
-              itemCount: searchResults.length,
-              itemBuilder: (context, index) {
-                final book = searchResults[index].data() as Map<String, dynamic>;
-
-                final title = book['title'] ?? 'No title';
-                final writer = book['writer'] ?? 'Unknown author';
-                final imageUrl = book['imageUrl'] ?? '';
-                final course = book['course'] ?? '';
-                final summary = book['summary'] ?? 'No summary available';
-
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 3,
-                  child: ListTile(
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(8.0),
-                      child: imageUrl.isEmpty
-                          ? const Icon(Icons.book, size: 50)
-                          : Image.network(
-                        imageUrl,
-                        width: 50,
-                        height: 70,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.book, size: 50);
-                        },
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 16),
+              child: Row(
+                children: [
+                  const SizedBox(width: 10),
+                  const Icon(Icons.search, color: Colors.white, size: 32),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      'Discover Books',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                        letterSpacing: 1.2,
+                        shadows: const [
+                          Shadow(
+                            color: Colors.black26,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    title: Text(
-                      title,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(writer),
-                    onTap: () {
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
+                    tooltip: 'All PDFs',
+                    onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => CourseBookDetailScreen(
-                            title: title,
-                            writer: writer,
-                            imageUrl: imageUrl,
-                            course: course,
-                            summary: summary,
-                          ),
-                        ),
+                        MaterialPageRoute(builder: (context) => const AllPDFsScreen()),
                       );
                     },
                   ),
-                );
-              },
+                  IconButton(
+                    icon: const Icon(Icons.menu_book, color: Colors.white),
+                    tooltip: 'All Books',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const AllBooksScreen()),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
-        ],
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8),
+        child: Column(
+          children: [
+            // Modern Search Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              child: Material(
+                elevation: 6,
+                borderRadius: BorderRadius.circular(30),
+                child: TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      query = value;
+                    });
+                    _searchBooks(value);
+                  },
+                  style: const TextStyle(fontSize: 18),
+                  decoration: InputDecoration(
+                    hintText: 'Search by title or author...',
+                    hintStyle: const TextStyle(color: Colors.grey),
+                    prefixIcon: const Icon(Icons.search, color: Color(0xFF4F8FFF)),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Results
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : searchResults.isEmpty
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              'assets/images/empty_search.png',
+                              width: 160,
+                              height: 160,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => const Icon(Icons.search_off, size: 80, color: Colors.grey),
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'No results found',
+                              style: TextStyle(fontSize: 20, color: Colors.grey, fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          itemCount: searchResults.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 16),
+                          itemBuilder: (context, index) {
+                            final book = searchResults[index].data() as Map<String, dynamic>;
+                            final title = book['title'] ?? 'No title';
+                            final writer = book['writer'] ?? 'Unknown author';
+                            final imageUrl = book['imageUrl'] ?? '';
+                            final course = book['course'] ?? '';
+                            final summary = book['summary'] ?? 'No summary available';
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CourseBookDetailScreen(
+                                      title: title,
+                                      writer: writer,
+                                      imageUrl: imageUrl,
+                                      course: course,
+                                      summary: summary,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(18),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.10),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    // Book Image
+                                    Container(
+                                      margin: const EdgeInsets.all(12),
+                                      width: 60,
+                                      height: 90,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        color: const Color(0xFFF0F4FA),
+                                        image: imageUrl.isNotEmpty
+                                            ? DecorationImage(
+                                                image: NetworkImage(imageUrl),
+                                                fit: BoxFit.cover,
+                                              )
+                                            : null,
+                                      ),
+                                      child: imageUrl.isEmpty
+                                          ? const Icon(Icons.book, size: 40, color: Color(0xFF4F8FFF))
+                                          : null,
+                                    ),
+                                    // Book Info
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              title,
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xFF222B45),
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Row(
+                                              children: [
+                                                const Icon(Icons.person, size: 16, color: Color(0xFF4F8FFF)),
+                                                const SizedBox(width: 4),
+                                                Expanded(
+                                                  child: Text(
+                                                    writer,
+                                                    style: const TextStyle(
+                                                      fontSize: 15,
+                                                      color: Color(0xFF6B7A8F),
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            if (course.isNotEmpty) ...[
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  const Icon(Icons.school, size: 15, color: Color(0xFF38C8FF)),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    course,
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                      color: Color(0xFF38C8FF),
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    // Arrow Icon
+                                    Container(
+                                      margin: const EdgeInsets.only(right: 16),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF4F8FFF).withOpacity(0.08),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF4F8FFF), size: 22),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+            ),
+          ],
+        ),
       ),
     );
   }

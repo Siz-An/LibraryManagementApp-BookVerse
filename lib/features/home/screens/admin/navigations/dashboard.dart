@@ -35,12 +35,13 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.grey[100],
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header section
+            // Header section (unchanged)
             const TPrimaryHeaderContainer(
               child: Column(
                 children: [
@@ -50,13 +51,15 @@ class _DashboardState extends State<Dashboard> {
                 ],
               ),
             ),
-
-            // Dashboard content
+            // Modern Dashboard content
             FutureBuilder<List<QuerySnapshot>>(
               future: _futureData,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Padding(
+                    padding: EdgeInsets.only(top: 60.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
                 }
 
                 if (snapshot.hasError) {
@@ -78,14 +81,51 @@ class _DashboardState extends State<Dashboard> {
                 final toBeReturnedBooks = returnedBooksSnapshot.docs;
 
                 return Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildStatCard('Total Books', Icons.book, totalBooks.toString(), context, AllBooksScreenAdmin()),
-                      _buildStatCard('Total Users', Icons.people, totalUsers.toString(), context, AllUsersScreen()),
-                      _buildNotificationsCard(),
-                      _buildIssuedBooksCard(issuedBooks, context),
-                      _buildReturnedBooksCard(toBeReturnedBooks, context),
+                      // Modern Stat Cards Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _modernStatCard(
+                            title: 'Books',
+                            icon: Icons.menu_book_rounded,
+                            value: totalBooks.toString(),
+                            color: Colors.blueAccent,
+                            context: context,
+                            navigateTo: AllBooksScreenAdmin(),
+                          ),
+                          _modernStatCard(
+                            title: 'Users',
+                            icon: Icons.people_alt_rounded,
+                            value: totalUsers.toString(),
+                            color: Colors.deepPurpleAccent,
+                            context: context,
+                            navigateTo: AllUsersScreen(),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      // Modern Notifications Card
+                      _modernNotificationsCard(),
+                      const SizedBox(height: 20),
+                      // Modern Issued Books Card
+                      _modernExpandableCard(
+                        title: 'Books Issued',
+                        icon: Icons.assignment_turned_in_rounded,
+                        color: Colors.greenAccent.shade400,
+                        children: _buildUniqueUsersList(issuedBooks, context),
+                      ),
+                      const SizedBox(height: 16),
+                      // Modern Returned Books Card
+                      _modernExpandableCard(
+                        title: 'Books Returned',
+                        icon: Icons.assignment_return_rounded,
+                        color: Colors.orangeAccent.shade200,
+                        children: _buildUniqueReturnedUsersList(toBeReturnedBooks, context),
+                      ),
                     ],
                   ),
                 );
@@ -97,106 +137,185 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildStatCard(String title, IconData icon, String value, BuildContext context, [Widget? navigateTo]) {
-    return GestureDetector(
-      onTap: () {
-        if (navigateTo != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => navigateTo),
-          );
-        }
-      },
-      child: Card(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        elevation: 3,
-        child: ListTile(
-          contentPadding: const EdgeInsets.all(16),
-          leading: Icon(icon, color: Colors.blueAccent),
-          title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-          trailing: Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+  Widget _modernStatCard({
+    required String title,
+    required IconData icon,
+    required String value,
+    required Color color,
+    required BuildContext context,
+    Widget? navigateTo,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          if (navigateTo != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => navigateTo),
+            );
+          }
+        },
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 6),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.12),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+            border: Border.all(color: color.withOpacity(0.15), width: 1.2),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                backgroundColor: color.withOpacity(0.15),
+                child: Icon(icon, color: color, size: 28),
+                radius: 26,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildNotificationsCard() {
+  Widget _modernNotificationsCard() {
     return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 3,
-      child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('notifications').snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const ListTile(
-              title: Text('Notifications Sent'),
-              subtitle: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          if (snapshot.hasError) {
-            return const ListTile(
-              title: Text('Notifications Sent'),
-              subtitle: Center(child: Text('Something went wrong')),
-            );
-          }
-
-          final notifications = snapshot.data?.docs ?? [];
-          final uniqueNotifications = _getUniqueNotifications(notifications);
-
-          return ExpansionTile(
-            title: Text('Notifications (${uniqueNotifications.length})'),
-            children: uniqueNotifications.map((doc) {
-              final data = doc.data() as Map<String, dynamic>;
-              final message = data['message'] ?? 'No message';
-              final timestamp = (data['timestamp'] as Timestamp).toDate();
-
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        child: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('notifications').snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
               return ListTile(
-                title: Text(message),
-                subtitle: Text('Sent on ${timestamp.toLocal()}'),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
-                    bool success = await _deleteNotification(doc.id);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(success ? 'Deleted successfully' : 'Failed to delete')),
-                    );
-                  },
+                leading: CircleAvatar(
+                  backgroundColor: Colors.blueAccent.withOpacity(0.12),
+                  child: const Icon(Icons.notifications, color: Colors.blueAccent),
                 ),
+                title: const Text('Notifications Sent'),
+                subtitle: const LinearProgressIndicator(),
               );
-            }).toList(),
-          );
-        },
+            }
+
+            if (snapshot.hasError) {
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.redAccent.withOpacity(0.12),
+                  child: const Icon(Icons.notifications_off, color: Colors.redAccent),
+                ),
+                title: const Text('Notifications Sent'),
+                subtitle: const Text('Something went wrong'),
+              );
+            }
+
+            final notifications = snapshot.data?.docs ?? [];
+            final uniqueNotifications = _getUniqueNotifications(notifications);
+
+            return ExpansionTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blueAccent.withOpacity(0.12),
+                child: const Icon(Icons.notifications, color: Colors.blueAccent),
+              ),
+              title: Text(
+                'Notifications (${uniqueNotifications.length})',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              children: uniqueNotifications.isEmpty
+                  ? [
+                      const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Text('No notifications sent yet.'),
+                      )
+                    ]
+                  : uniqueNotifications.map((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      final message = data['message'] ?? 'No message';
+                      final timestamp = (data['timestamp'] as Timestamp).toDate();
+
+                      return ListTile(
+                        leading: const Icon(Icons.message_rounded, color: Colors.blueAccent),
+                        title: Text(message, style: const TextStyle(fontWeight: FontWeight.w500)),
+                        subtitle: Text(
+                          'Sent on ${timestamp.toLocal().toString().substring(0, 16)}',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                          onPressed: () async {
+                            bool success = await _deleteNotification(doc.id);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(success ? 'Deleted successfully' : 'Failed to delete')),
+                            );
+                          },
+                        ),
+                      );
+                    }).toList(),
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildIssuedBooksCard(List<QueryDocumentSnapshot> issuedBooks, BuildContext context) {
+  Widget _modernExpandableCard({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required List<Widget> children,
+  }) {
     return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 3,
       child: ExpansionTile(
-        title: const Text('Books Issued'),
-        children: _buildUniqueUsersList(issuedBooks, context),
-      ),
-    );
-  }
-
-  Widget _buildReturnedBooksCard(List<QueryDocumentSnapshot> returnedBooks, BuildContext context) {
-    return Card(
-      color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 3,
-      child: ExpansionTile(
-        title: const Text('Books Returned'),
-        children: _buildUniqueReturnedUsersList(returnedBooks, context),
+        leading: CircleAvatar(
+          backgroundColor: color.withOpacity(0.15),
+          child: Icon(icon, color: color, size: 26),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: color.darken(0.2),
+            fontSize: 17,
+          ),
+        ),
+        children: children.isEmpty
+            ? [
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Text('No $title yet.'),
+                )
+              ]
+            : children,
       ),
     );
   }
@@ -249,9 +368,13 @@ class _DashboardState extends State<Dashboard> {
             final email = userData['Email'] ?? 'No email';
 
             return ListTile(
-              title: Text(username),
-              subtitle: Text(email),
-              trailing: const Icon(Icons.arrow_forward),
+              leading: CircleAvatar(
+                backgroundColor: Colors.greenAccent.withOpacity(0.15),
+                child: const Icon(Icons.person, color: Colors.green),
+              ),
+              title: Text(username, style: const TextStyle(fontWeight: FontWeight.w500)),
+              subtitle: Text(email, style: const TextStyle(fontSize: 13)),
+              trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => IssuedBooksScreen(userId: userId)),
@@ -291,9 +414,13 @@ class _DashboardState extends State<Dashboard> {
             final email = userData['Email'] ?? 'No email';
 
             return ListTile(
-              title: Text(username),
-              subtitle: Text(email),
-              trailing: const Icon(Icons.arrow_forward),
+              leading: CircleAvatar(
+                backgroundColor: Colors.orangeAccent.withOpacity(0.15),
+                child: const Icon(Icons.person, color: Colors.orange),
+              ),
+              title: Text(username, style: const TextStyle(fontWeight: FontWeight.w500)),
+              subtitle: Text(email, style: const TextStyle(fontSize: 13)),
+              trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => AcceptReturnedBooksScreen(userId: userId)),
@@ -305,5 +432,15 @@ class _DashboardState extends State<Dashboard> {
     }
 
     return userTiles;
+  }
+}
+
+// Extension for color darken
+extension ColorUtils on Color {
+  Color darken([double amount = .1]) {
+    assert(amount >= 0 && amount <= 1);
+    final hsl = HSLColor.fromColor(this);
+    final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
+    return hslDark.toColor();
   }
 }

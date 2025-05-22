@@ -27,7 +27,7 @@ class CourseBookDetailScreen extends StatefulWidget {
 
 class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
   bool isBookmarked = false;
-  bool isOutOfStock = false; // Track if the book is out of stock
+  bool isOutOfStock = false;
   late String userId;
 
   @override
@@ -39,12 +39,9 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
   Future<void> _initializeUserId() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      userId = user.uid; // Get the user ID from Firebase Auth
+      userId = user.uid;
       await _checkIfBookmarked();
       await _checkAvailability();
-    } else {
-      // Handle the case where the user is not logged in
-      // e.g., navigate to the login screen
     }
   }
 
@@ -62,7 +59,7 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
 
   Future<void> _checkAvailability() async {
     final snapshot = await FirebaseFirestore.instance
-        .collection('books') // Adjust the collection name as needed
+        .collection('books')
         .where('title', isEqualTo: widget.title)
         .limit(1)
         .get();
@@ -101,10 +98,9 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
 
   Future<void> _addBookmark(Map<String, dynamic> bookData) async {
     try {
-      // Fetch the bookId from the 'books' collection based on the book's title
       final bookSnapshot = await FirebaseFirestore.instance
           .collection('books')
-          .where('title', isEqualTo: widget.title) // Use an appropriate field to find the book
+          .where('title', isEqualTo: widget.title)
           .limit(1)
           .get();
 
@@ -115,7 +111,6 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
 
       final bookId = bookSnapshot.docs.first.id;
 
-      // Include 'bookId' in the bookData
       final bookDataWithId = {
         ...bookData,
         'bookId': bookId,
@@ -160,6 +155,7 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
       }
     }
   }
+
   Future<void> _viewPDFs() async {
     final snapshot = await FirebaseFirestore.instance
         .collection('books')
@@ -182,8 +178,6 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
     );
   }
 
-
-
   void _showNoPDFsDialog() {
     showDialog(
       context: context,
@@ -203,49 +197,201 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        actions: [
-          IconButton(
-            icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border),
-            onPressed: _toggleBookmark,
-          ),
-          IconButton(
-            icon: Icon(Icons.picture_as_pdf),
-            onPressed: _viewPDFs,
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Image.network(
-                  widget.imageUrl,
-                  width: 190,
-                  height: 280,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Center(child: Text('Image not available', style: TextStyle(color: Colors.red)));
-                  },
-                ),
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(90),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF4A4E69), Color(0xFF9A8C98)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(28),
+              bottomRight: Radius.circular(28),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x22000000),
+                blurRadius: 12,
+                offset: Offset(0, 4),
               ),
-              const SizedBox(height: 16),
-              Text('Title: ${widget.title}', style: Theme.of(context).textTheme.bodySmall),
-              Text('Writer: ${widget.writer}', style: Theme.of(context).textTheme.bodySmall),
-              Text('Course: ${widget.course}', style: Theme.of(context).textTheme.bodySmall),
-              const SizedBox(height: 16),
-              Text('Summary:', style: Theme.of(context).textTheme.bodySmall),
-              Text(widget.summary),
-              if (isOutOfStock) ...[
-                const SizedBox(height: 16),
-                Text('This book is currently out of stock.', style: TextStyle(color: Colors.red)),
-              ],
             ],
           ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 16),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 28),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                        letterSpacing: 1.2,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black26,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                    onPressed: _toggleBookmark,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.picture_as_pdf, color: Colors.white, size: 28),
+                    onPressed: _viewPDFs,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 18),
+        child: ListView(
+          children: [
+            Center(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 16,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: Image.network(
+                    widget.imageUrl,
+                    width: 200,
+                    height: 300,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 200,
+                        height: 300,
+                        color: Colors.grey[300],
+                        child: const Center(
+                          child: Text('Image not available', style: TextStyle(color: Colors.red)),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Title', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: const Color(0xFF4A4E69),
+                      fontWeight: FontWeight.bold,
+                    )),
+                    Text(widget.title, style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF22223B),
+                    )),
+                    const SizedBox(height: 10),
+                    Text('Writer', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: const Color(0xFF4A4E69),
+                      fontWeight: FontWeight.bold,
+                    )),
+                    Text(widget.writer, style: Theme.of(context).textTheme.bodyLarge),
+                    const SizedBox(height: 10),
+                    Text('Course', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: const Color(0xFF4A4E69),
+                      fontWeight: FontWeight.bold,
+                    )),
+                    Text(widget.course, style: Theme.of(context).textTheme.bodyLarge),
+                    const SizedBox(height: 18),
+                    Text('Summary', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: const Color(0xFF4A4E69),
+                      fontWeight: FontWeight.bold,
+                    )),
+                    Text(widget.summary, style: Theme.of(context).textTheme.bodyMedium),
+                    if (isOutOfStock) ...[
+                      const SizedBox(height: 18),
+                      Row(
+                        children: [
+                          const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 22),
+                          const SizedBox(width: 8),
+                          Text(
+                            'This book is currently out of stock.',
+                            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isBookmarked ? const Color(0xFF4A4E69) : const Color(0xFF9A8C98),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 4,
+                  ),
+                  icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border),
+                  label: Text(isBookmarked ? 'Bookmarked' : 'Bookmark'),
+                  onPressed: _toggleBookmark,
+                ),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4A4E69),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 4,
+                  ),
+                  icon: const Icon(Icons.picture_as_pdf),
+                  label: const Text('View PDFs'),
+                  onPressed: _viewPDFs,
+                ),
+              ],
+            ),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );

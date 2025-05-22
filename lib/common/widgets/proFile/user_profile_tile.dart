@@ -28,16 +28,13 @@ class TUserProfileTitle extends StatelessWidget {
         ),
         title: Text(
           controller.user.value.fullName,
-          style: Theme.of(context).textTheme.headlineSmall!.apply(color: TColors.white),
+          style: Theme.of(context).textTheme.headlineSmall!.apply(color: TColors.black),
         ),
         subtitle: Text(
           controller.user.value.email,
-          style: Theme.of(context).textTheme.bodySmall!.apply(color: TColors.white),
+          style: Theme.of(context).textTheme.bodySmall!.apply(color: TColors.black),
         ),
-        trailing: IconButton(
-          onPressed: onPressed,
-          icon: const Icon(Iconsax.edit, color: TColors.white),
-        ),
+        
       );
     });
   }

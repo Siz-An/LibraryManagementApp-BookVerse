@@ -16,7 +16,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
   String _userName = '';
   String _email = '';
   String _phoneNumber = '';
-  bool _isLoading = true; // Loading state
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -33,11 +33,11 @@ class _EditUserScreenState extends State<EditUserScreen> {
         _userName = userData['UserName'] ?? '';
         _email = userData['Email'] ?? '';
         _phoneNumber = userData['PhoneNumber'] ?? '';
-        _isLoading = false; // Loading completed
+        _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _isLoading = false; // Loading completed even on error
+        _isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error loading user data')));
     }
@@ -45,7 +45,6 @@ class _EditUserScreenState extends State<EditUserScreen> {
 
   Future<void> _updateUser() async {
     if (_formKey.currentState!.validate()) {
-      // Show confirmation dialog
       final shouldUpdate = await _showConfirmationDialog(context);
       if (shouldUpdate == true) {
         try {
@@ -63,27 +62,16 @@ class _EditUserScreenState extends State<EditUserScreen> {
   }
 
   Future<void> _deleteUser() async {
-    // Show confirmation dialog before deletion
     final shouldDelete = await _showDeleteConfirmationDialog(context);
     if (shouldDelete == true) {
       try {
-        // Retrieve the user document
         DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('Users').doc(widget.userId).get();
-
-        // Check if the user exists
         if (userDoc.exists) {
-          // Delete user from Firestore
           await FirebaseFirestore.instance.collection('Users').doc(widget.userId).delete();
-
-          // Delete user from Firebase Authentication
           User? userToDelete = await FirebaseAuth.instance.userChanges().firstWhere((user) => user?.uid == widget.userId).catchError((_) => null);
-
           if (userToDelete != null) {
-            // If we find the user to delete, we delete the account
             await userToDelete.delete();
           }
-
-          // Optionally, navigate back or show success message
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User account deleted successfully')));
         } else {
@@ -104,11 +92,11 @@ class _EditUserScreenState extends State<EditUserScreen> {
           content: Text('Are you sure you want to delete this user account? This action cannot be undone.'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false), // Cancel
+              onPressed: () => Navigator.of(context).pop(false),
               child: Text('Cancel'),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(true), // Confirm
+              onPressed: () => Navigator.of(context).pop(true),
               child: Text('Delete'),
             ),
           ],
@@ -126,11 +114,11 @@ class _EditUserScreenState extends State<EditUserScreen> {
           content: Text('Are you sure you want to edit this user?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false), // Cancel
+              onPressed: () => Navigator.of(context).pop(false),
               child: Text('Cancel'),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(true), // Confirm
+              onPressed: () => Navigator.of(context).pop(true),
               child: Text('Confirm'),
             ),
           ],
@@ -142,63 +130,207 @@ class _EditUserScreenState extends State<EditUserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit User'),
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator()) // Loading indicator
-          : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                initialValue: _userName,
-                decoration: InputDecoration(labelText: 'User Name', border: OutlineInputBorder()),
-                onChanged: (value) => _userName = value,
-                validator: (value) => value!.isEmpty ? 'Please enter a user name' : null,
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                initialValue: _email,
-                decoration: InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
-                onChanged: (value) => _email = value,
-                validator: (value) => value!.isEmpty ? 'Please enter an email' : null,
-                keyboardType: TextInputType.emailAddress,
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                initialValue: _phoneNumber,
-                decoration: InputDecoration(labelText: 'Phone Number', border: OutlineInputBorder()),
-                onChanged: (value) => _phoneNumber = value,
-                validator: (value) => value!.isEmpty ? 'Please enter a phone number' : null,
-                keyboardType: TextInputType.phone,
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _updateUser,
-                child: Text('Update User'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                  textStyle: TextStyle(fontSize: 16),
-                  backgroundColor: Colors.green,
-                ),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _deleteUser,
-                child: Text('Delete Account'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                  textStyle: TextStyle(fontSize: 16),
-                  backgroundColor: Colors.red, // Different color for delete
-                ),
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(90),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF4A4E69), Color(0xFF9A8C98)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(28),
+              bottomRight: Radius.circular(28),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x22000000),
+                blurRadius: 12,
+                offset: Offset(0, 4),
               ),
             ],
           ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 16),
+              child: Row(
+                children: [
+                  // Back button
+                  IconButton(
+                    icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  Icon(Icons.person, color: Colors.white, size: 32),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      'Edit User',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                        letterSpacing: 1.2,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black26,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 18),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 18),
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.08),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            _ModernTextField(
+                              label: 'User Name',
+                              icon: Icons.person_outline,
+                              initialValue: _userName,
+                              onChanged: (value) => _userName = value,
+                              validator: (value) => value!.isEmpty ? 'Please enter a user name' : null,
+                            ),
+                            const SizedBox(height: 18),
+                            _ModernTextField(
+                              label: 'Email',
+                              icon: Icons.email_outlined,
+                              initialValue: _email,
+                              onChanged: (value) => _email = value,
+                              validator: (value) => value!.isEmpty ? 'Please enter an email' : null,
+                              keyboardType: TextInputType.emailAddress,
+                            ),
+                            const SizedBox(height: 18),
+                            _ModernTextField(
+                              label: 'Phone Number',
+                              icon: Icons.phone_outlined,
+                              initialValue: _phoneNumber,
+                              onChanged: (value) => _phoneNumber = value,
+                              validator: (value) => value!.isEmpty ? 'Please enter a phone number' : null,
+                              keyboardType: TextInputType.phone,
+                            ),
+                            const SizedBox(height: 28),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: _updateUser,
+                                    icon: const Icon(Icons.save_alt, color: Colors.white),
+                                    label: const Text('Update User'),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                      backgroundColor: const Color(0xFF4A4E69),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: _deleteUser,
+                                    icon: const Icon(Icons.delete_outline, color: Colors.white),
+                                    label: const Text('Delete'),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                      backgroundColor: const Color(0xFFD7263D),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+}
+
+class _ModernTextField extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final String initialValue;
+  final Function(String) onChanged;
+  final String? Function(String?)? validator;
+  final TextInputType? keyboardType;
+
+  const _ModernTextField({
+    required this.label,
+    required this.icon,
+    required this.initialValue,
+    required this.onChanged,
+    this.validator,
+    this.keyboardType,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      initialValue: initialValue,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: const Color(0xFF4A4E69)),
+        filled: true,
+        fillColor: const Color(0xFFF5F7FA),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF4A4E69), width: 2),
+        ),
+      ),
+      style: const TextStyle(fontSize: 16),
+      onChanged: onChanged,
+      validator: validator,
+      keyboardType: keyboardType,
     );
   }
 }

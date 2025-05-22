@@ -87,7 +87,7 @@ class THomeAppBar extends StatelessWidget {
 
     // User Icon without Count
         TCartCounterIcons(
-          onPressed: () => Get.to(() => userScreen()),
+          onPressed: () => Get.to(() => UserScreen()),
           iconColor: TColors.white,
           icon: Iconsax.user,
           count: 0, // Optional: set to 0 as there's no badge needed for the user icon

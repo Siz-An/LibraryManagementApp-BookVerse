@@ -118,7 +118,6 @@ class _AddBooksState extends State<AddBooks> {
             .get();
 
         if (existingBooksQuery.docs.isNotEmpty) {
-          // Show existing book details if the title matches
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Book with the same title already exists!'),
@@ -126,10 +125,6 @@ class _AddBooksState extends State<AddBooks> {
               behavior: SnackBarBehavior.floating,
             ),
           );
-
-          // Optionally, show existing books with the same title
-          final existingBooks = existingBooksQuery.docs.map((doc) => doc.data()).toList();
-          // You can handle the display of the existing books, for example, by showing them in a dialog or a list.
           return;
         }
 
@@ -174,7 +169,6 @@ class _AddBooksState extends State<AddBooks> {
       }
     }
   }
-
 
   // Show notification dialog
   Future<bool> _showNotificationDialog() async {
@@ -232,214 +226,391 @@ class _AddBooksState extends State<AddBooks> {
     });
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Books'),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _numberOfBooksController,
-                decoration: const InputDecoration(
-                  labelText: 'Number of Copies',
-                  prefixIcon: Icon(Icons.numbers),
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Enter the number of copies';
-                  }
-                  final numCopies = int.tryParse(value);
-                  if (numCopies == null || numCopies < 0) {
-                    return 'Number of copies must be 0 or greater';
-                  }
-                  return null;
-                },
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(90),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF4A4E69), Color(0xFF9A8C98)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(28),
+              bottomRight: Radius.circular(28),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x22000000),
+                blurRadius: 12,
+                offset: Offset(0, 4),
               ),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                title: const Text('Is this a course book?'),
-                value: _isCourseBook,
-                onChanged: (value) {
-                  setState(() {
-                    _isCourseBook = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildTextFormField(
-                  _titleController, 'Book Title', Icons.book),
-              const SizedBox(height: 16),
-              _buildStringValidatedTextFormField(
-                  _writerController, 'Writer', Icons.person),
-              const SizedBox(height: 16),
-              if (!_isCourseBook)
-                _buildStringValidatedTextFormField(
-                    _genreController, 'Genre (comma-separated)', Icons.category),
-              if (_isCourseBook)
-                Column(
-                  children: [
-                    _buildTextFormField(
-                        _courseController, 'Year / Semester', Icons.calendar_today),
-                    const SizedBox(height: 16),
-                    _buildTextFormField(_gradeController, 'Grade', Icons.grade),
-                  ],
-                ),
-              const SizedBox(height: 16),
-              _buildTextFormField(
-                  _summaryController, 'Summary', Icons.description,
-                  maxLines: 3),
-              const SizedBox(height: 20),
-              if (_image != null)
-                Stack(
-                  alignment: Alignment.topRight,
-                  children: [
-                    Image.file(
-                      _image!,
-                      height: 150,
-                      width: 150,
-                      fit: BoxFit.cover,
-                    ),
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _image = null; // Clear the selected image
-                          });
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              Row(
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 16),
+              child: Row(
                 children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _pickImage,
-                      icon: const Icon(Icons.image),
-                      label: const Text('Pick Image'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
-                        foregroundColor: Colors.white,
+                  const Icon(Icons.library_add, color: Colors.white, size: 32),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Text(
+                      'Add New Book',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                        letterSpacing: 1.2,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black26,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _pickPDFs,
-                      icon: const Icon(Icons.picture_as_pdf),
-                      label: const Text('Pick PDFs'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
-                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              if (_pdfs.isNotEmpty)
-                Column(
-                  children: _pdfs.map((pdf) {
-                    return Card(
-                      child: ListTile(
-                        title: Text(pdf['name']),
-                        subtitle: TextField(
-                          controller: pdf['description'],
-                          decoration: const InputDecoration(
-                            labelText: 'Description (optional)',
-                            border: OutlineInputBorder(),
-                          ),
+            ),
+          ),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 18),
+                Center(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeInOut,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.12),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
                         ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.close, color: Colors.red),
-                          onPressed: () {
-                            setState(() {
-                              _pdfs.remove(pdf);
-                            });
-                          },
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      children: [
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: _image != null
+                              ? Stack(
+                                  alignment: Alignment.topRight,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.file(
+                                        _image!,
+                                        height: 140,
+                                        width: 140,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 4,
+                                      right: 4,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            _image = null;
+                                          });
+                                        },
+                                        child: Container(
+                                          decoration: const BoxDecoration(
+                                            color: Colors.red,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.close,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Container(
+                                  height: 140,
+                                  width: 140,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF2E9E4),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: const Color(0xFF9A8C98),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.add_a_photo,
+                                      color: Color(0xFF4A4E69),
+                                      size: 38,
+                                    ),
+                                  ),
+                                ),
                         ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              const SizedBox(height: 20),
-              Center(
-                child: ElevatedButton.icon(
-                  onPressed: _addBooks,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Books'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 25.0),
-                    textStyle: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _pickImage,
+                                icon: const Icon(Icons.image),
+                                label: const Text('Pick Image'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF4A4E69),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _pickPDFs,
+                                icon: const Icon(Icons.picture_as_pdf),
+                                label: const Text('Pick PDFs'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF9A8C98),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 22),
+                _modernTextField(
+                  controller: _numberOfBooksController,
+                  label: 'Number of Copies',
+                  icon: Icons.numbers,
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Enter the number of copies';
+                    }
+                    final numCopies = int.tryParse(value);
+                    if (numCopies == null || numCopies < 0) {
+                      return 'Number of copies must be 0 or greater';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 18),
+                SwitchListTile(
+                  title: const Text(
+                    'Is this a course book?',
+                    style: TextStyle(
+                      color: Color(0xFF4A4E69),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  value: _isCourseBook,
+                  activeColor: const Color(0xFF4A4E69),
+                  onChanged: (value) {
+                    setState(() {
+                      _isCourseBook = value;
+                    });
+                  },
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  tileColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                ),
+                const SizedBox(height: 18),
+                _modernTextField(
+                  controller: _titleController,
+                  label: 'Book Title',
+                  icon: Icons.book,
+                  validator: (value) => value!.isEmpty ? 'Please enter Book Title' : null,
+                ),
+                const SizedBox(height: 18),
+                _modernStringValidatedTextField(
+                  controller: _writerController,
+                  label: 'Writer',
+                  icon: Icons.person,
+                ),
+                const SizedBox(height: 18),
+                if (!_isCourseBook)
+                  _modernStringValidatedTextField(
+                    controller: _genreController,
+                    label: 'Genre (comma-separated)',
+                    icon: Icons.category,
+                  ),
+                if (_isCourseBook)
+                  Column(
+                    children: [
+                      _modernTextField(
+                        controller: _courseController,
+                        label: 'Year / Semester',
+                        icon: Icons.calendar_today,
+                      ),
+                      const SizedBox(height: 18),
+                      _modernTextField(
+                        controller: _gradeController,
+                        label: 'Grade',
+                        icon: Icons.grade,
+                      ),
+                    ],
+                  ),
+                const SizedBox(height: 18),
+                _modernTextField(
+                  controller: _summaryController,
+                  label: 'Summary',
+                  icon: Icons.description,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 22),
+                if (_pdfs.isNotEmpty)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Selected PDFs',
+                        style: TextStyle(
+                          color: Color(0xFF4A4E69),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ..._pdfs.map((pdf) {
+                        return Card(
+                          color: Colors.white,
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: ListTile(
+                            leading: const Icon(Icons.picture_as_pdf, color: Color(0xFF9A8C98)),
+                            title: Text(pdf['name']),
+                            subtitle: TextField(
+                              controller: pdf['description'],
+                              decoration: const InputDecoration(
+                                labelText: 'Description (optional)',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.close, color: Colors.red),
+                              onPressed: () {
+                                setState(() {
+                                  _pdfs.remove(pdf);
+                                });
+                              },
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ],
+                  ),
+                const SizedBox(height: 28),
+                Center(
+                  child: ElevatedButton.icon(
+                    onPressed: _addBooks,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Book'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4A4E69),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
+                      textStyle: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 6,
+                      shadowColor: const Color(0xFF4A4E69).withOpacity(0.2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildStringValidatedTextFormField(
-      TextEditingController controller, String labelText, IconData icon) {
+  Widget _modernStringValidatedTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+  }) {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
-        labelText: labelText,
-        prefixIcon: Icon(icon),
-        border: const OutlineInputBorder(),
+        labelText: label,
+        prefixIcon: Icon(icon, color: const Color(0xFF9A8C98)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        filled: true,
+        fillColor: Colors.white,
       ),
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
-          return 'Please enter a valid $labelText';
+          return 'Please enter a valid $label';
         }
         if (RegExp(r'\d').hasMatch(value)) {
-          return '$labelText should not contain numbers';
+          return '$label should not contain numbers';
         }
         return null;
       },
     );
   }
 
-
-  // Helper method to build text form fields
-  Widget _buildTextFormField(TextEditingController controller, String label, IconData icon,
-      {int maxLines = 1}) {
+  Widget _modernTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon),
-        border: const OutlineInputBorder(),
+        prefixIcon: Icon(icon, color: const Color(0xFF9A8C98)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        filled: true,
+        fillColor: Colors.white,
       ),
+      keyboardType: keyboardType,
       maxLines: maxLines,
-      validator: (value) => value!.isEmpty ? 'Please enter $label' : null,
+      validator: validator ?? (value) => value!.isEmpty ? 'Please enter $label' : null,
     );
   }
 }

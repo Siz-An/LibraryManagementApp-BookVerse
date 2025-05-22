@@ -182,7 +182,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
           // If a book with the same title exists, show a pop-up
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: const Text('Book with the same title already exists!'),
+              content: Text('Book with the same title already exists!'),
               backgroundColor: Colors.orange,
               behavior: SnackBarBehavior.floating,
             ),
@@ -237,10 +237,6 @@ class _EditBookScreenState extends State<EditBookScreen> {
     }
   }
 
-
-
-
-
   Widget _buildTextFields(
       TextEditingController controller,
       String labelText,
@@ -270,210 +266,8 @@ class _EditBookScreenState extends State<EditBookScreen> {
         return null;
       },
     );
-
   }
 
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Book'),
-        centerTitle: true,
-        backgroundColor: Colors.green,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              SwitchListTile(
-                title: const Text('Is this a course book?'),
-                value: _isCourseBook,
-                activeColor: Colors.deepOrangeAccent,
-                onChanged: (value) {
-                  setState(() {
-                    _isCourseBook = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 20),
-              _buildTextField(_titleController, 'Book Title', Icons.book, 'Please enter the book title'),
-              const SizedBox(height: 10),
-              _buildStringValidatedTextFormField(_writerController, 'Writer', Icons.person,),
-              const SizedBox(height: 10),
-              if (!_isCourseBook)
-                Column(
-                  children: [
-                    _buildStringValidatedTextFormField(_genreController, 'Genre (comma-separated)', Icons.category,),
-                    const SizedBox(height: 10),
-                  ],
-                ),
-              if (_isCourseBook)
-                Column(
-                  children: [
-                    _buildTextField(_courseController, 'Year / Semester (optional)', Icons.calendar_today),
-                    const SizedBox(height: 10),
-                    _buildTextField(_gradeController, 'Grade', Icons.grade, 'Please enter the grade'),
-                    const SizedBox(height: 10),
-                  ],
-                ),
-              _buildTextField(_summaryController, 'Summary', Icons.description, 'Please enter a summary'),
-              const SizedBox(height: 10),
-              _buildTextFields(
-                _numberOfBooksController,
-                'Number of Copies',
-                Icons.numbers,
-                'Please enter the number of copies',
-              ),
-              const SizedBox(height: 20),
-              if (_image != null || (_imageUrl != null && _imageUrl!.isNotEmpty))
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey, width: 2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.all(8),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Image',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 10),
-                        Stack(
-                          children: [
-                            SizedBox(
-                              height: 120,
-                              width: 120,
-                              child: _image != null
-                                  ? Image.file(_image!, fit: BoxFit.cover)
-                                  : Image.network(_imageUrl!, fit: BoxFit.cover),
-                            ),
-                            if (_image != null || _imageUrl != null)
-                              Positioned(
-                                top: 0,
-                                right: 0,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _image = null;
-                                      _imageUrl = null;
-                                    });
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.red,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(Icons.close, color: Colors.white, size: 20),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-              const SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: _pickImage,
-                icon: const Icon(Icons.image),
-                label: const Text('Pick Image'),
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue,
-                  minimumSize: const Size(120, 40),
-                ),
-              ),
-              const SizedBox(height: 20),
-              if (_pdfs.isNotEmpty)
-                Column(
-                  children: _pdfs.map((pdf) {
-                    return Card(
-                      child: ListTile(
-                        title: Text(pdf['name']),
-                        subtitle: TextField(
-                          controller: pdf['description'],
-                          decoration: const InputDecoration(
-                            labelText: 'Description (optional)',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.close, color: Colors.red),
-                          onPressed: () {
-                            setState(() {
-                              _pdfs.remove(pdf);
-                            });
-                          },
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              const SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: _pickPDFs,
-                icon: const Icon(Icons.picture_as_pdf),
-                label: const Text('Pick PDFs'),
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.teal,
-                  minimumSize: const Size(120, 40),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: _updateBook,
-                    icon: const Icon(Icons.save),
-                    label: const Text('Save Changes'),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.green,
-                      minimumSize: const Size(150, 40),
-                    ),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(Icons.cancel),
-                    label: const Text('Cancel'),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.red,
-                      minimumSize: const Size(150, 40),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _confirmDelete,
-                icon: const Icon(Icons.delete),
-                label: const Text('Delete Book'),
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.redAccent,
-                  minimumSize: const Size(200, 50),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
   Widget _buildStringValidatedTextFormField(
       TextEditingController controller, String labelText, IconData icon) {
     return TextFormField(
@@ -484,9 +278,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
         border: const OutlineInputBorder(),
       ),
       validator: (value) {
-        if (value == null || value
-            .trim()
-            .isEmpty) {
+        if (value == null || value.trim().isEmpty) {
           return 'Please enter a valid $labelText';
         }
         if (RegExp(r'\d').hasMatch(value)) {
@@ -496,6 +288,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
       },
     );
   }
+
   Widget _buildTextField(
       TextEditingController controller,
       String label,
@@ -510,7 +303,11 @@ class _EditBookScreenState extends State<EditBookScreen> {
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon),
-        border: OutlineInputBorder(),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        filled: true,
+        fillColor: Colors.white,
       ),
       keyboardType: inputType,
       maxLines: maxLines,
@@ -519,6 +316,325 @@ class _EditBookScreenState extends State<EditBookScreen> {
             if (validatorMessage != null && value!.isEmpty) return validatorMessage;
             return null;
           },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(90),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF4A4E69), Color(0xFF9A8C98)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(28),
+              bottomRight: Radius.circular(28),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x22000000),
+                blurRadius: 12,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 16),
+              child: Row(
+                children: [
+                  // Back button
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.edit, color: Colors.white, size: 32),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Text(
+                      'Edit Book',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                        letterSpacing: 1.2,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black26,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              const SizedBox(height: 16),
+              Card(
+                elevation: 3,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SwitchListTile(
+                        title: const Text(
+                          'Is this a course book?',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        value: _isCourseBook,
+                        activeColor: Colors.deepOrangeAccent,
+                        onChanged: (value) {
+                          setState(() {
+                            _isCourseBook = value;
+                          });
+                        },
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      const SizedBox(height: 18),
+                      _buildTextField(_titleController, 'Book Title', Icons.book, 'Please enter the book title'),
+                      const SizedBox(height: 14),
+                      _buildStringValidatedTextFormField(_writerController, 'Writer', Icons.person),
+                      const SizedBox(height: 14),
+                      if (!_isCourseBook)
+                        _buildStringValidatedTextFormField(_genreController, 'Genre (comma-separated)', Icons.category),
+                      if (!_isCourseBook) const SizedBox(height: 14),
+                      if (_isCourseBook)
+                        _buildTextField(_courseController, 'Year / Semester (optional)', Icons.calendar_today),
+                      if (_isCourseBook) const SizedBox(height: 14),
+                      if (_isCourseBook)
+                        _buildTextField(_gradeController, 'Grade', Icons.grade, 'Please enter the grade'),
+                      if (_isCourseBook) const SizedBox(height: 14),
+                      _buildTextField(_summaryController, 'Summary', Icons.description, 'Please enter a summary', TextInputType.text, 3),
+                      const SizedBox(height: 14),
+                      _buildTextFields(
+                        _numberOfBooksController,
+                        'Number of Copies',
+                        Icons.numbers,
+                        'Please enter the number of copies',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 22),
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Book Image',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF4A4E69)),
+                      ),
+                      const SizedBox(height: 12),
+                      Center(
+                        child: Stack(
+                          children: [
+                            Container(
+                              height: 120,
+                              width: 120,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.grey.shade300, width: 2),
+                                color: Colors.grey.shade100,
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: _image != null
+                                    ? Image.file(_image!, fit: BoxFit.cover)
+                                    : (_imageUrl != null && _imageUrl!.isNotEmpty)
+                                        ? Image.network(_imageUrl!, fit: BoxFit.cover)
+                                        : const Icon(Icons.image, size: 60, color: Colors.grey),
+                              ),
+                            ),
+                            if (_image != null || (_imageUrl != null && _imageUrl!.isNotEmpty))
+                              Positioned(
+                                top: 4,
+                                right: 4,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _image = null;
+                                      _imageUrl = null;
+                                    });
+                                  },
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.close, color: Colors.white, size: 20),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Center(
+                        child: ElevatedButton.icon(
+                          onPressed: _pickImage,
+                          icon: const Icon(Icons.image),
+                          label: const Text('Pick Image'),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: const Color(0xFF4A4E69),
+                            minimumSize: const Size(120, 40),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 22),
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'PDFs',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF4A4E69)),
+                      ),
+                      const SizedBox(height: 12),
+                      if (_pdfs.isNotEmpty)
+                        Column(
+                          children: _pdfs.map((pdf) {
+                            return Card(
+                              color: const Color(0xFFF8F7FA),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              child: ListTile(
+                                leading: const Icon(Icons.picture_as_pdf, color: Color(0xFF9A8C98)),
+                                title: Text(pdf['name'], style: const TextStyle(fontWeight: FontWeight.w600)),
+                                subtitle: TextField(
+                                  controller: pdf['description'],
+                                  decoration: const InputDecoration(
+                                    labelText: 'Description (optional)',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.close, color: Colors.red),
+                                  onPressed: () {
+                                    setState(() {
+                                      _pdfs.remove(pdf);
+                                    });
+                                  },
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      const SizedBox(height: 10),
+                      Center(
+                        child: ElevatedButton.icon(
+                          onPressed: _pickPDFs,
+                          icon: const Icon(Icons.picture_as_pdf),
+                          label: const Text('Pick PDFs'),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: const Color(0xFF9A8C98),
+                            minimumSize: const Size(120, 40),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _updateBook,
+                      icon: const Icon(Icons.save),
+                      label: const Text('Save Changes'),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFF4A4E69),
+                        minimumSize: const Size(150, 48),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        elevation: 3,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      icon: const Icon(Icons.cancel),
+                      label: const Text('Cancel'),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.red,
+                        minimumSize: const Size(150, 48),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        elevation: 3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: ElevatedButton.icon(
+                  onPressed: _confirmDelete,
+                  icon: const Icon(Icons.delete),
+                  label: const Text('Delete Book'),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.redAccent,
+                    minimumSize: const Size(200, 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -1,0 +1,2 @@
+/Users/zoro/Desktop/Flutter/LibraryManagementApp-BookVerse/android/app/.cxx/RelWithDebInfo/475h6d1f/x86_64/CMakeFiles/edit_cache.dir
+/Users/zoro/Desktop/Flutter/LibraryManagementApp-BookVerse/android/app/.cxx/RelWithDebInfo/475h6d1f/x86_64/CMakeFiles/rebuild_cache.dir
