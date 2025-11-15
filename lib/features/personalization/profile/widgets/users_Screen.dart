@@ -195,20 +195,20 @@ class UserScreen extends StatelessWidget {
           ),
           const SizedBox(height: 36),
           // Delete Account Button
-          Center(
-            child: TextButton.icon(
-              onPressed: () => controller.deleteAccountWarningPopup(),
-              icon: const Icon(Iconsax.trash, color: Colors.redAccent),
-              label: const Text(
-                'Delete Account',
-                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
-              ),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.redAccent,
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              ),
-            ),
-          ),
+          // Center(
+          //   child: TextButton.icon(
+          //     onPressed: () => controller.deleteAccountWarningPopup(),
+          //     icon: const Icon(Iconsax.trash, color: Colors.redAccent),
+          //     label: const Text(
+          //       'Delete Accounts',
+          //       style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+          //     ),
+          //     style: TextButton.styleFrom(
+          //       foregroundColor: Colors.redAccent,
+          //       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

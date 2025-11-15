@@ -178,6 +178,110 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
     );
   }
 
+  Future<void> _requestBook() async {
+    // Show confirmation dialog
+    final shouldRequest = await _showRequestConfirmationDialog();
+    if (shouldRequest != true) return;
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You must be logged in to request a book')),
+      );
+      return;
+    }
+
+    try {
+      // Check if book is already requested or issued
+      final issuedBooksSnapshot = await FirebaseFirestore.instance
+          .collection('issuedBooks')
+          .where('userId', isEqualTo: user.uid)
+          .where('title', isEqualTo: widget.title)
+          .get();
+
+      if (issuedBooksSnapshot.docs.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('This book is already issued to you')),
+        );
+        return;
+      }
+
+      final existingRequestsSnapshot = await FirebaseFirestore.instance
+          .collection('requests')
+          .where('userId', isEqualTo: user.uid)
+          .get();
+
+      final existingRequests = existingRequestsSnapshot.docs
+          .expand((doc) => (doc.data()['books'] as List)
+          .map((book) => (book as Map<String, dynamic>)['title'] as String))
+          .toSet();
+
+      if (existingRequests.contains(widget.title)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('This book is already in your requests')),
+        );
+        return;
+      }
+
+      // Check if user has reached the request limit (7 books total)
+      final issuedBooksTitles = issuedBooksSnapshot.docs
+          .map((doc) => doc.data()['title'] as String)
+          .toSet();
+
+      if (issuedBooksTitles.length + existingRequests.length >= 7) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You can only have up to 7 books issued or requested in total')),
+        );
+        return;
+      }
+
+      // Add book to requests
+      final bookData = {
+        'title': widget.title,
+        'writer': widget.writer,
+        'imageUrl': widget.imageUrl,
+        'course': widget.course,
+        'summary': widget.summary,
+      };
+
+      await FirebaseFirestore.instance.collection('requests').add({
+        'userId': user.uid,
+        'books': [bookData],
+        'requestedAt': FieldValue.serverTimestamp(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${widget.title} has been requested successfully')),
+      );
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to request book: $error')),
+      );
+    }
+  }
+
+  Future<bool?> _showRequestConfirmationDialog() {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirm Request'),
+          content: Text('Are you sure you want to request "${widget.title}"?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Request'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showNoPDFsDialog() {
     showDialog(
       context: context,
@@ -389,6 +493,25 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
                   onPressed: _viewPDFs,
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            // Request button placed below the other buttons
+            Center(
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2A9D8F), // Different color for request button
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 4,
+                  minimumSize: const Size(200, 50), // Minimum width and height
+                ),
+                icon: const Icon(Icons.request_quote),
+                label: const Text('Request Book'),
+                onPressed: isOutOfStock ? null : _requestBook, // Disable if out of stock
+              ),
             ),
             const SizedBox(height: 40),
           ],
