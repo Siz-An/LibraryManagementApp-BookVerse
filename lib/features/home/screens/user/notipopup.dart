@@ -97,7 +97,7 @@ void showNotificationPopup(BuildContext context) {
 
                               return ListTile(
                                 title: Text(message),
-                                subtitle: Text('From: $sender'),
+                                subtitle: Text('From: Admin'),
                                 onTap: () async {
                                   // Mark notification as read
                                   await FirebaseFirestore.instance
@@ -138,7 +138,7 @@ void showNotificationPopup(BuildContext context) {
 
                               return ListTile(
                                 title: Text(message),
-                                subtitle: Text('From: $sender'),
+                                subtitle: Text('From: Admin'),
                                 onTap: () async {
                                   // You can mark notification as read again or add any other logic here
                                 },

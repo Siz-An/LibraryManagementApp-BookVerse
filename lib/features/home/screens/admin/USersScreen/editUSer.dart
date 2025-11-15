@@ -223,13 +223,11 @@ class _EditUserScreenState extends State<EditUserScreen> {
                               validator: (value) => value!.isEmpty ? 'Please enter a user name' : null,
                             ),
                             const SizedBox(height: 18),
-                            _ModernTextField(
+                            // Changed email field to be read-only
+                            _ReadOnlyField(
                               label: 'Email',
                               icon: Icons.email_outlined,
-                              initialValue: _email,
-                              onChanged: (value) => _email = value,
-                              validator: (value) => value!.isEmpty ? 'Please enter an email' : null,
-                              keyboardType: TextInputType.emailAddress,
+                              value: _email,
                             ),
                             const SizedBox(height: 18),
                             _ModernTextField(
@@ -331,6 +329,61 @@ class _ModernTextField extends StatelessWidget {
       onChanged: onChanged,
       validator: validator,
       keyboardType: keyboardType,
+    );
+  }
+}
+
+// Added new widget for read-only fields
+class _ReadOnlyField extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final String value;
+
+  const _ReadOnlyField({
+    required this.label,
+    required this.icon,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F7FA),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFF4A4E69)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
