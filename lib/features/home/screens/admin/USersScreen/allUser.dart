@@ -5,6 +5,18 @@ import 'editUser.dart';
 class AllUsersScreen extends StatelessWidget {
   const AllUsersScreen({super.key});
 
+  // Function to toggle user activation status
+  Future<void> _toggleUserActivation(String userId, bool isCurrentlyActive) async {
+    try {
+      await FirebaseFirestore.instance.collection('Users').doc(userId).update({
+        'can_login': isCurrentlyActive ? 'no' : 'yes',
+      });
+    } catch (e) {
+      // Handle error if needed
+      print('Error updating user activation status: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,6 +103,12 @@ class AllUsersScreen extends StatelessWidget {
                 final userData = users[index].data() as Map<String, dynamic>;
                 final userName = userData['UserName'] ?? 'No Name';
                 final userEmail = userData['Email'] ?? 'No Email';
+                final userId = users[index].id;
+                
+                // Check if user can login (default to 'no' if not set)
+                final canLogin = userData['can_login'] ?? 'no';
+                final isActivated = canLogin == 'yes';
+                final isSuspended = canLogin == 'suspended';
 
                 return Material(
                   color: Colors.transparent,
@@ -101,7 +119,7 @@ class AllUsersScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => EditUserScreen(
-                            userId: users[index].id,
+                            userId: userId,
                             initialData: {},
                           ),
                         ),
@@ -157,10 +175,64 @@ class AllUsersScreen extends StatelessWidget {
                                     fontSize: 15,
                                   ),
                                 ),
+                                const SizedBox(height: 8),
+                                // Status indicator
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: isActivated 
+                                        ? Colors.green.withOpacity(0.2) 
+                                        : isSuspended 
+                                            ? Colors.orange.withOpacity(0.2) 
+                                            : Colors.red.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    isActivated ? 'Active' : isSuspended ? 'Suspended' : 'Inactive',
+                                    style: TextStyle(
+                                      color: isActivated 
+                                          ? Colors.green 
+                                          : isSuspended 
+                                              ? Colors.orange 
+                                              : Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                          const Icon(Icons.edit, color: Color(0xFF4A4E69)),
+                          Column(
+                            children: [
+                              const Icon(Icons.edit, color: Color(0xFF4A4E69)),
+                              const SizedBox(height: 8),
+                              // Activation button
+                              ElevatedButton(
+                                onPressed: () {
+                                  if (!isSuspended) { // Don't allow activation if suspended
+                                    _toggleUserActivation(userId, isActivated);
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isActivated ? Colors.red : Colors.green,
+                                  minimumSize: const Size(80, 30),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Text(
+                                  isActivated ? 'Deactivate' : 'Activate',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),

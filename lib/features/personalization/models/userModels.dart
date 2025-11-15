@@ -10,6 +10,7 @@ class UserModel {
   String phoneNumber;
   String profilePicture;
   String role; // Added role field
+  String canLogin; // Added can_login field for user activation
 
   UserModel({
     required this.id,
@@ -20,6 +21,7 @@ class UserModel {
     required this.phoneNumber,
     required this.profilePicture,
     required this.role, // Added role to constructor
+    this.canLogin = 'no', // Default to 'no' for new users
   });
 
   /// Helper Function to Get the full Name
@@ -52,6 +54,7 @@ class UserModel {
     phoneNumber: '',
     profilePicture: '',
     role: '', // Default empty role
+    canLogin: 'no', // Default to 'no' for new users
   );
 
   /// Convert model to JSON structure for storing data in Firestore
@@ -64,6 +67,7 @@ class UserModel {
       'PhoneNumber': phoneNumber,
       'ProfilePicture': profilePicture,
       'Role': role, // Added role to JSON conversion
+      'can_login': canLogin, // Added can_login to JSON conversion
     };
   }
 
@@ -79,6 +83,7 @@ class UserModel {
         phoneNumber: data['PhoneNumber'] ?? '',
         profilePicture: data['ProfilePicture'] ?? '',
         role: data['Role'] ?? '', // Added role field
+        canLogin: data['can_login'] ?? 'no', // Added can_login field with default 'no'
       );
     } else {
       return UserModel.empty();

@@ -66,6 +66,16 @@ class AuthenticationRepository extends GetxController {
       final credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
       final Role = await getUserRole(credential.user!.uid);
 
+      // Check if user is activated (only for User role, not Admin)
+      if (Role == 'User') {
+        final isActivated = await _isUserActivated(credential.user!.uid);
+        if (!isActivated) {
+          // Sign out the user since they're not activated
+          await _auth.signOut();
+          throw Exception('Your account is not activated yet. Please contact the administrator.');
+        }
+      }
+
       if (Role != 'User') {
         throw Exception('You are not authorized to log in as a User.');
       }
@@ -74,6 +84,23 @@ class AuthenticationRepository extends GetxController {
       rethrow;
     }
   }
+  
+  /// Check if user is activated
+  Future<bool> _isUserActivated(String userId) async {
+    try {
+      final snapshot = await _firestore.collection('Users').doc(userId).get();
+      if (snapshot.exists) {
+        final userData = snapshot.data() as Map<String, dynamic>;
+        final canLogin = userData['can_login'] ?? 'no';
+        return canLogin == 'yes';
+      }
+      return false;
+    } catch (e) {
+      print('Error checking user activation status: $e');
+      return false;
+    }
+  }
+
   Future<UserCredential> registerWithEmailAndPassword(String email, String password) async {
     return _handleFirebaseAuthOperation(() async {
       return await _auth.createUserWithEmailAndPassword(email: email, password: password);
