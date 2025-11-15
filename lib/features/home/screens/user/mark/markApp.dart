@@ -176,6 +176,11 @@ class MarkApp extends StatelessWidget {
       }
         }
 
+        if (uniqueBookmarks.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No bookmarks to request')));
+      return;
+        }
+
         // Fetch issued books
         final issuedBooksSnapshot = await FirebaseFirestore.instance
         .collection('issuedBooks')
@@ -200,43 +205,48 @@ class MarkApp extends StatelessWidget {
         // Combine issued and requested books
         final totalEngagedBooks = issuedBooksTitles.union(existingRequests);
 
-        // Determine non-engaged bookmarks
-        final nonEngagedBooks = uniqueBookmarks
-        .where((book) => !totalEngagedBooks.contains(book['title'] ?? ''))
+        // Filter out already engaged books from bookmarks
+        final availableBookmarks = uniqueBookmarks
+        .where((book) {
+          final title = book['title'] ?? '';
+          return title.isNotEmpty && !totalEngagedBooks.contains(title);
+        })
         .toList();
 
+        if (availableBookmarks.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('All bookmarked books are already requested or issued')));
+      return;
+        }
+
+        // Show selection dialog with only available books
+        final selectedBooks = await _showBookSelectionDialog(context, availableBookmarks);
+        
+        if (selectedBooks == null || selectedBooks.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No books selected for request')));
+      return;
+        }
+
         // Check if the total books would exceed the limit
-        if (totalEngagedBooks.length + nonEngagedBooks.length > 7) {
+        if (totalEngagedBooks.length + selectedBooks.length > 7) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('You can only have up to 7 books issued or requested in total.')),
       );
       return;
         }
 
-        final issuedMessage = issuedBooksTitles.isNotEmpty
-        ? 'The following books are already issued:\n${issuedBooksTitles.join(', ')}\n'
-        : '';
-        final requestsMessage = existingRequests.isNotEmpty
-        ? 'The following books are already in your requests:\n${existingRequests.join(', ')}\n'
-        : '';
-        final addedMessage = nonEngagedBooks.isNotEmpty
-        ? 'The following books have been added to your requests:\n${nonEngagedBooks.map((book) => book['title']).join(', ')}\n'
+        final addedMessage = selectedBooks.isNotEmpty
+        ? 'The following books have been added to your requests:\n${selectedBooks.map((book) => book['title']).join(', ')}\n'
         : 'No new books were added to your requests.';
 
         showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text('Books Status'),
+        title: const Text('Books Requested'),
         content: SingleChildScrollView(
           child: ListBody(
         children: <Widget>[
-          if (issuedMessage.isNotEmpty)
-            Text(issuedMessage, style: const TextStyle(color: Colors.redAccent)),
-          if (requestsMessage.isNotEmpty)
-            Text(requestsMessage, style: const TextStyle(color: Colors.orange)),
-          if (addedMessage.isNotEmpty)
-            Text(addedMessage, style: const TextStyle(color: Colors.green)),
+          Text(addedMessage, style: const TextStyle(color: Colors.green)),
         ],
           ),
         ),
@@ -244,27 +254,84 @@ class MarkApp extends StatelessWidget {
           TextButton(
         onPressed: () async {
           Navigator.of(context).pop();
-          if (nonEngagedBooks.isNotEmpty) {
-            try {
-          await FirebaseFirestore.instance.collection('requests').add({
-            'userId': user.uid,
-            'books': nonEngagedBooks,
-            'requestedAt': FieldValue.serverTimestamp(),
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Selected books added to your requests')),
-          );
-            } catch (error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to add requests: $error')),
-          );
-            }
+          try {
+        await FirebaseFirestore.instance.collection('requests').add({
+          'userId': user.uid,
+          'books': selectedBooks,
+          'requestedAt': FieldValue.serverTimestamp(),
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Selected books added to your requests')),
+        );
+          } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add requests: $error')),
+        );
           }
         },
         child: const Text('OK'),
           ),
         ],
       ),
+        );
+      }
+
+      Future<List<Map<String, dynamic>>?> _showBookSelectionDialog(
+      BuildContext context, 
+      List<Map<String, dynamic>> bookmarks) async {
+        final selectedBooks = <Map<String, dynamic>>[];
+        final isSelected = List.generate(bookmarks.length, (index) => false);
+
+        return showDialog<List<Map<String, dynamic>>>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          title: const Text('Select Books to Request'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: bookmarks.length,
+              itemBuilder: (context, index) {
+                final book = bookmarks[index];
+                return CheckboxListTile(
+                  value: isSelected[index],
+                  onChanged: (bool? value) {
+                    setState(() {
+                      isSelected[index] = value ?? false;
+                    });
+                  },
+                  title: Text(book['title'] ?? 'Unknown Title'),
+                  subtitle: Text(book['writer'] ?? 'Unknown Author'),
+                  controlAffinity: ListTileControlAffinity.leading,
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                for (int i = 0; i < bookmarks.length; i++) {
+                  if (isSelected[i]) {
+                    selectedBooks.add(bookmarks[i]);
+                  }
+                }
+                Navigator.of(context).pop(selectedBooks);
+              },
+              child: const Text('Request Selected'),
+            ),
+          ],
+            );
+          },
+        );
+      },
         );
       }
     }

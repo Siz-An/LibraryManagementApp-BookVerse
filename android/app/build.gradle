@@ -52,7 +52,7 @@ android {
     defaultConfig {
         // Unique Application ID
         applicationId = "com.example.bookVerse"
-        minSdkVersion 23
+        minSdkVersion flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
