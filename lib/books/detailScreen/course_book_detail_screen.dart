@@ -28,6 +28,7 @@ class CourseBookDetailScreen extends StatefulWidget {
 class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
   bool isBookmarked = false;
   bool isOutOfStock = false;
+  int numberOfCopies = 0; // Add this line to track number of copies
   late String userId;
 
   @override
@@ -67,7 +68,8 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
     if (snapshot.docs.isNotEmpty) {
       final bookData = snapshot.docs.first.data();
       setState(() {
-        isOutOfStock = (bookData['numberOfCopies'] ?? 0) <= 0;
+        numberOfCopies = bookData['numberOfCopies'] ?? 0; // Get the number of copies
+        isOutOfStock = numberOfCopies <= 0;
       });
     }
   }
@@ -437,6 +439,29 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
                       fontWeight: FontWeight.bold,
                     )),
                     Text(widget.course, style: Theme.of(context).textTheme.bodyLarge),
+                    const SizedBox(height: 10),
+                    // Add available copies information
+                    Text('Available Copies', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: const Color(0xFF4A4E69),
+                      fontWeight: FontWeight.bold,
+                    )),
+                    Row(
+                      children: [
+                        Icon(
+                          numberOfCopies > 0 ? Icons.check_circle : Icons.cancel,
+                          color: numberOfCopies > 0 ? Colors.green : Colors.red,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '$numberOfCopies copies available',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: numberOfCopies > 0 ? Colors.green : Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 18),
                     Text('Summary', style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: const Color(0xFF4A4E69),
@@ -449,9 +474,11 @@ class _CourseBookDetailScreenState extends State<CourseBookDetailScreen> {
                         children: [
                           const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 22),
                           const SizedBox(width: 8),
-                          Text(
-                            'This book is currently out of stock.',
-                            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                          const Expanded(
+                            child: Text(
+                              'This book is currently out of stock.',
+                              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ],
                       ),

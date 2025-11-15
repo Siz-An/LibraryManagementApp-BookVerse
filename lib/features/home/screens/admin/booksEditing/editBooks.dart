@@ -168,6 +168,24 @@ class _EditBookScreenState extends State<EditBookScreen> {
 
   Future<void> _updateBook() async {
     if (_formKey.currentState!.validate()) {
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 20),
+                Text('Updating book...'),
+              ],
+            ),
+          );
+        },
+      );
+
       try {
         String title = _titleController.text.toUpperCase();
 
@@ -179,6 +197,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
 
         if (querySnapshot.docs.isNotEmpty &&
             querySnapshot.docs.first.id != widget.bookId) {
+          Navigator.of(context).pop(); // Close loading dialog
           // If a book with the same title exists, show a pop-up
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -224,12 +243,14 @@ class _EditBookScreenState extends State<EditBookScreen> {
           'pdfs': pdfData, // Updated PDFs
         });
 
+        Navigator.of(context).pop(); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Book updated successfully')),
         );
 
         Navigator.pop(context);
       } catch (e) {
+        Navigator.of(context).pop(); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to update book: $e')),
         );

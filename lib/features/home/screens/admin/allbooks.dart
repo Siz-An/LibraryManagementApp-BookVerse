@@ -69,8 +69,8 @@ class AllBooksScreenAdmin extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8),
-        child: FutureBuilder<QuerySnapshot>(
-          future: FirebaseFirestore.instance.collection('books').orderBy('title').get(),
+        child: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('books').orderBy('title').snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
