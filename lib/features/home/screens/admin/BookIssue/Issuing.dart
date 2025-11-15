@@ -42,7 +42,7 @@ class IssuedBooksScreen extends StatelessWidget {
                   const SizedBox(width: 14),
                   const Expanded(
                     child: Text(
-                      'Issued Books',
+                      'Issued Booksss',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -131,12 +131,36 @@ class IssuedBooksScreen extends StatelessWidget {
                               width: 56,
                               height: 80,
                               fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                // Fallback to a default book icon if image fails to load
+                                return Container(
+                                  width: 56,
+                                  height: 80,
+                                  color: const Color(0xFF9A8C98).withOpacity(0.15),
+                                  child: const Icon(Icons.menu_book, size: 36, color: Color(0xFF4A4E69)),
+                                );
+                              },
+                              loadingBuilder: (context, child, loadingProgress) {
+                                // Show a loading indicator while the image is loading
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  width: 56,
+                                  height: 80,
+                                  color: const Color(0xFF9A8C98).withOpacity(0.15),
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF4A4E69)),
+                                    ),
+                                  ),
+                                );
+                              },
                             )
                           : Container(
                               width: 56,
                               height: 80,
                               color: const Color(0xFF9A8C98).withOpacity(0.15),
-                              child: const Icon(Icons.broken_image, size: 36, color: Color(0xFF4A4E69)),
+                              child: const Icon(Icons.menu_book, size: 36, color: Color(0xFF4A4E69)),
                             ),
                     ),
                     title: Text(

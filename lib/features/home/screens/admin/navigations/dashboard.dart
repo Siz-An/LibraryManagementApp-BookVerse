@@ -37,7 +37,7 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: const Color(0xFFF5F7FA),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -85,6 +85,59 @@ class _DashboardState extends State<Dashboard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Welcome Section
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [const Color(0xFF4A4E69), const Color(0xFF9A8C98)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Welcome Back, Admin!',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Here\'s what\'s happening today',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white.withOpacity(0.9),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // Stats Overview
+                      const Text(
+                        'Overview',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF22223B),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      
                       // Modern Stat Cards Row
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -93,7 +146,7 @@ class _DashboardState extends State<Dashboard> {
                             title: 'Books',
                             icon: Icons.menu_book_rounded,
                             value: totalBooks.toString(),
-                            color: Colors.blueAccent,
+                            color: const Color(0xFF4A4E69),
                             context: context,
                             navigateTo: AllBooksScreenAdmin(),
                           ),
@@ -101,29 +154,43 @@ class _DashboardState extends State<Dashboard> {
                             title: 'Users',
                             icon: Icons.people_alt_rounded,
                             value: totalUsers.toString(),
-                            color: Colors.deepPurpleAccent,
+                            color: const Color(0xFF9A8C98),
                             context: context,
                             navigateTo: AllUsersScreen(),
                           ),
                         ],
                       ),
                       const SizedBox(height: 20),
+                      
+                      // Recent Activity Section
+                      const Text(
+                        'Recent Activity',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF22223B),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      
                       // Modern Notifications Card
                       _modernNotificationsCard(),
                       const SizedBox(height: 20),
+                      
                       // Modern Issued Books Card
                       _modernExpandableCard(
                         title: 'Books Issued',
                         icon: Icons.assignment_turned_in_rounded,
-                        color: Colors.greenAccent.shade400,
+                        color: const Color(0xFF4CAF50),
                         children: _buildUniqueUsersList(issuedBooks, context),
                       ),
                       const SizedBox(height: 16),
+                      
                       // Modern Returned Books Card
                       _modernExpandableCard(
                         title: 'Books Returned',
                         icon: Icons.assignment_return_rounded,
-                        color: Colors.orangeAccent.shade200,
+                        color: const Color(0xFFFFA726),
                         children: _buildUniqueReturnedUsersList(toBeReturnedBooks, context),
                       ),
                     ],
@@ -173,10 +240,13 @@ class _DashboardState extends State<Dashboard> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircleAvatar(
-                backgroundColor: color.withOpacity(0.15),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Icon(icon, color: color, size: 28),
-                radius: 26,
               ),
               const SizedBox(height: 12),
               Text(
@@ -216,8 +286,12 @@ class _DashboardState extends State<Dashboard> {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.blueAccent.withOpacity(0.12),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: const Icon(Icons.notifications, color: Colors.blueAccent),
                 ),
                 title: const Text('Notifications Sent'),
@@ -227,8 +301,12 @@ class _DashboardState extends State<Dashboard> {
 
             if (snapshot.hasError) {
               return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.redAccent.withOpacity(0.12),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: const Icon(Icons.notifications_off, color: Colors.redAccent),
                 ),
                 title: const Text('Notifications Sent'),
@@ -240,8 +318,12 @@ class _DashboardState extends State<Dashboard> {
             final uniqueNotifications = _getUniqueNotifications(notifications);
 
             return ExpansionTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.blueAccent.withOpacity(0.12),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blueAccent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: const Icon(Icons.notifications, color: Colors.blueAccent),
               ),
               title: Text(
@@ -261,7 +343,14 @@ class _DashboardState extends State<Dashboard> {
                       final timestamp = (data['timestamp'] as Timestamp).toDate();
 
                       return ListTile(
-                        leading: const Icon(Icons.message_rounded, color: Colors.blueAccent),
+                        leading: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.blueAccent.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.message_rounded, color: Colors.blueAccent, size: 20),
+                        ),
                         title: Text(message, style: const TextStyle(fontWeight: FontWeight.w500)),
                         subtitle: Text(
                           'Sent on ${timestamp.toLocal().toString().substring(0, 16)}',
@@ -296,15 +385,19 @@ class _DashboardState extends State<Dashboard> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       color: Colors.white,
       child: ExpansionTile(
-        leading: CircleAvatar(
-          backgroundColor: color.withOpacity(0.15),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(10),
+          ),
           child: Icon(icon, color: color, size: 26),
         ),
         title: Text(
           title,
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            color: color.darken(0.2),
+            color: color,
             fontSize: 17,
           ),
         ),
@@ -368,8 +461,12 @@ class _DashboardState extends State<Dashboard> {
             final email = userData['Email'] ?? 'No email';
 
             return ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.greenAccent.withOpacity(0.15),
+              leading: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.greenAccent.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: const Icon(Icons.person, color: Colors.green),
               ),
               title: Text(username, style: const TextStyle(fontWeight: FontWeight.w500)),
@@ -414,8 +511,12 @@ class _DashboardState extends State<Dashboard> {
             final email = userData['Email'] ?? 'No email';
 
             return ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.orangeAccent.withOpacity(0.15),
+              leading: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.orangeAccent.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: const Icon(Icons.person, color: Colors.orange),
               ),
               title: Text(username, style: const TextStyle(fontWeight: FontWeight.w500)),
@@ -432,15 +533,5 @@ class _DashboardState extends State<Dashboard> {
     }
 
     return userTiles;
-  }
-}
-
-// Extension for color darken
-extension ColorUtils on Color {
-  Color darken([double amount = .1]) {
-    assert(amount >= 0 && amount <= 1);
-    final hsl = HSLColor.fromColor(this);
-    final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
-    return hslDark.toColor();
   }
 }
