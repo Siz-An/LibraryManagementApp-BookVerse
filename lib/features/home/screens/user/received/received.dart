@@ -210,6 +210,34 @@ class _ModernIssuedBooksList extends StatelessWidget {
                     width: 54,
                     height: 78,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Fallback to a default book icon if image fails to load
+                      return Container(
+                        width: 54,
+                        height: 78,
+                        color: const Color(0xFF9A8C98).withOpacity(0.15),
+                        child: const Icon(
+                          Icons.menu_book,
+                          size: 30,
+                          color: Color(0xFF4A4E69),
+                        ),
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      // Show a loading indicator while the image is loading
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        width: 54,
+                        height: 78,
+                        color: const Color(0xFF9A8C98).withOpacity(0.15),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF4A4E69)),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 title: Text(
@@ -297,6 +325,34 @@ class _ModernRejectedBooksList extends StatelessWidget {
                     width: 54,
                     height: 78,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Fallback to a default book icon if image fails to load
+                      return Container(
+                        width: 54,
+                        height: 78,
+                        color: const Color(0xFF9A8C98).withOpacity(0.15),
+                        child: const Icon(
+                          Icons.menu_book,
+                          size: 30,
+                          color: Color(0xFF4A4E69),
+                        ),
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      // Show a loading indicator while the image is loading
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        width: 54,
+                        height: 78,
+                        color: const Color(0xFF9A8C98).withOpacity(0.15),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF4A4E69)),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 title: Text(

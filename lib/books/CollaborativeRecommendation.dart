@@ -219,10 +219,34 @@ class _RandomBooksState extends State<TRandomBooks> {
                               height: 220,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
-                                return const Center(
-                                  child: Text(
-                                    'Image not available',
-                                    style: TextStyle(color: Colors.red),
+                                // Fallback to a default book icon if image fails to load
+                                return Container(
+                                  width: 150,
+                                  height: 220,
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(
+                                    Icons.menu_book,
+                                    size: 50,
+                                    color: Colors.grey,
+                                  ),
+                                );
+                              },
+                              loadingBuilder: (context, child, loadingProgress) {
+                                // Show a loading indicator while the image is loading
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  width: 150,
+                                  height: 220,
+                                  color: Colors.grey.shade200,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded /
+                                              loadingProgress.expectedTotalBytes!
+                                          : null,
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                                    ),
                                   ),
                                 );
                               },

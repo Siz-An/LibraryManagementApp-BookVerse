@@ -15,6 +15,7 @@ class _AddPDFScreenState extends State<AddPDFScreen> {
   final TextEditingController _writerController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   PlatformFile? _selectedPDF;
+  bool _isUploading = false;
 
   void _pickPDF() async {
     final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
@@ -36,6 +37,10 @@ class _AddPDFScreenState extends State<AddPDFScreen> {
       return;
     }
 
+    setState(() {
+      _isUploading = true;
+    });
+
     try {
       final pdfPath = 'pdfs/${_selectedPDF!.name}';
       final storageRef = FirebaseStorage.instance.ref().child(pdfPath);
@@ -56,6 +61,10 @@ class _AddPDFScreenState extends State<AddPDFScreen> {
       _showSuccessDialog();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload PDF: $e')));
+    } finally {
+      setState(() {
+        _isUploading = false;
+      });
     }
   }
 
@@ -90,9 +99,64 @@ class _AddPDFScreenState extends State<AddPDFScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Add PDF'),
-        backgroundColor: Colors.teal,
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(90),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF4A4E69), Color(0xFF9A8C98)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(28),
+              bottomRight: Radius.circular(28),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x22000000),
+                blurRadius: 12,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 16),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(width: 10),
+                  const Icon(Icons.picture_as_pdf, color: Colors.white, size: 32),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Text(
+                      'Add PDF',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                        letterSpacing: 1.2,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black26,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -100,62 +164,178 @@ class _AddPDFScreenState extends State<AddPDFScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'PDF Name',
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'PDF Information',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF22223B),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildTextField(
+                      controller: _nameController,
+                      label: 'PDF Name',
+                      icon: Icons.title,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _writerController,
+                      label: 'Writer Name',
+                      icon: Icons.person,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDescriptionField(),
+                  ],
                 ),
               ),
-              SizedBox(height: 16),
-              TextField(
-                controller: _writerController,
-                decoration: InputDecoration(
-                  labelText: 'Writer Name',
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Upload PDF',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF22223B),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildPDFPickerButton(),
+                  ],
                 ),
               ),
-              SizedBox(height: 16),
-              TextField(
-                controller: _descriptionController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: 'What is this PDF about?',
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                ),
-              ),
-              SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: _pickPDF,
-                icon: Icon(Icons.upload_file),
-                label: Text(_selectedPDF == null ? 'Pick PDF' : 'Selected: ${_selectedPDF!.name}'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-              SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _uploadPDF,
-                child: Text('Upload PDF'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              const SizedBox(height: 30),
+              SizedBox(
+                height: 70,
+                child: ElevatedButton(
+                  onPressed: _isUploading ? null : _uploadPDF,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4A4E69),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 4,
+                  ),
+                  child: _isUploading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Upload PDF',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: const Color(0xFF4A4E69)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF4A4E69), width: 2),
+        ),
+        filled: true,
+        fillColor: const Color(0xFFF5F7FA),
+      ),
+      style: const TextStyle(fontSize: 16),
+    );
+  }
+
+  Widget _buildDescriptionField() {
+    return TextFormField(
+      controller: _descriptionController,
+      maxLines: 4,
+      decoration: InputDecoration(
+        labelText: 'What is this PDF about?',
+        alignLabelWithHint: true,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF4A4E69), width: 2),
+        ),
+        filled: true,
+        fillColor: const Color(0xFFF5F7FA),
+      ),
+      style: const TextStyle(fontSize: 16),
+    );
+  }
+
+  Widget _buildPDFPickerButton() {
+    return ElevatedButton.icon(
+      onPressed: _pickPDF,
+      icon: const Icon(Icons.upload_file, color: Colors.white),
+      label: Text(
+        _selectedPDF == null ? 'Pick PDF' : 'Selected: ${_selectedPDF!.name}',
+        style: const TextStyle(color: Colors.white),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF9A8C98),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        elevation: 2,
       ),
     );
   }
