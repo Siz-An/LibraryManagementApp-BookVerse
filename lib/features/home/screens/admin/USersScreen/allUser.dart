@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'editUser.dart';
 
 class AllUsersScreen extends StatelessWidget {
-  const AllUsersScreen({super.key});
+  final String userFilter; // 'active', 'inactive', or 'all'
+  
+  const AllUsersScreen({super.key, this.userFilter = 'all'});
 
   // Function to toggle user activation status
   Future<void> _toggleUserActivation(String userId, bool isCurrentlyActive) async {
@@ -56,10 +58,14 @@ class AllUsersScreen extends StatelessWidget {
                   const SizedBox(width: 6),
                   const Icon(Icons.people, color: Colors.white, size: 32),
                   const SizedBox(width: 14),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'All Users',
-                      style: TextStyle(
+                      userFilter == 'active' 
+                          ? 'Active Users' 
+                          : userFilter == 'inactive' 
+                              ? 'Inactive Users' 
+                              : 'All Users',
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 24,
@@ -93,17 +99,42 @@ class AllUsersScreen extends StatelessWidget {
               return const Center(child: Text('Something went wrong'));
             }
             final users = snapshot.data?.docs ?? [];
-            if (users.isEmpty) {
-              return const Center(child: Text('No users found'));
+            
+            // Filter users based on the userFilter parameter
+            final filteredUsers = users.where((doc) {
+              final userData = doc.data() as Map<String, dynamic>;
+              final canLogin = userData['can_login'] ?? 'no';
+              
+              switch (userFilter) {
+                case 'active':
+                  return canLogin == 'yes';
+                case 'inactive':
+                  return canLogin == 'no';
+                default:
+                  return true; // Show all users
+              }
+            }).toList();
+            
+            if (filteredUsers.isEmpty) {
+              return Center(
+                child: Text(
+                  userFilter == 'active' 
+                      ? 'No active users found' 
+                      : userFilter == 'inactive' 
+                          ? 'No inactive users found' 
+                          : 'No users found'
+                )
+              );
             }
+            
             return ListView.separated(
-              itemCount: users.length,
+              itemCount: filteredUsers.length,
               separatorBuilder: (_, __) => const SizedBox(height: 14),
               itemBuilder: (context, index) {
-                final userData = users[index].data() as Map<String, dynamic>;
+                final userData = filteredUsers[index].data() as Map<String, dynamic>;
                 final userName = userData['UserName'] ?? 'No Name';
                 final userEmail = userData['Email'] ?? 'No Email';
-                final userId = users[index].id;
+                final userId = filteredUsers[index].id;
                 
                 // Check if user can login (default to 'no' if not set)
                 final canLogin = userData['can_login'] ?? 'no';

@@ -79,6 +79,19 @@ class _DashboardState extends State<Dashboard> {
                 final totalUsers = usersSnapshot.size;
                 final issuedBooks = issuedBooksSnapshot.docs;
                 final toBeReturnedBooks = returnedBooksSnapshot.docs;
+                
+                // Filter users to get active and inactive counts
+                final activeUsers = usersSnapshot.docs.where((doc) {
+                  final userData = doc.data() as Map<String, dynamic>;
+                  final canLogin = userData['can_login'] ?? 'no';
+                  return canLogin == 'yes';
+                }).length;
+                
+                final inactiveUsers = usersSnapshot.docs.where((doc) {
+                  final userData = doc.data() as Map<String, dynamic>;
+                  final canLogin = userData['can_login'] ?? 'no';
+                  return canLogin == 'no';
+                }).length;
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24),
@@ -151,12 +164,34 @@ class _DashboardState extends State<Dashboard> {
                             navigateTo: AllBooksScreenAdmin(),
                           ),
                           _modernStatCard(
-                            title: 'Users',
+                            title: 'Active Users',
                             icon: Icons.people_alt_rounded,
-                            value: totalUsers.toString(),
+                            value: activeUsers.toString(),
                             color: const Color(0xFF9A8C98),
                             context: context,
-                            navigateTo: AllUsersScreen(),
+                            navigateTo: AllUsersScreen(userFilter: 'active'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _modernStatCard(
+                            title: 'Issued Books',
+                            icon: Icons.assignment_turned_in_rounded,
+                            value: issuedBooks.length.toString(),
+                            color: const Color(0xFF4CAF50),
+                            context: context,
+                            navigateTo: null,
+                          ),
+                          _modernStatCard(
+                            title: 'Inactive Users',
+                            icon: Icons.person_off,
+                            value: inactiveUsers.toString(),
+                            color: const Color(0xFFF44336),
+                            context: context,
+                            navigateTo: AllUsersScreen(userFilter: 'inactive'),
                           ),
                         ],
                       ),
@@ -192,6 +227,15 @@ class _DashboardState extends State<Dashboard> {
                         icon: Icons.assignment_return_rounded,
                         color: const Color(0xFFFFA726),
                         children: _buildUniqueReturnedUsersList(toBeReturnedBooks, context),
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Modern Inactive Users Card
+                      _modernExpandableCard(
+                        title: 'Inactive Users',
+                        icon: Icons.person_off,
+                        color: const Color(0xFFF44336),
+                        children: _buildInactiveUsersList(usersSnapshot.docs, context),
                       ),
                     ],
                   ),
@@ -533,5 +577,81 @@ class _DashboardState extends State<Dashboard> {
     }
 
     return userTiles;
+  }
+
+  List<Widget> _buildInactiveUsersList(List<QueryDocumentSnapshot> users, BuildContext context) {
+    final List<Widget> userTiles = [];
+    
+    // Filter to only show inactive users
+    final inactiveUsers = users.where((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      final canLogin = data['can_login'] ?? 'no';
+      return canLogin == 'no';
+    }).toList();
+
+    for (var doc in inactiveUsers) {
+      final data = doc.data() as Map<String, dynamic>;
+      final userId = doc.id; // Use document ID, not userId field
+      final username = data['UserName'] ?? 'Unknown';
+      final email = data['Email'] ?? 'No email';
+
+      userTiles.add(
+        ListTile(
+          leading: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.redAccent.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.person_off, color: Colors.red),
+          ),
+          title: Text(username, style: const TextStyle(fontWeight: FontWeight.w500)),
+          subtitle: Text(email, style: const TextStyle(fontSize: 13)),
+          trailing: ElevatedButton(
+            onPressed: () => _activateUser(context, userId),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              minimumSize: Size(80, 30),
+              padding: EdgeInsets.zero,
+            ),
+            child: Text('Activate', style: TextStyle(color: Colors.white, fontSize: 12)),
+          ),
+        ),
+      );
+    }
+
+    // Show message if no inactive users
+    if (userTiles.isEmpty) {
+      userTiles.add(
+        const Padding(
+          padding: EdgeInsets.all(12.0),
+          child: Text('No inactive users found.'),
+        ),
+      );
+    }
+
+    return userTiles;
+  }
+
+  Future<void> _activateUser(BuildContext context, String userId) async {
+    try {
+      await FirebaseFirestore.instance.collection('Users').doc(userId).update({
+        'can_login': 'yes',
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('User activated successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to activate user: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

@@ -81,7 +81,7 @@ class AcceptReturnedBooksScreen extends StatelessWidget {
                   const SizedBox(width: 14),
                   const Expanded(
                     child: Text(
-                      'Returned Books',
+                      'Returned Bookssss',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -172,6 +172,38 @@ class AcceptReturnedBooksScreen extends StatelessWidget {
                                   width: 70,
                                   height: 100,
                                   fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    // Fallback to a default book icon if image fails to load
+                                    return Container(
+                                      width: 70,
+                                      height: 100,
+                                      color: const Color(0xFFE0E0E0),
+                                      child: const Icon(
+                                        Icons.book,
+                                        size: 36,
+                                        color: Color(0xFF9A8C98),
+                                      ),
+                                    );
+                                  },
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    // Show a loading indicator while the image is loading
+                                    if (loadingProgress == null) return child;
+                                    return Container(
+                                      width: 70,
+                                      height: 100,
+                                      color: const Color(0xFFE0E0E0),
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          value: loadingProgress.expectedTotalBytes != null
+                                              ? loadingProgress.cumulativeBytesLoaded /
+                                                  loadingProgress.expectedTotalBytes!
+                                              : null,
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF9A8C98)),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 )
                               : Container(
                                   width: 70,
