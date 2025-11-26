@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 
 import '../features/home/screens/user/home/home.dart';
 import '../features/home/screens/user/mark/markApp.dart';
@@ -13,27 +14,30 @@ import '../utils/helpers/helper_function.dart';
 class NavigationMenu extends StatelessWidget {
   NavigationMenu({super.key});
 
+  final NavigationController controller = Get.put(NavigationController());
+
   @override
   Widget build(BuildContext context) {
-    final NavigationController controller = Get.put(NavigationController());
     final darkMode = THelperFunction.isDarkMode(context);
 
     return Scaffold(
       bottomNavigationBar: Obx(
-            () => NavigationBar(
-          height: 60,
-          elevation: 0,
-          selectedIndex: controller.selectedIndex.value,
-          onDestinationSelected: (index) => controller.selectedIndex.value = index,
-          backgroundColor: darkMode ? TColors.black : Colors.white.withOpacity(0.1),
-          indicatorColor: darkMode ? TColors.white.withOpacity(0.3) : TColors.black.withOpacity(0.3),
-          destinations: const [
-            NavigationDestination(icon: Icon(Iconsax.search_normal), label: 'Search'),
-            NavigationDestination(icon: Icon(Iconsax.bookmark), label: 'BookMark'),
-            NavigationDestination(icon: Icon(Iconsax.home), label: 'Home'),
-            NavigationDestination(icon: Icon(Iconsax.book), label: 'Received'),
-            NavigationDestination(icon: Icon(Iconsax.user), label: 'Profile'),
+        () => CurvedNavigationBar(
+          index: controller.selectedIndex.value,
+          height: 60.0,
+          items: const [
+            Icon(Iconsax.search_normal, size: 30),
+            Icon(Iconsax.bookmark, size: 30),
+            Icon(Iconsax.home, size: 30),
+            Icon(Iconsax.book, size: 30),
+            Icon(Iconsax.user, size: 30),
           ],
+          color: Colors.grey,
+          buttonBackgroundColor: Colors.grey,
+          backgroundColor: darkMode ? TColors.black : Colors.transparent,
+          animationCurve: Curves.easeInOut,
+          animationDuration: const Duration(milliseconds: 300),
+          onTap: (index) => controller.selectedIndex.value = index,
         ),
       ),
       body: Obx(() => controller.screens[controller.selectedIndex.value]),

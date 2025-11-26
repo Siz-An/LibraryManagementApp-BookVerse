@@ -39,6 +39,7 @@ dependencies:
 
 #navigation curve menu_bar
   scroll_to_hide_bottom_navigation_bar: ^0.0.1
+  curved_navigation_bar: ^1.0.6
 
   # Icons
   cupertino_icons: ^1.0.6

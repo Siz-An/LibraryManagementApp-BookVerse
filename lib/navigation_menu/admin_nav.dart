@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import '../features/home/screens/admin/navigations/addBooks.dart';
 import '../features/home/screens/admin/navigations/dashboard.dart';
 import '../features/home/screens/admin/navigations/editScreen.dart';
@@ -16,22 +17,25 @@ class AdminNavigationMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.put(AdminNavigationController());
     final darkMode = THelperFunction.isDarkMode(context);
+    
     return Scaffold(
       bottomNavigationBar: Obx(
-            () => NavigationBar(
-            height: 60,
-            elevation: 0,
-            selectedIndex: controller.selectedIndex.value,
-            onDestinationSelected: (index) => controller.selectedIndex.value = index,
-            backgroundColor: darkMode ? TColors.black : Colors.white.withOpacity(0.1),
-            indicatorColor: darkMode ? TColors.white.withOpacity(0.3) : TColors.black.withOpacity(0.3),
-            destinations: const [
-              NavigationDestination(icon: Icon(Iconsax.add), label: 'Dashboard'),
-              NavigationDestination(icon: Icon(Iconsax.user), label: 'Users'),
-              NavigationDestination(icon: Icon(Iconsax.book_1), label: 'Add Books'),
-              NavigationDestination(icon: Icon(Iconsax.edit), label: 'Edit'),
-              NavigationDestination(icon: Icon(Iconsax.setting), label: 'Settings'),
+        () => CurvedNavigationBar(
+          index: controller.selectedIndex.value,
+          height: 60.0,
+          items: const [
+            Icon(Iconsax.add, size: 30),
+            Icon(Iconsax.user, size: 30),
+            Icon(Iconsax.book_1, size: 30),
+            Icon(Iconsax.edit, size: 30),
+            Icon(Iconsax.setting, size: 30),
           ],
+          color: Colors.grey,
+          buttonBackgroundColor: Colors.grey,
+          backgroundColor: darkMode ? TColors.black : Colors.transparent,
+          animationCurve: Curves.easeInOut,
+          animationDuration: const Duration(milliseconds: 300),
+          onTap: (index) => controller.selectedIndex.value = index,
         ),
       ),
       body: Obx(() => controller.screens[controller.selectedIndex.value]),
