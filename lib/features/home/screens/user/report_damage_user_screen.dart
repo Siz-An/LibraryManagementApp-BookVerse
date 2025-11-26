@@ -79,7 +79,7 @@ class UserReportDamageScreen extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             }
             if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
+              return Center(child: Text('Error: \${snapshot.error}'));
             }
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
               return const Center(
@@ -162,7 +162,7 @@ class UserReportDamageScreen extends StatelessWidget {
                                           child: Center(
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
-                                              valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF4A4E69)),
+                                              valueColor: AlwaysStoppedAnimation(const Color(0xFF4A4E69)),
                                             ),
                                           ),
                                         );
@@ -191,7 +191,7 @@ class UserReportDamageScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Writer: $writer',
+                                    'Writer: \$writer',
                                     style: const TextStyle(
                                       color: Color(0xFF4A4E69),
                                       fontWeight: FontWeight.w500,
@@ -204,7 +204,7 @@ class UserReportDamageScreen extends StatelessWidget {
                                       const Icon(Icons.calendar_today, size: 16, color: Color(0xFF9A8C98)),
                                       const SizedBox(width: 6),
                                       Text(
-                                        'Issued: $issueDate',
+                                        'Issued: \$issueDate',
                                         style: const TextStyle(
                                           color: Color(0xFF9A8C98),
                                           fontSize: 14,
