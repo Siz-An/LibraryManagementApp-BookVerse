@@ -78,6 +78,19 @@ class _ReportDamageScreenState extends State<ReportDamageScreen> {
       // Upload image if available
       String? imageUrl = await _uploadImage();
 
+      // Get book price
+      double bookPrice = 0.0;
+      try {
+        final bookDoc = await FirebaseFirestore.instance.collection('books').doc(widget.bookId).get();
+        if (bookDoc.exists) {
+          final bookData = bookDoc.data() as Map<String, dynamic>;
+          // Assuming the book has a 'price' field, if not, we can calculate based on other fields
+          bookPrice = bookData['price'] ?? 0.0;
+        }
+      } catch (e) {
+        print('Error fetching book price: $e');
+      }
+
       // Create damage report
       final reportData = {
         'bookId': widget.bookId,
@@ -90,6 +103,7 @@ class _ReportDamageScreenState extends State<ReportDamageScreen> {
         'reportedAt': FieldValue.serverTimestamp(),
         'adminNotified': false,
         'resolved': false,
+        'bookPrice': bookPrice,
       };
 
       await FirebaseFirestore.instance.collection('damagedBooks').add(reportData);

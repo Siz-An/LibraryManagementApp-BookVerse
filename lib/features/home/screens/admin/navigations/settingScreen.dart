@@ -12,6 +12,7 @@ import '../../DataForAdmin/usersdata.dart';
 import '../BookIssue/users.dart';
 // import '../../../..editScreen.dart';
 import '../notification/notificationScreen.dart';
+import '../damagedbooks/damaged_books_admin_screen.dart';
 // import '../../search/searchBookScreen.dart';
 
 class AdminSettingsScreen extends StatelessWidget {
@@ -133,6 +134,12 @@ class AdminSettingsScreen extends StatelessWidget {
               title: 'Search Screen',
               subtitle: 'Search Books',
               onTap: () => Get.to(() => SearchBookScreen()),
+            ),
+            _ModernSettingCard(
+              icon: Icons.report_problem,
+              title: 'Damage Reports',
+              subtitle: 'View and process book damage reports',
+              onTap: () => Get.to(() => const DamagedBooksAdminScreen()),
             ),
             const SizedBox(height: 28),
             ElevatedButton.icon(
