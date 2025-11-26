@@ -153,7 +153,7 @@ class AdminScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 18),
                     TProfileMenu(
-                      onPressed: () => Get.to(() => const ChangeName()),
+                      onPressed: () => Get.to(()),
                       title: 'Full Name',
                       value: controller.admin.value.fullName,
                       icon: Iconsax.user,
@@ -172,13 +172,13 @@ class AdminScreen extends StatelessWidget {
                       icon: Iconsax.copy,
                     ),
                     TProfileMenu(
-                      onPressed: () => Get.to(() => const ChangeEmailPassword(changeType: 'Email')),
+                      onPressed: () => Get.to(()),
                       title: 'Email Id',
                       value: controller.admin.value.email,
                       icon: Iconsax.sms,
                     ),
                     TProfileMenu(
-                      onPressed: () => Get.to(() => const ChangeEmailPassword(changeType: 'Phone')),
+                      onPressed: () => Get.to(()),
                       title: 'Phone number',
                       value: controller.admin.value.phoneNumber,
                       icon: Iconsax.call,
