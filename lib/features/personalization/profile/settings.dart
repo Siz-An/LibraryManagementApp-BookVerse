@@ -8,10 +8,12 @@ import '../../../common/widgets/proFile/user_profile_tile.dart';
 import '../../../data/authentication/repository/authentication/authentication_repo.dart';
 import '../../home/screens/dataforuser/returnhistory.dart';
 import '../../home/screens/user/bookreturnsss.dart';
+import '../../home/screens/user/damaged_books_user_view.dart';
 import '../../home/screens/user/mark/markApp.dart';
 import '../../home/screens/user/mark/requestssss.dart';
 import '../../home/screens/user/notification.dart';
 import '../../home/screens/user/pdfView/pdflist.dart';
+import '../../home/screens/user/report_damage_user_screen.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
@@ -84,7 +86,7 @@ class SettingScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: Padding(
+       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 12),
         child: ListView(
           children: [
@@ -144,6 +146,18 @@ class SettingScreen extends StatelessWidget {
               subTitle: 'List of Pdf Files',
               onTap: () => Get.to(() => AllPDFsScreen()),
             ),
+            _ModernSettingMenu(
+              icon: Iconsax.danger,
+              title: 'Report Book Damage',
+              subTitle: 'Report damage to issued books',
+              onTap: () => Get.to(() => const UserReportDamageScreen()),
+            ),
+            _ModernSettingMenu(
+              icon: Iconsax.document,
+              title: 'My Damage Reports',
+              subTitle: 'View your reported book damages',
+              onTap: () => Get.to(() => UserDamagedBooksView()),
+            ),
             const SizedBox(height: 32),
             // Logout Button
             SizedBox(
@@ -171,7 +185,7 @@ class SettingScreen extends StatelessWidget {
             const SizedBox(height: 24),
           ],
         ),
-      ),
+       ),
     );
   }
 }
