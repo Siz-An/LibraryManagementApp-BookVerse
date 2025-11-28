@@ -102,6 +102,7 @@ class UserReportDamageScreen extends StatelessWidget {
                 var bookData = doc.data() as Map<String, dynamic>;
                 
                 String docId = doc.id;
+                String bookId = bookData['bookId'] ?? '';
                 String imageUrl = bookData['imageUrl'] ?? '';
                 String title = bookData['title'] ?? 'No Title';
                 String writer = bookData['writer'] ?? 'Unknown';
@@ -111,7 +112,7 @@ class UserReportDamageScreen extends StatelessWidget {
                 return FutureBuilder<QuerySnapshot>(
                   future: FirebaseFirestore.instance
                       .collection('damagedBooks')
-                      .where('bookId', isEqualTo: docId)
+                      .where('bookId', isEqualTo: bookId)
                       .where('userId', isEqualTo: userId)
                       .where('resolved', isEqualTo: false)
                       .get(),
@@ -239,7 +240,7 @@ class UserReportDamageScreen extends StatelessWidget {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) => ReportDamageScreen(
-                                              bookId: docId,
+                                              bookId: bookId,
                                               bookTitle: title,
                                               userId: userId,
                                             ),
