@@ -190,6 +190,30 @@ class UserRequestedBooksScreen extends StatelessWidget {
                     width: 56,
                     height: 80,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Fallback to a default book icon if image fails to load
+                      return Container(
+                        width: 56,
+                        height: 80,
+                        color: Colors.grey.shade200,
+                        child: const Icon(Icons.book, size: 34, color: Colors.grey),
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      // Show a loading indicator while the image is loading
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        width: 56,
+                        height: 80,
+                        color: Colors.grey.shade200,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                          ),
+                        ),
+                      );
+                    },
                   )
                 : Container(
                     width: 56,
