@@ -12,7 +12,8 @@ import '../../DataForAdmin/usersdata.dart';
 import '../BookIssue/users.dart';
 // import '../../../..editScreen.dart';
 import '../notification/notificationScreen.dart';
-import '../damagedbooks/damaged_books_admin_screen.dart';
+import 'package:book_Verse/features/home/screens/admin/damagedbooks/damaged_books_admin_screen.dart';
+import 'package:book_Verse/features/home/screens/admin/damagedbooks/user_wise_damage_reports_screen.dart';
 // import '../../search/searchBookScreen.dart';
 
 class AdminSettingsScreen extends StatelessWidget {
@@ -139,6 +140,12 @@ class AdminSettingsScreen extends StatelessWidget {
               icon: Icons.report_problem,
               title: 'Damage Reports',
               subtitle: 'View and process book damage reports',
+              onTap: () => Get.to(() => const UserWiseDamageReportsScreen()),
+            ),
+            _ModernSettingCard(
+              icon: Icons.report,
+              title: 'All Damage Reports',
+              subtitle: 'View all damage reports in chronological order',
               onTap: () => Get.to(() => const DamagedBooksAdminScreen()),
             ),
             const SizedBox(height: 28),
