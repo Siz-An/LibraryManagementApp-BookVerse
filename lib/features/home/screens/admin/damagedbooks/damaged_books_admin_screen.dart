@@ -1,6 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
+import 'dart:io';
 
 class DamagedBooksAdminScreen extends StatelessWidget {
   const DamagedBooksAdminScreen({super.key});
@@ -83,7 +88,97 @@ class DamagedBooksAdminScreen extends StatelessWidget {
     }
   }
 
-  @override
+  Future<void> _generateDamageReportsPdf(BuildContext context) async {
+    final pdf = pw.Document();
+
+    // Fetch all damage reports
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('damagedBooks')
+        .orderBy('reportedAt', descending: true)
+        .get();
+
+    final List<Map<String, dynamic>> reportData = [];
+    for (var doc in querySnapshot.docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      reportData.add(data);
+    }
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) => pw.Column(
+          children: [
+            pw.Text(
+              'Damage Reports',
+              style: pw.TextStyle(
+                fontSize: 24,
+                fontWeight: pw.FontWeight.bold,
+              ),
+            ),
+            pw.SizedBox(height: 20),
+            pw.Text('Generated on: ${DateFormat('MMMM dd, yyyy, h:mm a').format(DateTime.now())}'),
+            pw.SizedBox(height: 20),
+            pw.Table.fromTextArray(
+              headers: ['SN', 'Book Title', 'User Name', 'Damage Type', 'Reported Date', 'Status'],
+              data: List<List<String>>.generate(reportData.length, (index) {
+                final item = reportData[index];
+                final bookTitle = item['bookTitle'] as String? ?? 'Unknown Book';
+                final userName = item['userName'] as String? ?? 'Unknown User';
+                final damageType = item['damageType'] as String? ?? 'Unknown Damage';
+                final timestamp = item['reportedAt'] as Timestamp? ?? Timestamp.now();
+                final reportedDate = DateFormat('MMM dd, yyyy').format(timestamp.toDate());
+                final isAccepted = item['accepted'] as bool? ?? false;
+                final isRejected = item['rejected'] as bool? ?? false;
+                String status;
+                if (isAccepted) {
+                  status = 'Accepted';
+                } else if (isRejected) {
+                  status = 'Rejected';
+                } else {
+                  status = 'Pending';
+                }
+
+                return [
+                  '${index + 1}',
+                  bookTitle,
+                  userName,
+                  damageType,
+                  reportedDate,
+                  status,
+                ];
+              }),
+              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+              headerDecoration: const pw.BoxDecoration(
+                color: PdfColors.grey300,
+              ),
+              cellAlignment: pw.Alignment.centerLeft,
+              cellStyle: const pw.TextStyle(fontSize: 10),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/damage_reports_${DateTime.now().millisecondsSinceEpoch}.pdf');
+      await file.writeAsBytes(await pdf.save());
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('PDF generated successfully')),
+        );
+      }
+
+      // Open the PDF file
+      await OpenFile.open(file.path);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error generating PDF: $e')),
+        );
+      }
+    }
+  }
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -134,6 +229,11 @@ class DamagedBooksAdminScreen extends StatelessWidget {
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.download, color: Colors.white, size: 28),
+                    onPressed: () => _generateDamageReportsPdf(context),
+                    tooltip: 'Download PDF Report',
                   ),
                 ],
               ),
