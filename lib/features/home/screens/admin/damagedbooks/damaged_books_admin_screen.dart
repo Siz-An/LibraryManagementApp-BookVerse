@@ -23,7 +23,7 @@ class DamagedBooksAdminScreen extends StatelessWidget {
         return 2000;
       case 'lost':
       case 'missing pages':
-        return bookPrice.toInt();
+        return 5000;
       default:
         return 10000; // Default fine for other damage types
     }
