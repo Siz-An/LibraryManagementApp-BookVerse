@@ -44,40 +44,23 @@ class _RandomBooksState extends State<TRandomBooks> {
     }
   }
 
-
-
   Future<void> _fetchCollaborativeFiltering(String currentUserId) async {
     try {
-      // Fetch books from 'searchedBooks' and 'bookmarks' collections
-      final searchedBooksSnapshot = await _firestore.collection('searchedBooks').get();
+      // Fetch books from 'bookmarks' collection only
       final bookmarksSnapshot = await _firestore.collection('bookmarks').get();
 
       // Fetch user-specific data
-      final currentUserSearchedBooksSnapshot = await _firestore
-          .collection('searchedBooks')
-          .where('userId', isEqualTo: currentUserId)
-          .get();
       final currentUserBookmarksSnapshot = await _firestore
           .collection('bookmarks')
           .where('userId', isEqualTo: currentUserId)
           .get();
 
       // Convert snapshots to lists
-      final searchedBooks = searchedBooksSnapshot.docs.map((doc) => doc.data()).toList();
       final bookmarks = bookmarksSnapshot.docs.map((doc) => doc.data()).toList();
-      final currentUserSearchedBooks = currentUserSearchedBooksSnapshot.docs.map((doc) => doc.data()).toList();
       final currentUserBookmarks = currentUserBookmarksSnapshot.docs.map((doc) => doc.data()).toList();
 
-      // Step 1: Compute user similarity
+      // Step 1: Compute user similarity based on bookmarks only
       Map<String, int> userSimilarityScores = {};
-      for (var book in currentUserSearchedBooks) {
-        for (var searchedBook in searchedBooks) {
-          if (searchedBook['bookId'] == book['bookId'] && searchedBook['userId'] != currentUserId) {
-            userSimilarityScores[searchedBook['userId']] =
-                (userSimilarityScores[searchedBook['userId']] ?? 0) + 1;
-          }
-        }
-      }
       for (var book in currentUserBookmarks) {
         for (var bookmark in bookmarks) {
           if (bookmark['bookId'] == book['bookId'] && bookmark['userId'] != currentUserId) {
@@ -98,34 +81,28 @@ class _RandomBooksState extends State<TRandomBooks> {
             .collection('bookmarks')
             .where('userId', isEqualTo: userId)
             .get();
-        final userSearchedBooksSnapshot = await _firestore
-            .collection('searchedBooks')
-            .where('userId', isEqualTo: userId)
-            .get();
 
         recommendedBooks.addAll(userBookmarksSnapshot.docs.map((doc) => doc.data()).toList());
-        recommendedBooks.addAll(userSearchedBooksSnapshot.docs.map((doc) => doc.data()).toList());
       }
 
       // Remove duplicates and already interacted books
       recommendedBooks = recommendedBooks.toSet().toList();
-      recommendedBooks.removeWhere((book) => currentUserSearchedBooks.any((b) => b['bookId'] == book['bookId']));
       recommendedBooks.removeWhere((book) => currentUserBookmarks.any((b) => b['bookId'] == book['bookId']));
 
-      // Step 4: Final selection with weighted hybrid
+      // Step 4: Final selection
       List<Map<String, dynamic>> selectedBooks = [];
-      int numRecommended = 5; // e.g., favor 3 recommended books
-      int numRandom = 5;      // and 3 random books from global pool
+      int numRecommended = 10; // Total books to display
 
       // Randomly select from recommended books
       recommendedBooks.shuffle();
-      selectedBooks.addAll(recommendedBooks.take(numRecommended));
+      selectedBooks.addAll(recommendedBooks.take(min(numRecommended, recommendedBooks.length)));
 
-      // Randomly select from global pool
-      searchedBooks.shuffle();
-      bookmarks.shuffle();
-      selectedBooks.addAll(searchedBooks.take(numRandom ~/ 2));
-      selectedBooks.addAll(bookmarks.take(numRandom ~/ 2));
+      // If we don't have enough recommended books, add some random bookmarks
+      if (selectedBooks.length < numRecommended) {
+        final remainingSlots = numRecommended - selectedBooks.length;
+        bookmarks.shuffle();
+        selectedBooks.addAll(bookmarks.take(min(remainingSlots, bookmarks.length)));
+      }
 
       // Shuffle final selection for random order display
       selectedBooks.shuffle();
@@ -138,11 +115,6 @@ class _RandomBooksState extends State<TRandomBooks> {
       });
     }
   }
-
-
-
-
-
 
   void _navigateToDetailPage(Map<String, dynamic> book) {
     final title = book['title'] ?? 'Unknown Title';
@@ -181,7 +153,7 @@ class _RandomBooksState extends State<TRandomBooks> {
         _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _randomBooks.isEmpty
-            ? Center(child: Text('No random books found.'))
+            ? Center(child: Text('No trendy books found.'))
             : SizedBox(
           height: 300, // Set a fixed height for the carousel
           child: CarouselSlider.builder(
