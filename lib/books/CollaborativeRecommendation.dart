@@ -46,67 +46,76 @@ class _RandomBooksState extends State<TRandomBooks> {
 
   Future<void> _fetchCollaborativeFiltering(String currentUserId) async {
     try {
-      // Fetch books from 'bookmarks' collection only
-      final bookmarksSnapshot = await _firestore.collection('bookmarks').get();
-
-      // Fetch user-specific data
+      // Check if user has bookmarked any books
       final currentUserBookmarksSnapshot = await _firestore
           .collection('bookmarks')
           .where('userId', isEqualTo: currentUserId)
+          .limit(1) // Just check if any bookmarks exist
           .get();
 
-      // Convert snapshots to lists
-      final bookmarks = bookmarksSnapshot.docs.map((doc) => doc.data()).toList();
+      // If user hasn't bookmarked any books, show empty state
+      if (currentUserBookmarksSnapshot.docs.isEmpty) {
+        setState(() {
+          _randomBooks = [];
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Fetch user-specific bookmarks
       final currentUserBookmarks = currentUserBookmarksSnapshot.docs.map((doc) => doc.data()).toList();
 
-      // Step 1: Compute user similarity based on bookmarks only
-      Map<String, int> userSimilarityScores = {};
-      for (var book in currentUserBookmarks) {
-        for (var bookmark in bookmarks) {
-          if (bookmark['bookId'] == book['bookId'] && bookmark['userId'] != currentUserId) {
-            userSimilarityScores[bookmark['userId']] =
-                (userSimilarityScores[bookmark['userId']] ?? 0) + 1;
-          }
+      // Extract writers from user's bookmarked books
+      final Set<String> userWriters = {};
+      for (var bookmark in currentUserBookmarks) {
+        final writer = bookmark['writer'] as String?;
+        if (writer != null && writer.isNotEmpty) {
+          userWriters.add(writer.trim());
         }
       }
 
-      // Step 2: Find top similar users
-      final similarUsers = userSimilarityScores.keys.toList()
-        ..sort((a, b) => userSimilarityScores[b]!.compareTo(userSimilarityScores[a]!));
+      // If no writers found in user's bookmarks, show empty state
+      if (userWriters.isEmpty) {
+        setState(() {
+          _randomBooks = [];
+          _isLoading = false;
+        });
+        return;
+      }
 
-      // Step 3: Collect books from similar users
+      // Fetch all bookmarks to find books by the same writers
+      final allBookmarksSnapshot = await _firestore.collection('bookmarks').get();
+      final allBookmarks = allBookmarksSnapshot.docs.map((doc) => doc.data()).toList();
+
+      // Find books by the same writers (excluding user's own bookmarks)
       List<Map<String, dynamic>> recommendedBooks = [];
-      for (var userId in similarUsers.take(5)) {
-        final userBookmarksSnapshot = await _firestore
-            .collection('bookmarks')
-            .where('userId', isEqualTo: userId)
-            .get();
-
-        recommendedBooks.addAll(userBookmarksSnapshot.docs.map((doc) => doc.data()).toList());
+      for (var bookmark in allBookmarks) {
+        final writer = bookmark['writer'] as String?;
+        final userId = bookmark['userId'] as String?;
+        
+        // Check if book is by same writer but not bookmarked by current user
+        if (writer != null && 
+            writer.isNotEmpty && 
+            userWriters.contains(writer.trim()) && 
+            userId != currentUserId) {
+          recommendedBooks.add(bookmark);
+        }
       }
 
-      // Remove duplicates and already interacted books
-      recommendedBooks = recommendedBooks.toSet().toList();
-      recommendedBooks.removeWhere((book) => currentUserBookmarks.any((b) => b['bookId'] == book['bookId']));
+      // Remove duplicates based on bookId
+      final Set<String> seenBookIds = {};
+      recommendedBooks = recommendedBooks.where((book) {
+        final bookId = book['bookId'] as String?;
+        if (bookId != null && !seenBookIds.contains(bookId)) {
+          seenBookIds.add(bookId);
+          return true;
+        }
+        return false;
+      }).toList();
 
-      // Step 4: Final selection
-      List<Map<String, dynamic>> selectedBooks = [];
-      int numRecommended = 10; // Total books to display
-
-      // Randomly select from recommended books
+      // Limit to 10 recommendations
       recommendedBooks.shuffle();
-      selectedBooks.addAll(recommendedBooks.take(min(numRecommended, recommendedBooks.length)));
-
-      // If we don't have enough recommended books, add some random bookmarks
-      if (selectedBooks.length < numRecommended) {
-        final remainingSlots = numRecommended - selectedBooks.length;
-        bookmarks.shuffle();
-        selectedBooks.addAll(bookmarks.take(min(remainingSlots, bookmarks.length)));
-      }
-
-      // Shuffle final selection for random order display
-      selectedBooks.shuffle();
-      _randomBooks = selectedBooks;
+      _randomBooks = recommendedBooks.take(10).toList();
     } catch (e) {
       print('Error fetching books with collaborative filtering: $e');
     } finally {
@@ -114,6 +123,34 @@ class _RandomBooksState extends State<TRandomBooks> {
         _isLoading = false;
       });
     }
+  }
+
+  // Helper method to compute cosine similarity between two vectors
+  double _cosineSimilarity(List<double> vectorA, List<double> vectorB) {
+    // Calculate dot product
+    double dotProduct = 0.0;
+    for (int i = 0; i < vectorA.length; i++) {
+      dotProduct += vectorA[i] * vectorB[i];
+    }
+
+    // Calculate magnitudes
+    double magnitudeA = 0.0;
+    double magnitudeB = 0.0;
+    
+    for (int i = 0; i < vectorA.length; i++) {
+      magnitudeA += vectorA[i] * vectorA[i];
+      magnitudeB += vectorB[i] * vectorB[i];
+    }
+    
+    magnitudeA = sqrt(magnitudeA);
+    magnitudeB = sqrt(magnitudeB);
+
+    // Avoid division by zero
+    if (magnitudeA == 0 || magnitudeB == 0) {
+      return 0.0;
+    }
+
+    return dotProduct / (magnitudeA * magnitudeB);
   }
 
   void _navigateToDetailPage(Map<String, dynamic> book) {
@@ -153,7 +190,29 @@ class _RandomBooksState extends State<TRandomBooks> {
         _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _randomBooks.isEmpty
-            ? Center(child: Text('No trendy books found.'))
+            ? Center(
+                child: Column(
+                  children: [
+                    Text(
+                      'Bookmark some books to see personalized recommendations!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Books you bookmark will appear here as recommendations',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
+                ),
+              )
             : SizedBox(
           height: 300, // Set a fixed height for the carousel
           child: CarouselSlider.builder(
