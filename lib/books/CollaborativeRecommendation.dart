@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,13 +10,18 @@ class TRandomBooks extends StatefulWidget {
   const TRandomBooks({Key? key}) : super(key: key);
 
   @override
-  _RandomBooksState createState() => _RandomBooksState();
+  State<TRandomBooks> createState() => _RandomBooksState();
 }
 
 class _RandomBooksState extends State<TRandomBooks> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<Map<String, dynamic>> _randomBooks = [];
   bool _isLoading = true;
+  List<String> _globalWriters = [];
+
+  static const double _similarityThreshold = 0.2;
+  static const int _maxRecommendations = 10;
+  static const int _topWritersLimit = 50;
 
   @override
   void initState() {
@@ -26,222 +30,223 @@ class _RandomBooksState extends State<TRandomBooks> {
   }
 
   Future<void> _initializeData() async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
-    // Obtain the current user's ID (replace with actual logic)
-    final currentUser = await FirebaseAuth.instance.currentUser;
-    final currentUserId = currentUser?.uid;
-
-    if (currentUserId != null) {
-      await _fetchCollaborativeFiltering(currentUserId);
-    } else {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
       print('Error: User not logged in.');
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
+      return;
     }
+
+    await _fetchCollaborativeFiltering(currentUser.uid);
   }
 
   Future<void> _fetchCollaborativeFiltering(String currentUserId) async {
     try {
-      // Check if user has bookmarked any books
-      final currentUserBookmarksSnapshot = await _firestore
-          .collection('bookmarks')
-          .where('userId', isEqualTo: currentUserId)
-          .get();
+      final allBookmarksSnapshot =
+          await _firestore.collection('bookmarks').get();
+      final allBookmarks =
+          allBookmarksSnapshot.docs.map((doc) => doc.data()).toList();
 
-      // If user hasn't bookmarked any books, show empty state
-      if (currentUserBookmarksSnapshot.docs.isEmpty) {
-        setState(() {
-          _randomBooks = [];
-          _isLoading = false;
-        });
+      if (allBookmarks.isEmpty) {
+        _setRandomBooks([]);
         return;
       }
 
-      // Fetch user-specific bookmarks
-      final currentUserBookmarks = currentUserBookmarksSnapshot.docs.map((doc) => doc.data()).toList();
-
-      // Create a feature vector for the current user
-      List<double> currentUserVector = _createUserVector(currentUserBookmarks);
-
-      // Fetch all bookmarks to find similar users
-      final allBookmarksSnapshot = await _firestore.collection('bookmarks').get();
-      final allBookmarks = allBookmarksSnapshot.docs.map((doc) => doc.data()).toList();
+      // Build global feature space (limit to top writers for performance)
+      _buildGlobalWriters(allBookmarks);
 
       // Group bookmarks by userId
-      Map<String, List<Map<String, dynamic>>> userBookmarks = {};
-      for (var bookmark in allBookmarks) {
-        final userId = bookmark['userId'] as String?;
-        if (userId != null) {
-          userBookmarks.putIfAbsent(userId, () => []);
-          userBookmarks[userId]!.add(bookmark);
-        }
+      final userBookmarks = _groupBookmarksByUser(allBookmarks);
+
+      final currentUserBookmarks = userBookmarks[currentUserId] ?? [];
+      if (currentUserBookmarks.isEmpty) {
+        _setRandomBooks([]);
+        return;
       }
 
-      // Calculate similarity scores for all other users
-      Map<String, double> userSimilarityScores = {};
-      for (var entry in userBookmarks.entries) {
-        final userId = entry.key;
-        final bookmarks = entry.value;
+      // Create vectors and compute similarity
+      final currentUserVector = _createUserVector(currentUserBookmarks);
+      final similarityScores =
+          _computeSimilarityScores(currentUserId, userBookmarks, currentUserVector);
 
-        // Skip current user
-        if (userId == currentUserId) continue;
-
-        // Create feature vector for other user
-        List<double> otherUserVector = _createUserVector(bookmarks);
-
-        // Calculate cosine similarity
-        double similarity = _cosineSimilarity(currentUserVector, otherUserVector);
-        userSimilarityScores[userId] = similarity;
-      }
-
-      // Find top similar users (threshold: similarity > 0.2 for stricter matching)
-      final topSimilarUsers = userSimilarityScores.entries
-          .where((entry) => entry.value > 0.2)
+      // Find top similar users
+      final topUsers = similarityScores.entries
+          .where((e) => e.value > _similarityThreshold)
           .toList()
-          ..sort((a, b) => b.value.compareTo(a.value));
+        ..sort((a, b) => b.value.compareTo(a.value));
 
-      // Collect recommended books from similar users based on writers
-      Map<String, Map<String, dynamic>> recommendedBooksMap = {};
-      Map<String, double> bookScores = {};
-
-      // Get writers from current user's bookmarks
-      Set<String> currentUserWriters = {};
-      for (var bookmark in currentUserBookmarks) {
-        final writer = (bookmark['writer'] as String?)?.trim().toLowerCase();
-        if (writer != null && writer.isNotEmpty) {
-          currentUserWriters.add(writer);
-        }
+      if (topUsers.isEmpty) {
+        _setRandomBooks([]);
+        return;
       }
 
-      for (var similarUser in topSimilarUsers) {
-        final userId = similarUser.key;
-        final similarity = similarUser.value;
+      // Get recommendations
+      final recommendations = _generateRecommendations(
+        currentUserId,
+        currentUserBookmarks,
+        topUsers,
+        userBookmarks,
+      );
 
-        for (var bookmark in userBookmarks[userId]!) {
-          final bookId = bookmark['bookId'] as String?;
-          final writer = (bookmark['writer'] as String?)?.trim().toLowerCase();
-          
-          // Skip if user already bookmarked this book
-          if (currentUserBookmarks.any((b) => b['bookId'] == bookId)) {
-            continue;
-          }
-
-          // Only recommend books by writers the current user has bookmarked (writer-based filtering)
-          if (writer != null && currentUserWriters.contains(writer)) {
-            // Add or update book score (weighted by user similarity)
-            if (bookId != null) {
-              recommendedBooksMap[bookId] = bookmark;
-              bookScores[bookId] = (bookScores[bookId] ?? 0) + similarity;
-            }
-          }
-        }
-      }
-
-      // Sort by score and take top 10
-      final sortedBooks = bookScores.entries
-          .toList()
-          ..sort((a, b) => b.value.compareTo(a.value));
-
-      _randomBooks = sortedBooks.take(10).map((entry) {
-        return recommendedBooksMap[entry.key]!;
-      }).toList();
-
+      _setRandomBooks(recommendations);
     } catch (e) {
-      print('Error fetching books with collaborative filtering: $e');
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      print('Error fetching recommended books: $e');
+      _setRandomBooks([]);
     }
   }
 
-  // Create a feature vector based on writers in user's bookmarks
-  List<double> _createUserVector(List<Map<String, dynamic>> bookmarks) {
-    // Extract all writers and count their occurrences
-    Map<String, int> writerCounts = {};
-    
-    for (var bookmark in bookmarks) {
-      final writer = bookmark['writer'] as String?;
-      
+  void _buildGlobalWriters(List<Map<String, dynamic>> allBookmarks) {
+    final writerCounts = <String, int>{};
+
+    for (var b in allBookmarks) {
+      final writer = (b['writer'] as String?)?.trim().toLowerCase();
       if (writer != null && writer.isNotEmpty) {
-        final normalizedWriter = writer.trim().toLowerCase();
-        writerCounts[normalizedWriter] = (writerCounts[normalizedWriter] ?? 0) + 1;
+        writerCounts[writer] = (writerCounts[writer] ?? 0) + 1;
       }
     }
-    
-    // Create a sorted list of writers by frequency (most common first)
-    final sortedWriters = writerCounts.entries.toList()
+
+    // Get top writers by frequency
+    final sortedEntries = writerCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     
-    // Create a limited feature space (top 20 writers)
-    List<String> featureSpace = sortedWriters.take(20).map((e) => e.key).toList();
-    
-    // Create frequency vector based on writer counts
-    List<double> vector = [];
-    for (var writer in featureSpace) {
-      vector.add(writerCounts[writer]!.toDouble());
+    _globalWriters = sortedEntries.take(_topWritersLimit).map((e) => e.key).toList();
+  }  Map<String, List<Map<String, dynamic>>> _groupBookmarksByUser(
+    List<Map<String, dynamic>> allBookmarks,
+  ) {
+    final userBookmarks = <String, List<Map<String, dynamic>>>{};
+
+    for (var b in allBookmarks) {
+      final uid = b['userId'] as String?;
+      if (uid == null) continue;
+      userBookmarks.putIfAbsent(uid, () => []);
+      userBookmarks[uid]!.add(b);
     }
-    
-    // Handle case where user has no valid writers
-    return vector.isEmpty ? [0.0] : vector;
+
+    return userBookmarks;
   }
 
-  // Helper method to compute cosine similarity between two vectors
-  double _cosineSimilarity(List<double> vectorA, List<double> vectorB) {
-    // Pad vectors to same length
-    int maxLen = max(vectorA.length, vectorB.length);
-    List<double> a = List<double>.from(vectorA)..addAll(List.filled(max(0, maxLen - vectorA.length), 0.0));
-    List<double> b = List<double>.from(vectorB)..addAll(List.filled(max(0, maxLen - vectorB.length), 0.0));
+  Map<String, double> _computeSimilarityScores(
+    String currentUserId,
+    Map<String, List<Map<String, dynamic>>> userBookmarks,
+    List<double> currentUserVector,
+  ) {
+    final similarityScores = <String, double>{};
 
-    // Calculate dot product
-    double dotProduct = 0.0;
+    userBookmarks.forEach((uid, bookmarks) {
+      if (uid == currentUserId) return;
+      similarityScores[uid] = _cosineSimilarity(
+        currentUserVector,
+        _createUserVector(bookmarks),
+      );
+    });
+
+    return similarityScores;
+  }
+
+  List<Map<String, dynamic>> _generateRecommendations(
+    String currentUserId,
+    List<Map<String, dynamic>> currentUserBookmarks,
+    List<MapEntry<String, double>> topUsers,
+    Map<String, List<Map<String, dynamic>>> userBookmarks,
+  ) {
+    final currentUserWriters = currentUserBookmarks
+        .map((b) => (b['writer'] as String?)?.trim().toLowerCase())
+        .whereType<String>()
+        .toSet();
+
+    final recommendedBooksMap = <String, Map<String, dynamic>>{};
+    final bookScores = <String, double>{};
+    final currentUserBookIds = currentUserBookmarks
+        .map((b) => b['bookId'] as String?)
+        .whereType<String>()
+        .toSet();
+
+    for (var entry in topUsers) {
+      final userId = entry.key;
+      final similarity = entry.value;
+
+      for (var book in userBookmarks[userId]!) {
+        final bookId = book['bookId'] as String?;
+        final writer = (book['writer'] as String?)?.trim().toLowerCase();
+
+        // Validation checks
+        if (bookId == null || writer == null) continue;
+        if (currentUserBookIds.contains(bookId)) continue;
+        if (!currentUserWriters.contains(writer)) continue;
+
+        // Update recommendation
+        recommendedBooksMap[bookId] = book;
+        bookScores[bookId] = (bookScores[bookId] ?? 0) + similarity;
+      }
+    }
+
+    // Sort and return top recommendations
+    final sortedBooks = bookScores.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    return sortedBooks
+        .take(_maxRecommendations)
+        .map((e) => recommendedBooksMap[e.key]!)
+        .toList();
+  }
+
+  List<double> _createUserVector(List<Map<String, dynamic>> bookmarks) {
+    final counts = <String, int>{};
+
+    for (var b in bookmarks) {
+      final w = (b['writer'] as String?)?.trim().toLowerCase();
+      if (w != null && w.isNotEmpty) {
+        counts[w] = (counts[w] ?? 0) + 1;
+      }
+    }
+
+    return _globalWriters
+        .map((w) => counts[w]?.toDouble() ?? 0.0)
+        .toList();
+  }
+
+  double _cosineSimilarity(List<double> a, List<double> b) {
+    if (a.isEmpty || b.isEmpty) return 0.0;
+
+    double dot = 0.0, magA = 0.0, magB = 0.0;
+
     for (int i = 0; i < a.length; i++) {
-      dotProduct += a[i] * b[i];
+      dot += a[i] * b[i];
+      magA += a[i] * a[i];
+      magB += b[i] * b[i];
     }
 
-    // Calculate magnitudes
-    double magnitudeA = 0.0;
-    double magnitudeB = 0.0;
-    
-    for (int i = 0; i < a.length; i++) {
-      magnitudeA += a[i] * a[i];
-      magnitudeB += b[i] * b[i];
-    }
-    
-    magnitudeA = sqrt(magnitudeA);
-    magnitudeB = sqrt(magnitudeB);
+    magA = sqrt(magA);
+    magB = sqrt(magB);
 
-    // Avoid division by zero
-    if (magnitudeA == 0 || magnitudeB == 0) {
-      return 0.0;
-    }
+    if (magA == 0 || magB == 0) return 0.0;
 
-    return dotProduct / (magnitudeA * magnitudeB);
+    return dot / (magA * magB);
   }
 
   void _navigateToDetailPage(Map<String, dynamic> book) {
-    final title = book['title'] ?? 'Unknown Title';
-    final writer = book['writer'] ?? 'Unknown Writer';
-    final imageUrl = book['imageUrl'] ?? 'https://example.com/placeholder.jpg';
-    final course = book['course'] ?? 'No course info available';
-    final summary = book['summary'] ?? 'No summary available';
-
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => CourseBookDetailScreen(
-          title: title,
-          writer: writer,
-          imageUrl: imageUrl,
-          course: course,
-          summary: summary,
+          title: book['title'] ?? 'Unknown Title',
+          writer: book['writer'] ?? 'Unknown Writer',
+          imageUrl: book['imageUrl'] ??
+              'https://example.com/placeholder.jpg',
+          course: book['course'] ?? 'No course info available',
+          summary: book['summary'] ?? 'No summary available',
         ),
       ),
     );
+  }
+
+  void _setRandomBooks(List<Map<String, dynamic>> books) {
+    setState(() {
+      _randomBooks = books;
+      _isLoading = false;
+    });
   }
 
   @override
@@ -252,141 +257,151 @@ class _RandomBooksState extends State<TRandomBooks> {
         TSectionHeading(
           title: '| Recommended for You',
           fontSize: 25,
-          onPressed: () {
-            // Handle view all button press
-          },
+          onPressed: () {},
         ),
-        SizedBox(height: 10),
-        _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _randomBooks.isEmpty
-            ? Center(
-                child: Column(
-                  children: [
-                    Text(
-                      'Bookmark books by your favorite writers to see personalized recommendations!',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'We\'ll recommend books by the same writers that readers with similar tastes have enjoyed',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[500],
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : SizedBox(
-          height: 300,
-          child: CarouselSlider.builder(
-            itemCount: _randomBooks.length,
-            itemBuilder: (context, index, realIndex) {
-              final book = _randomBooks[index];
-              final imageUrl = book['imageUrl'] ?? 'https://example.com/placeholder.jpg';
-              final title = book['title'] ?? 'Unknown Title';
-              final writer = book['writer'] ?? 'Unknown Writer';
-
-              return GestureDetector(
-                onTap: () => _navigateToDetailPage(book),
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 5),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            decoration: const BoxDecoration(
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 8,
-                                  spreadRadius: 1,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Image.network(
-                              imageUrl,
-                              width: 150,
-                              height: 220,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  width: 150,
-                                  height: 220,
-                                  color: Colors.grey.shade200,
-                                  child: const Icon(
-                                    Icons.menu_book,
-                                    size: 50,
-                                    color: Colors.grey,
-                                  ),
-                                );
-                              },
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Container(
-                                  width: 150,
-                                  height: 220,
-                                  color: Colors.grey.shade200,
-                                  child: Center(
-                                    child: CircularProgressIndicator(
-                                      value: loadingProgress.expectedTotalBytes != null
-                                          ? loadingProgress.cumulativeBytesLoaded /
-                                              loadingProgress.expectedTotalBytes!
-                                          : null,
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          writer,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-            options: CarouselOptions(
-              height: 300,
-              viewportFraction: 0.5,
-              enlargeCenterPage: false,
-              aspectRatio: 2.0,
-              autoPlay: false,
-              enableInfiniteScroll: true,
-            ),
-          ),
-        ),
+        const SizedBox(height: 10),
+        _buildContent(),
       ],
     );
   }
+
+  Widget _buildContent() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_randomBooks.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return _buildCarousel();
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        children: const [
+          Text(
+            'Bookmark books by your favorite writers to see personalized recommendations!',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16),
+          ),
+          SizedBox(height: 10),
+          Text(
+            "We'll recommend books by the same writers that readers with similar tastes have enjoyed",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCarousel() {
+    return SizedBox(
+      height: 300,
+      child: CarouselSlider.builder(
+        itemCount: _randomBooks.length,
+        itemBuilder: (context, index, realIndex) =>
+            _buildBookCard(_randomBooks[index]),
+        options: CarouselOptions(
+          height: 300,
+          viewportFraction: 0.5,
+          enlargeCenterPage: false,
+          autoPlay: false,
+          enableInfiniteScroll: true,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBookCard(Map<String, dynamic> book) {
+    final imageUrl =
+        book['imageUrl'] ?? 'https://example.com/placeholder.jpg';
+    final title = book['title'] ?? 'Unknown Title';
+    final writer = book['writer'] ?? 'Unknown Writer';
+
+    return GestureDetector(
+      onTap: () => _navigateToDetailPage(book),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 5),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: _buildBookImage(imageUrl),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 5),
+            Text(
+              writer,
+              style: const TextStyle(
+                color: Colors.grey,
+                fontSize: 12,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBookImage(String imageUrl) {
+    return Image.network(
+      imageUrl,
+      width: 150,
+      height: 220,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          width: 150,
+          height: 220,
+          color: Colors.grey.shade200,
+          child: const Icon(
+            Icons.menu_book,
+            size: 50,
+            color: Colors.grey,
+          ),
+        );
+      },
+      loadingBuilder: (context, child, progress) {
+        if (progress == null) return child;
+        return Container(
+          width: 150,
+          height: 220,
+          color: Colors.grey.shade200,
+          child: Center(
+            child: CircularProgressIndicator(
+              value: progress.expectedTotalBytes != null
+                  ? progress.cumulativeBytesLoaded /
+                      progress.expectedTotalBytes!
+                  : null,
+              strokeWidth: 2,
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
+
+
+
+
+
+
+
