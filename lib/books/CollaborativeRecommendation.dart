@@ -50,7 +50,6 @@ class _RandomBooksState extends State<TRandomBooks> {
       final currentUserBookmarksSnapshot = await _firestore
           .collection('bookmarks')
           .where('userId', isEqualTo: currentUserId)
-          .limit(1) // Just check if any bookmarks exist
           .get();
 
       // If user hasn't bookmarked any books, show empty state
@@ -65,57 +64,92 @@ class _RandomBooksState extends State<TRandomBooks> {
       // Fetch user-specific bookmarks
       final currentUserBookmarks = currentUserBookmarksSnapshot.docs.map((doc) => doc.data()).toList();
 
-      // Extract writers from user's bookmarked books
-      final Set<String> userWriters = {};
-      for (var bookmark in currentUserBookmarks) {
-        final writer = bookmark['writer'] as String?;
-        if (writer != null && writer.isNotEmpty) {
-          userWriters.add(writer.trim());
-        }
-      }
+      // Create a feature vector for the current user
+      List<double> currentUserVector = _createUserVector(currentUserBookmarks);
 
-      // If no writers found in user's bookmarks, show empty state
-      if (userWriters.isEmpty) {
-        setState(() {
-          _randomBooks = [];
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // Fetch all bookmarks to find books by the same writers
+      // Fetch all bookmarks to find similar users
       final allBookmarksSnapshot = await _firestore.collection('bookmarks').get();
       final allBookmarks = allBookmarksSnapshot.docs.map((doc) => doc.data()).toList();
 
-      // Find books by the same writers (excluding user's own bookmarks)
-      List<Map<String, dynamic>> recommendedBooks = [];
+      // Group bookmarks by userId
+      Map<String, List<Map<String, dynamic>>> userBookmarks = {};
       for (var bookmark in allBookmarks) {
-        final writer = bookmark['writer'] as String?;
         final userId = bookmark['userId'] as String?;
-        
-        // Check if book is by same writer but not bookmarked by current user
-        if (writer != null && 
-            writer.isNotEmpty && 
-            userWriters.contains(writer.trim()) && 
-            userId != currentUserId) {
-          recommendedBooks.add(bookmark);
+        if (userId != null) {
+          userBookmarks.putIfAbsent(userId, () => []);
+          userBookmarks[userId]!.add(bookmark);
         }
       }
 
-      // Remove duplicates based on bookId
-      final Set<String> seenBookIds = {};
-      recommendedBooks = recommendedBooks.where((book) {
-        final bookId = book['bookId'] as String?;
-        if (bookId != null && !seenBookIds.contains(bookId)) {
-          seenBookIds.add(bookId);
-          return true;
+      // Calculate similarity scores for all other users
+      Map<String, double> userSimilarityScores = {};
+      for (var entry in userBookmarks.entries) {
+        final userId = entry.key;
+        final bookmarks = entry.value;
+
+        // Skip current user
+        if (userId == currentUserId) continue;
+
+        // Create feature vector for other user
+        List<double> otherUserVector = _createUserVector(bookmarks);
+
+        // Calculate cosine similarity
+        double similarity = _cosineSimilarity(currentUserVector, otherUserVector);
+        userSimilarityScores[userId] = similarity;
+      }
+
+      // Find top similar users (threshold: similarity > 0.2 for stricter matching)
+      final topSimilarUsers = userSimilarityScores.entries
+          .where((entry) => entry.value > 0.2)
+          .toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
+
+      // Collect recommended books from similar users based on writers
+      Map<String, Map<String, dynamic>> recommendedBooksMap = {};
+      Map<String, double> bookScores = {};
+
+      // Get writers from current user's bookmarks
+      Set<String> currentUserWriters = {};
+      for (var bookmark in currentUserBookmarks) {
+        final writer = (bookmark['writer'] as String?)?.trim().toLowerCase();
+        if (writer != null && writer.isNotEmpty) {
+          currentUserWriters.add(writer);
         }
-        return false;
+      }
+
+      for (var similarUser in topSimilarUsers) {
+        final userId = similarUser.key;
+        final similarity = similarUser.value;
+
+        for (var bookmark in userBookmarks[userId]!) {
+          final bookId = bookmark['bookId'] as String?;
+          final writer = (bookmark['writer'] as String?)?.trim().toLowerCase();
+          
+          // Skip if user already bookmarked this book
+          if (currentUserBookmarks.any((b) => b['bookId'] == bookId)) {
+            continue;
+          }
+
+          // Only recommend books by writers the current user has bookmarked (writer-based filtering)
+          if (writer != null && currentUserWriters.contains(writer)) {
+            // Add or update book score (weighted by user similarity)
+            if (bookId != null) {
+              recommendedBooksMap[bookId] = bookmark;
+              bookScores[bookId] = (bookScores[bookId] ?? 0) + similarity;
+            }
+          }
+        }
+      }
+
+      // Sort by score and take top 10
+      final sortedBooks = bookScores.entries
+          .toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
+
+      _randomBooks = sortedBooks.take(10).map((entry) {
+        return recommendedBooksMap[entry.key]!;
       }).toList();
 
-      // Limit to 10 recommendations
-      recommendedBooks.shuffle();
-      _randomBooks = recommendedBooks.take(10).toList();
     } catch (e) {
       print('Error fetching books with collaborative filtering: $e');
     } finally {
@@ -125,21 +159,57 @@ class _RandomBooksState extends State<TRandomBooks> {
     }
   }
 
+  // Create a feature vector based on writers in user's bookmarks
+  List<double> _createUserVector(List<Map<String, dynamic>> bookmarks) {
+    // Extract all writers and count their occurrences
+    Map<String, int> writerCounts = {};
+    
+    for (var bookmark in bookmarks) {
+      final writer = bookmark['writer'] as String?;
+      
+      if (writer != null && writer.isNotEmpty) {
+        final normalizedWriter = writer.trim().toLowerCase();
+        writerCounts[normalizedWriter] = (writerCounts[normalizedWriter] ?? 0) + 1;
+      }
+    }
+    
+    // Create a sorted list of writers by frequency (most common first)
+    final sortedWriters = writerCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    
+    // Create a limited feature space (top 20 writers)
+    List<String> featureSpace = sortedWriters.take(20).map((e) => e.key).toList();
+    
+    // Create frequency vector based on writer counts
+    List<double> vector = [];
+    for (var writer in featureSpace) {
+      vector.add(writerCounts[writer]!.toDouble());
+    }
+    
+    // Handle case where user has no valid writers
+    return vector.isEmpty ? [0.0] : vector;
+  }
+
   // Helper method to compute cosine similarity between two vectors
   double _cosineSimilarity(List<double> vectorA, List<double> vectorB) {
+    // Pad vectors to same length
+    int maxLen = max(vectorA.length, vectorB.length);
+    List<double> a = List<double>.from(vectorA)..addAll(List.filled(max(0, maxLen - vectorA.length), 0.0));
+    List<double> b = List<double>.from(vectorB)..addAll(List.filled(max(0, maxLen - vectorB.length), 0.0));
+
     // Calculate dot product
     double dotProduct = 0.0;
-    for (int i = 0; i < vectorA.length; i++) {
-      dotProduct += vectorA[i] * vectorB[i];
+    for (int i = 0; i < a.length; i++) {
+      dotProduct += a[i] * b[i];
     }
 
     // Calculate magnitudes
     double magnitudeA = 0.0;
     double magnitudeB = 0.0;
     
-    for (int i = 0; i < vectorA.length; i++) {
-      magnitudeA += vectorA[i] * vectorA[i];
-      magnitudeB += vectorB[i] * vectorB[i];
+    for (int i = 0; i < a.length; i++) {
+      magnitudeA += a[i] * a[i];
+      magnitudeB += b[i] * b[i];
     }
     
     magnitudeA = sqrt(magnitudeA);
@@ -180,7 +250,7 @@ class _RandomBooksState extends State<TRandomBooks> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TSectionHeading(
-          title: '| Trendy Books',
+          title: '| Recommended for You',
           fontSize: 25,
           onPressed: () {
             // Handle view all button press
@@ -194,7 +264,7 @@ class _RandomBooksState extends State<TRandomBooks> {
                 child: Column(
                   children: [
                     Text(
-                      'Bookmark some books to see personalized recommendations!',
+                      'Bookmark books by your favorite writers to see personalized recommendations!',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
@@ -203,7 +273,7 @@ class _RandomBooksState extends State<TRandomBooks> {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      'Books you bookmark will appear here as recommendations',
+                      'We\'ll recommend books by the same writers that readers with similar tastes have enjoyed',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
@@ -214,7 +284,7 @@ class _RandomBooksState extends State<TRandomBooks> {
                 ),
               )
             : SizedBox(
-          height: 300, // Set a fixed height for the carousel
+          height: 300,
           child: CarouselSlider.builder(
             itemCount: _randomBooks.length,
             itemBuilder: (context, index, realIndex) {
@@ -250,7 +320,6 @@ class _RandomBooksState extends State<TRandomBooks> {
                               height: 220,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
-                                // Fallback to a default book icon if image fails to load
                                 return Container(
                                   width: 150,
                                   height: 220,
@@ -263,7 +332,6 @@ class _RandomBooksState extends State<TRandomBooks> {
                                 );
                               },
                               loadingBuilder: (context, child, loadingProgress) {
-                                // Show a loading indicator while the image is loading
                                 if (loadingProgress == null) return child;
                                 return Container(
                                   width: 150,
